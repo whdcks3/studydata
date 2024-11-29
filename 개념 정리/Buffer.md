@@ -29,4 +29,46 @@ Java NIO의 버퍼는 다음의 세 가지 속성을 사용하여 데이터를 �
 + rewind() ```position```을 0으로 설정하여 버퍼의 내용을 처음부터 읽을 수 있도록 한다. 쓰기 작업을 덮어쓰지 않고, 데이터를 반복해서 읽고자 할 때 유용하다.
 
 ##### 예제 : ByteBuffer의 기본 구조와 메소드 사용
+```java
+import java.nio.ByteBuffer;
 
+public class BufferExample {
+    public static void main(String[] args) {
+        // 10 바이트 크기의 ByteBuffer 생성
+        ByteBuffer buffer = ByteBuffer.allocate(10);
+
+        // 데이터 쓰기
+        for (int i = 0; i < buffer.capacity(); i++) {
+            buffer.put((byte) (i + 1)); // 1, 2, 3, ..., 10 데이터 입력
+        }
+
+        // 버퍼의 쓰기 모드에서 읽기 모드로 전환
+        buffer.flip();
+
+        // 데이터 읽기
+        while (buffer.hasRemaining()) {
+            System.out.print(buffer.get() + " ");
+        }
+
+        // 버퍼 재사용을 위한 초기화
+        buffer.clear();
+    }
+}
+```
+----------------------------------------------
+## 3. Buffer의 다양한 종류와 활용 목적
+java NIO에서는 다양한 타입의 데이터를 저장하고 다루기 위한 여러 버퍼 클래스를 제공한다. 이를 통해 특정 데이터 타입에 최적화된 버퍼를 선택할 수 있다.
+
+#### 3-1 ByteBuffer
+ByteBuffer는 바이트(byte) 데이터를 저장하기 위한 버퍼로, 입출력 작업에서 가장 많이 사용된다. 파일 입출력이나 네트워크 통신에서 데이터를 바이트 단위로 저장하고 처리할 때 적합하다.
+#### 3-2 CharBuffer
+CharBuffer는 문자(char) 데이터를 저장하는 버퍼로, 문자열 데이터를 처리하는 데 유용하다. 특히 텍스트 파일 입출력에서 주로 사용되며,
+```Chracter```데이터 타입을 저장할 수 있다.
+#### 3-3 IntBuffer
+IntBuffer는 정수(int)데이터를 저장하기 위한 버퍼로, 정수 배열을 입출력하거나 연산할 때 주로 사용된다. 대규모 정수 데이터를 저장하고 빠르게 읽고 쓸 수 있다.
+#### 3-4 FloatBuffer, DoubleBuffer, LongBuffer, ShortBuffer
+각각 부동소수(float), 배정밀도 부동소수(double), 긴 정수(long), 짧은 정수(short) 데이터를 저장할 수 있는 버퍼로, 대규모 과학 계산이나 데이터 분석 작업에서 효율적으로 데이터를 처리할 수 있다.
+
+**각 버퍼 클래스는 allocate() 메소드를 통해 각 데이터 타입에 맞는 적절한 크기의 메모리 공간을 할당받을 수 있으며, 데이터의 읽기와 쓰기에 최적화되어 있다.**
+
+-------------------------
