@@ -87,7 +87,7 @@ Direct Buffer는 **네이티브 메모리(native memory)에** 할당되며, 입�
 + 일반적인 사용 : 파일 입출력, 네트워크 통신 등 대규모 데이터의 읽기 및 쓰기 작업에 사용된다.
 
 #### 4-2 Non-Direct Buffer
-Non-Direct Buffer는 **힙 메모리(heap memory)에 할당되며, JVM 가비지 컬렉션의 대상이 된다. ```ByteBuffer.allocate()``` 메소드로 생성되며 다음과 같은 특성이 있다.
+Non-Direct Buffer는 **힙 메모리(heap memory)에** 할당되며, JVM 가비지 컬렉션의 대상이 된다. ```ByteBuffer.allocate()``` 메소드로 생성되며 다음과 같은 특성이 있다.
 + 빠른 메모리 할당 : 힙 메모리 내에서 버퍼가 생성되므로 메모리 할당 속도가 빠르고 JVM이 관리하기에 쉽다.
 + JVM 관리 하에 효율적 사용 : 힙 메모리에 할당되기 때문에 JVM이 직접 관리하고, 가비지 컬렉션으로 자동 해제되어 메모리 관리가 간편하다.
 + 일반적인 사용 : 상대적으로 소규모의 데이터
