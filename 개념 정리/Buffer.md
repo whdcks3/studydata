@@ -300,7 +300,7 @@ public class FileCopyExample {
 자바 NIO에서 Buffer와 Channel은 입출력 작업의 성능을 최적화 하기 위해 함께 사용된다. Buffer는 데이터를 저장하고, Channel은 데이터의 통로 역할을 하며, 데이터가 Channel을 통해 Buffer로 이동하면서 읽기와 쓰기 작업이 이루어진다.
 
 #### 7-1 FileChannel과 ByteBuffer의 협력 구조
-+ 데이터 쓰기 : ```ByteBuffer```에 데이터를 쓰고 ```flip()```메소드로 읽기 모드로 전환한다. 이후 ```FileChannel.write() 메소드를 사용해 버퍼에 있는 데이터를 파일로 전송한다.
++ 데이터 쓰기 : ```ByteBuffer```에 데이터를 쓰고 ```flip()```메소드로 읽기 모드로 전환한다. 이후 ```FileChannel.write()``` 메소드를 사용해 버퍼에 있는 데이터를 파일로 전송한다.
 + 데이터 읽기 : ```FileChannel.read()``` 메소드를 사용해 파일 데이터를 ```ByteBuffer```로 읽어온다. 버퍼의 데이터를 읽기 위해 ```filp()```을 호출하여 읽기 모드로 전환하고, ```get()``` 메소드를 사용해 버퍼에 저장된 데이터를 읽는다.
 
 ##### 예제 : FileChannel과 ByteBuffer를 활용한 파일 읽기
