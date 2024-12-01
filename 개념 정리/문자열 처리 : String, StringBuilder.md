@@ -164,7 +164,7 @@ public class PerformanceComparison {
 String과 StringBuilder의 메모리 효율성을 이해하기 위해서는 메모리 관리와 GC(Garbage Collection)의 이해가 필요하다.
 
 #### 3-2 메모리 관리와 GC(Garbage Collection)
-자바의 ***GC(Garbage Collection)** 는 필요하지 않은 객체를 자동으로 메모리에서 해제해 준다. 하지만 ```String```객체가 너무 자주 생성되고 해제되면, GC의 부담이 증가하여 프로그램의 성능을 떨어 뜨릴 수 잇다. 이는 특히 반복문에서 문자열을 다룰 때 문제가 된다.
+자바의 **GC(Garbage Collection)** 는 필요하지 않은 객체를 자동으로 메모리에서 해제해 준다. 하지만 ```String```객체가 너무 자주 생성되고 해제되면, GC의 부담이 증가하여 프로그램의 성능을 떨어 뜨릴 수 잇다. 이는 특히 반복문에서 문자열을 다룰 때 문제가 된다.
 
 ```String```을 반복적으로 조작하는 코드는 매번 새로운 객체를 생성하여 메모리를 소모하고, 생성된 ```String```객체들이 사용되지 않을 때 GC가 이를 제거하게 된다. 하지만 ```StringBuilder```는 객체가 불필요하게 많이 생성되지 않고 같은 객체를 계속해서 사용할 수 있어 GC의 부담을 줄일 수 있다.
 
