@@ -130,3 +130,72 @@ public class StringBuilderMethodsExample {
 
 ----------------------------------
 ## String과 StringBuilder의 성능 비교
+문자열을 조작하는 성능은 **String과 StringBuilder의 가장 큰 차이 중 하나**다. ```String```은 불변 객체로, **문자열을 조작할 때마다 새로운 객체를 생성하므로 메모리를 소비하며, 성능이 저하될 수 있다.** 반면, ```StringBuilder```는 기존 객체 내에서 문자열을 직접 조작하므로 성능과 메모리 혀율이 뛰어나다.
+
+##### 예제 : 문자열 조작
+```java
+public class PerformanceComparison {
+    public static void main(String[] args) {
+        long startTime, endTime;
+
+        // String으로 문자열 추가
+        startTime = System.currentTimeMillis();
+        String str = "";
+        for (int i = 0; i < 10000; i++) {
+            str += "a"; // 새로운 객체가 반복 생성됨
+        }
+        endTime = System.currentTimeMillis();
+        System.out.println("String 소요 시간: " + (endTime - startTime) + "ms");
+
+        // StringBuilder로 문자열 추가
+        startTime = System.currentTimeMillis();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 10000; i++) {
+            sb.append("a"); // 동일 객체 내에서 문자열을 추가
+        }
+        endTime = System.currentTimeMillis();
+        System.out.println("StringBuilder 소요 시간: " + (endTime - startTime) + "ms");
+    }
+}
+```
+설명 : ```String```은 반복적으로 문자열을 추가할 때마다 새로운 객체를 생성하므로 시간이 더 많이 소요된다.<br>```StringBuilder```는 같은 객체 내에서 문자열을 추가하여 메모리 낭비가 없고, 성능이 훨씬 빠르다.
+
+-----------------------------
+String과 StringBuilder의 메모리 효율성을 이해하기 위해서는 메모리 관리와 GC(Garbage Collection)의 이해가 필요하다.
+
+#### 3-2 메모리 관리와 GC(Garbage Collection)
+자바의 ***GC(Garbage Collection)** 는 필요하지 않은 객체를 자동으로 메모리에서 해제해 준다. 하지만 ```String```객체가 너무 자주 생성되고 해제되면, GC의 부담이 증가하여 프로그램의 성능을 떨어 뜨릴 수 잇다. 이는 특히 반복문에서 문자열을 다룰 때 문제가 된다.
+
+```String```을 반복적으로 조작하는 코드는 매번 새로운 객체를 생성하여 메모리를 소모하고, 생성된 ```String```객체들이 사용되지 않을 때 GC가 이를 제거하게 된다. 하지만 ```StringBuilder```는 객체가 불필요하게 많이 생성되지 않고 같은 객체를 계속해서 사용할 수 있어 GC의 부담을 줄일 수 있다.
+
+---------------------------------
+##### 예제 : 반복적인 문자열 연결을 통한 성능 차이 비교
+```java
+public class StringVsStringBuilderExample {
+    public static void main(String[] args) {
+        long startTime, endTime;
+
+        // 1. String을 이용한 반복적인 문자열 연결
+        startTime = System.currentTimeMillis();
+        String str = "A";
+        for (int i = 0; i < 100000; i++) {
+            str += "A";  // 새로운 객체가 반복 생성됨
+        }
+        endTime = System.currentTimeMillis();
+        System.out.println("String 사용 시간: " + (endTime - startTime) + "ms");
+
+        // 2. StringBuilder를 이용한 반복적인 문자열 연결
+        startTime = System.currentTimeMillis();
+        StringBuilder sb = new StringBuilder("A");
+        for (int i = 0; i < 100000; i++) {
+            sb.append("A");  // 동일 객체 내에서 문자열 추가
+        }
+        endTime = System.currentTimeMillis();
+        System.out.println("StringBuilder 사용 시간: " + (endTime - startTime) + "ms");
+    }
+}
+```
+설명 : **String**은 문자열을 100,000번 추가하는 동안 매번 새로운 ```String```객체가 생성되고 기존의 객체는 GC의 대상이 된다. 이로 인해 GC의 부담이 커지고, 메모리 소모가 많아지면서 프로그램이 느려진다.<br>**StringBuilder**는 동일한 ```StringBuilder``` 객체 내에서 문자열이 추가되므로, 새로운 객체를 생성하지 않기 때문에 성능이 크게 향상된다.
+
+## 4. String과 StringBuilder의 차이점 요약
+|비교 항목|
