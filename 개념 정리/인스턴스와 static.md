@@ -124,3 +124,67 @@ public class Main {
 <br>```balance```는 인스턴스 필드로 각 계좌가 고유의 잔액을 가진다.
 <br>```addInterest()```는 인스턴스 메소드로, 각 계좌에 개별적으로 이자를 추가한다.
 <br>```setInterestRate()```는 static 메소드로, 클래스 전체의 이자율을 변경할 수 있다.
+
+--------------------------------
+## 5. static 메소드와 인스턴스 메소드의 차이점
+**인스턴스 메소드**는 특정 객체에 속해 있어, 해당 객체의 인스턴스 변수와 다른 인스턴스 메소드에 접근할 수 있다.
+**static** 메소드는 클래스에 속하며 객체 생성 없이 호출할 수 있다. static메소드 안에서는 인스턴스 변수나 인스턴스 메소드에 접근할 수 없고, 오직 static필드와 static 메소드만 사용할 수 있다.
+
+##### 예제 : static 메소드와 인스턴스 메소드의 사용법
+```java
+public class Calculator {
+    int instanceValue = 10;  // 인스턴스 필드
+
+    static int add(int a, int b) {      // static 메소드
+        return a + b;
+    }
+
+    void multiply(int factor) {         // 인스턴스 메소드
+        instanceValue *= factor;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        int sum = Calculator.add(5, 10);  // static 메소드 호출, 객체 생성 불필요
+        System.out.println("합계: " + sum);  // 출력: 합계: 15
+
+        Calculator calc = new Calculator();  // 인스턴스 객체 생성
+        calc.multiply(3);                     // 인스턴스 메소드 호출
+        System.out.println("곱셈 결과: " + calc.instanceValue); // 출력: 곱셈 결과: 30
+    }
+}
+```
+설명 : ```add()```는 static 메소드로 객체 없이 호출할 수 있으며, 클래스 이름으로 접근한다.
+```multiply()```는 인스턴스 메소드로, 인스턴스 필드 ```instanceValue```를 조작할 수 있다.
+
+---------------------
+## 6. static 블록을 통한 초기화
+**static 초기화 블록**은 클래스 로드 시 한 번만 실행되며, static 필드를 초기화하는데 유용하다.
+
+```java
+public class DatabaseConfig {
+    static String url;
+    static String username;
+    static String password;
+
+    static {  // static 초기화 블록
+        url = "jdbc:mysql://localhost:3306/mydb";
+        username = "root";
+        password = "password";
+        System.out.println("Database 설정이 초기화되었습니다.");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Database URL: " + DatabaseConfig.url);
+    }
+}
+```
+설명 : ```DatabaseConfig``` 클래스가 처음 로드될 때 static 블록이 실행되어 URL, 사용자 이름, 비밀번호가 초기화된다.<br>이후에는 static 필드의 초기화가 변경되지 않으며, ```DatabaseConfig```의 모든 객체가 동일한 설정을 공유한다.
+
+-------------------------------
+## 7. 인스턴스와 static의 사용 가이드
++ 인스턴스 필드와 메소드 : 각 객체가 **고유의 상태나 동작**을 가지는 경우 사용한다. 예를 들어, 사람마다 이름과 나이가 다를 경우 ```Person```클래스에 인스턴스 필드로 ```name```과 ```age```를 정의한다.
++ static 필드와 메소드 : 모든 객체가 **공유해야 하는 데이터나 기능**이 필요할 때 사용한다. 예를 들어, 전체 계좌의 이자율을 설정하는 ```interestRate```와 같은 변수는 모든 ```BankAccount```객체에서 공유되어야 하므로 static으로 선언한다.
