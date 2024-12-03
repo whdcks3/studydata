@@ -127,3 +127,39 @@ public class BooleanExample {
 }
 ```
 ----------------------------
+## 3. 데이터 타입의 활용 예제
+```java
+public class StudentGrade {
+    public static void main(String[] args) {
+        String name = "Alice";       // 학생 이름 (참조 타입)
+        int age = 20;                // 나이 (정수형)
+        float gpa = 3.75F;           // 학점 (실수형)
+        char grade = 'A';            // 학점 문자 (문자형)
+        boolean isGraduated = false; // 졸업 여부 (논리형)
+
+        System.out.println("Student Name: " + name);
+        System.out.println("Age: " + age);
+        System.out.println("GPA: " + gpa);
+        System.out.println("Grade: " + grade);
+        System.out.println("Graduated: " + isGraduated);
+    }
+}
+```
+-----------------------------
+## 4. 주의할 점
+##### 정수형 타입의 범위 초과(오버플로우)
+정수형 변수에 허용된 범위를 넘는 값을 저장할 때 오버플로우 또는 언더플로우가 발생할 수 있다. 예를 들어 byte 타입에 128을 저장하면 오류가 발생한다.
+
+##### 실수형 부동 소수점 오차
+실수형 데이터 타입(float, double)은 부동 소수점 방식을 사용하여 소수점을 표현하므로 미세한 오차가 발생할 수 있다. 이를 해결하려면 정밀도가 높은 ```BigDecimal```클래스를 사용하는 것이 좋다.
+
+##### 타입 캐스팅(형 변환)
+작은 데이터 타입에서 큰 데이터 타입으로 변환은 자동으로 이루어지지만, 큰 데이터 타입에서 작은 데이터 타입으로 변환할 때는 **명시적형 변환**이 필요하다.
+```java
+double largeNumber = 100.99;
+int smallNumber = (int) largeNumber; // 강제 형 변환
+System.out.println("Small Number: " + smallNumber); // 출력 결과: 100
+```
+**long 타입의 리터럴 표기**
+long 타입은 기본적으로 정수형으로 인식되는 int보다 큰 숫자를 표현하므로 ```L```을 붙여 long임을 명시해 주어야 한다.
+```
