@@ -9,4 +9,121 @@ Java에서 데이터 타입은 변수에 저장할 수 있는 데이터의 종�
 --------------------------------------------
 ## 2. Java의 기본 데이터 타입 종류 및 상세 설명
 #### 2-1 정수형(Integer Type)
-정수형 데이터 타입은
+정수형 데이터 타입은 소수점 없이 정수 값을 저장한다. 각 타입마다 다루는 값의 크기가 다르며, 값의 범위는 메모리 크기에 따라 따라 달라진다.
+```byte```
++ 크기 : 1byte(8 bits)
++ 값의 범위 : -128 ~ 127
++ 용도 : 매우 작은 정수 값이나 메모리 절약이 중요한 경우 사용
+
+##### 예제
+```java
+byte maxByte = 127;
+byte minByte = -128;
+System.out.println("Max Byte Value: " + maxByte);
+System.out.println("Min Byte Value: " + minByte);
+```
+
+```short```
++ 크기 : 2bytes(16 bits)
++ 값의 범위 : -32,768 ~ 32,767
++ 용도 : byte보다 큰 정수를 다룰 때, 메모리를 절약해야 하는 경우 사용
+
+##### 예제
+```java
+short maxShort = 32767;
+short minShort = -32768;
+System.out.println("Max Short Value: " + maxShort);
+System.out.println("Min Short Value: " + minShort);
+```
+
+```int```
+크기 : 4bytes(32bits)
+값의 범위 : -2,147,483,648 ~ 2,147,483,647
+용도 : 일반적인 정수형 데이터에 가장 많이 사용
+
+##### 예제
+```java
+int population = 1500000000;
+System.out.println("Population: " + population);
+```
+
+```long```
+크기 : 8bytes(64bits)
+값의 범위 : -9,223,372,036,854,775,808 ~ 9,223,372,036,854,775,807
+용도 : 매우 큰 정수를 저장해야 할 때 사용하며, 값 뒤에 ```l```을 붙여 표시
+
+##### 예제
+```java
+long distanceToSun = 149600000000L; // 지구와 태양 사이 거리 (단위: km)
+System.out.println("Distance to Sun: " + distanceToSun + " km");
+```
+
+------------------------------
+#### 2-2 실수형 (Floatiing-point Types)
+실수형 데이터 타입은 소수점을 포함한 값을 저장하며, 단정밀도와 배정밀도로 나뉜다. 정수형과 달리 실수형은 부동 소수점(floating-point)방식을 사용하여 소수점 이하의 값도 표현할 수 있다.
+
+```float```
++ 크기 : 4bytes(32bits)
++ 정밀도 : 소수점 이하 약 7자리
++ 용도 : 비교적 작은 소수점 값을 다룰 때 사용하며, 값 뒤에 ```F```를 붙여 ```float```형임을 표시
+
+##### 예제
+```java
+float piApprox = 3.1415927F;
+System.out.println("Approximate Value of Pi: " + piApprox);
+```
+
+```double```
++ 크기 : 8bytes(64bits)
++ 정밀도 : 소수점 이하 약 15자리
++ 용도 : 정밀도가 높은 소수점 값을 저장해야 할 때 사용하며, 기본 실수형 타입이다.
+
+##### 예제
+```java
+double precisePi = 3.141592653589793;
+System.out.println("Precise Value of Pi: " + precisePi);
+```
+주의할 점 : ```float```와 ```double```은부동 소수점 오차가 발생할 수 있다. 예를 들어, 0.1을 반복해서 더하는 경우 미세한 오차가 발생할 수 있다. 정밀도가 중요한 금융 계산 등에서는 BigDecimal을 사용하는 것이 좋다.
+
+-------------------------------------
+#### 2-3 문자형 (Character Type)
+문자형 데이터 타입은 단 하나의 문자만 저장하며, Java의 ```char```타입은 유니코드(UTF-16)을 사용하여 전 세계의 거의 모든 문자를 표현할 수 있다.
+
+```char```
++ 크기 : 2bytes(16bits)
++ 값의 범위 : \u0000 ~ \uFFFF
++ 용도 : 문자 한 개를 저장하고, 아스키 문자뿐만 아니라 다양한 언어의 문자를 다룰 수 있다.
++ 유니코드 사용법 : 유니코드 값을 \uXXXX 형태로 표현하여 문자로 변환할 수 있다.
+
+##### 예제
+```java
+double precisePi = 3.141592653589793;
+System.out.println("Precise Value of Pi: " + precisePi);
+```
+
+#### 2-4 논리형 (Boolean Type)
+논리형 데이터 타입은 조건식의 결과로 참 또는 거짓을 나타내며, 제어문(조건문, 반복문) 에서 매우 자주 사용된다. boolean은 true 또는 false 두 가지 값만 저장할 수 있다.
+
+```boolean```
++ 크기 : 1byte(8bits)로 관리되나, 특정 JVM에서는 더 큰 메모리를 할당할 수도 있다.
++ 값의 범위 : true 또는 false
++ 용도 : 논리적인 상태나 조건을 나타내는 데 사용되며 제어문(if,while)에서 필수적이다.
+
+##### 예제
+```java
+public class BooleanExample {
+    public static void main(String[] args) {
+        boolean isJavaFun = true;
+        boolean isFishTasty = false;
+
+        if (isJavaFun) {
+            System.out.println("Java programming is fun!");
+        } else {
+            System.out.println("Java programming is not fun.");
+        }
+
+        System.out.println("Is fish tasty? " + isFishTasty);
+    }
+}
+```
+----------------------------
