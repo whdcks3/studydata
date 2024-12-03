@@ -162,4 +162,3 @@ System.out.println("Small Number: " + smallNumber); // 출력 결과: 100
 ```
 **long 타입의 리터럴 표기**
 long 타입은 기본적으로 정수형으로 인식되는 int보다 큰 숫자를 표현하므로 ```L```을 붙여 long임을 명시해 주어야 한다.
-```
