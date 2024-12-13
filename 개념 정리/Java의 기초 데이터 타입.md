@@ -25,7 +25,7 @@ System.out.println("Min Byte Value: " + minByte);
 
 ```short```
 + 크기 : 2bytes(16 bits)
-+ 값의 범위 : -32,768 ~ 32,767
++ 값의 범위 : -32,768 ~ 32,7672
 + 용도 : byte보다 큰 정수를 다룰 때, 메모리를 절약해야 하는 경우 사용
 
 ##### 예제
