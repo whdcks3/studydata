@@ -667,7 +667,172 @@ private static void processName(String name) {
 ### 3. 익명 클래스의 기능 부족
 람다 표현식은 익명 클래스를 간단히 대체할 수 있지만, 익명 클래스가 제공하는 모든 기능을 지원하지는 않는다.
 
-제한점
-    + 다중 메서드 정의 불가능
-      + 람다 표현식은 단일 추상 메서드만 구현할 수 있다.
-      + 익명 클래스처럼 여러 메서드를 포함하는 복잡한 로직을 작성할 수 없다.
+**제한점**
++ 다중 메서드 정의 불가능
+  + 람다 표현식은 단일 추상 메서드만 구현할 수 있다.
+  + 익명 클래스처럼 여러 메서드를 포함하는 복잡한 로직을 작성할 수 없다.
++ this 키워드 사용 제한
+  + 람다 표현식에서 this 키워드는 람다 표현식 자체가 아닌 외부 클래스(컨텍스트)를 참조한다.
+  + 익명 클래스에서는 this가 익명 클래스 인스턴스를 참조한다.
+
+#### 예제 : this 키워드의 차이점
+```java
+public class LambdaThisExample {
+    private String name = "OuterClass";
+
+    public void test() {
+        // 익명 클래스
+        Runnable anonymousClass = new Runnable() {
+            private String name = "AnonymousClass";
+
+            @Override
+            public void run() {
+                System.out.println("This in anonymous class: " + this.name);
+            }
+        };
+
+        // 람다 표현식
+        Runnable lambda = () -> {
+            System.out.println("This in lambda: " + this.name);
+        };
+
+        anonymousClass.run(); // 출력: This in anonymous class: AnonymousClass
+        lambda.run();         // 출력: This in lambda: OuterClass
+    }
+}
+```
+설명 : 익명 클래스에서는 this가 익명 클래스 자체를 참조하지만, 람다 표현식에서는 외부 클래스의 인스턴스를 참조한다.
+
+### 4. 성능 및 메모리 사용량 증가
+람다 표현식은 내부적으로 익명 클래스의 인스턴스 생성으로 구현된다.<br>
+이로 인해 빈번한 호출이나 많은 객체 생성이 필요한 경우 성능이 저하될 수 있다.
+
+#### 예제 : 성능 차이 발생 가능성
+```java
+public class LambdaPerformanceExample {
+    public static void main(String[] args) {
+        Runnable runnable = () -> System.out.println("Hello, Lambda!");
+
+        for (int i = 0; i < 1000; i++) {
+            new Thread(runnable).start();
+        }
+    }
+}
+```
+설명 : 매번 새로운 쓰레드를 생성할 때 람다 표현식의 객체가 생성된다.<br>
+메모리 사용량이 증가하고, 빈번한 객체 생성으로 성능이 저하될 수 있다.
+
+#### 해결방법 : 람다 표현식을 변수에 할당하거나, 싱글턴 객체를 활용해 객체 생성을 최소화한다.
+```java
+Runnable runnable = () -> System.out.println("Hello, Lambda!");
+```
+
+### 5. 타입 추론의 제한
+람다 표현식은 Java의 타입 추론을 기반으로 작성된다.<br>
+하지만, 일부 복잡한 경우 컴파일러가 타입을 추로한지 못해 오류가 발생시킬 수 있다.
+
+#### 예제 : 타입 추론 문제
+```java
+// 컴파일러가 타입을 추론하지 못함
+BiFunction<String, String, Integer> func = (a, b) -> a + b; // 컴파일 에러
+```
+
+#### 해결방법 : 명시적으로 타입을 지정하여 컴파일러가 올바른 타입을 추론할 수 있도록 한다.
+```java
+BiFunction<String, String, Integer> func = (String a, String b) -> a.length() + b.length();
+```
+---------------------------
+## 람다 표현식과 Method References 비교
+람다 표현식과 메서드 참조(Method References)는 Java 8에서 도입된 기능으로, 코드의 간결성과 가독성을 높이는 데 기여한다.<br>
+두 개념은 함수형 프로그램밍을 지원하며 유사한 목적을 가지지만, 사용 방식과 표현 형태에서 차이가 있다. 이번 파트에서는 이 두 개념의 차이점과 사용 사례를 보자.
+
+### 람다 표현식과 메서드 참조의 개요
+람다 표현식은 익명 함수로 특정 작업을 정의하는 데 유용하며, 주로 함수형 인터페이스와 함께 사용된다.<br>
+메서드 참조는 이미 존재하는 메서드를 참조하여 동일한 작업을 수행하도록 하는 간결한 표현 방식이다.
+
+#### 람다 표현식 예
+```java
+// 리스트 정렬
+list.sort((s1, s2) -> s1.compareToIgnoreCase(s2));
+```
+#### 메서드 참조 예
+```java
+// 리스트 정렬
+list.sort(String::compareToIgnoreCase);
+```
+**차이점**<br>
+람다 표현식 : 새로운 익명 함수를 정의하여 작업을 수행한다.<br>
+메서드 참조 : 기존 메서드를 참조하여 동일 작업을 수행한다.
+
+### 메서드 참조의 유형
+### 1. 정적 메서드 참조
+형식 : ```클래스명::메서드명```<br>
+용도 : 정적 메서드를 참조할 때 사용한다.<br>
+#### 람다 표현식
+```java
+// 정수 리스트 정렬
+list.sort((n1, n2) -> Integer.compare(n1, n2));
+```
+#### 메서드 참조
+```java
+// 정수 리스트 정렬
+list.sort(Integer::compare);
+```
+설명 : ```Integer.compare```은 두 정수를 비교하는 정적 메서드다.<br>
+메서드 참조는 중복되는 코드를 제거하고, 더 간결하고 직관적인 표현을 제공한다.
+
+### 2. 인스턴스 메서드 참조
+형식 : ```객체참조::메서드명```<br>
+용도 : 특정 객체의 인스턴스 메서드를 참조할 때 사용한다.
+#### 람다 표현식
+```java
+// 리스트의 각 요소 출력
+list.forEach(element -> System.out.println(element));
+```
+#### 메서드 참조
+```java
+// 리스트의 각 요소 출력
+list.forEach(System.out::println);
+```
+설명 : ```System.out::pringln```은 System.out객체의 println메서드를 참조한다.<br>
+메서드 참조는 작성한 코드를 더 읽기 쉽게 만든다.
+
+### 3. 특정 클래스의 인스턴스 메서드 참조
+형식 : ```클래스명::메서드명```<br>
+용도 : 메서드의 호출 객체가 매개변수로 전달될 때 사용한다.
+#### 람다 표현식
+```java
+// 문자열 정렬
+list.sort((s1, s2) -> s1.compareToIgnoreCase(s2));
+```
+#### 메서드 참조
+```java
+// 문자열 정렬
+list.sort(String::compareToIgnoreCase);
+```
+설명 : ```String::compareToIgnoreCase```는 두 문자열을 비교하는 compareToIgnoreCase메서드를 참조한다.<br>
+메서드 참조는 람다 표현식보다 더 간결한 형태로 동일한 작업을 한다.
+
+### 4. 생성자 참조
+형식 : ```클래스명::new```<br>
+용도 : 생성자를 참조하여 객체를 생성할 때 사용한다.<br>
+#### 람다 표현식
+```java
+// 리스트 생성
+Supplier<List<String>> listSupplier = () -> new ArrayList<>();
+```
+#### 메서드 참조
+```java
+// 리스트 생성
+Supplier<List<String>> listSupplier = ArrayList::new;
+```
+설명 : 생성자 참조는 람다 표현식에서 객체 생성 구문을 더 간단히 표현한다.<br>
+함수형 인터페이스와 결합하여 유용하게 사용된다.
+
+### 람다 표현식과 메서드 참조의 비교 분석
+|특징|람다 표현식|메서드 참조|
+|:---|:---|:---|
+|코드 표현 방식|새로운 익명 함수 정의|기존 메서드를 참조|
+|간결성|단순 로직에 적합하지만, 복잡할 경우 코드가 길어질 수 있음|간결하고 직관적이며, 중복 제거에 효과적|
+|유연성|익명 함수로 다양한 작업 가능|기존 메서드의 동작만 수행 가능|
+|가독성|익숙하지 않은 경우 이해가 어려울 수 있음|메서드 이름으로 의도를 쉽게 파악 가능|
