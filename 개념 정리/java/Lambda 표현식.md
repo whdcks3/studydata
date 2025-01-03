@@ -278,10 +278,396 @@ Java 내장 Functional Interface를 사용하여 일관성 있고 재사용 가�
 **병렬 처리 지원**<br>
 스트림 API와 결합해 데이터를 병렬 처리하거나 효율적으로 처리 가능
 
+------------------------
 ### Comparator와 람다 표현식
 Comparator는 객체 간의 순서를 정의하기 위한 Functional Interface로, 두 객체를 비교하고 정렬 순서를 결정하는 데 사용된다.<br>
 람다 표현식은 이러한 Comparator를 간단하고 효율적으로 구현할 수 있는 방법을 제공하며, Java 8 이후로 가독성과 사용성을 크게 향상시켰다.
 
-#### Comparator의 기본 개념
+### Comparator의 기본 개념
 ```java.util.Comparator<T>```는 두 객체를 비교하여 정렬 기준을 정의하기 위해 사용된다.<br>
 이 인터페이스는 Functional Interface이며, 단일 추상 메서드인 ```compare```를 가진다.
+
+#### 추상 메서드
+```java
+int compare(T o1, T o2);
+```
+**메서드 설명**<br>
+두 객체 o1과 o2를 비교한 결과를 정수로 반환한다.
++ 음수 : o1이 o2보다 작다
++ 0 : o1과 o2가 같다
++ 양수 : o1이 o2보다 크다
+이를 기반으로 정렬 순서가 결정된다.
+
+### Comparator의 주요 역할
+**사용자 정의 정렬**
+
+기본 정렬 기준이 아닌, 사용자가 정의한 기준으로 객체를 정렬할 수 있다.<br>
+예를 들어, 문자열 길이, 날짜, 객체의 특정 속성 등을 기준으로 정렬 가능하다.
+
+**컬렉션과의 결합**
+
+Java의 Collections.sort 또는 List.sort와 결합하여 리스트를 정렬할 때 사용된다.
+
+**유연한 정렬 기준 제공**
+
+같은 데이터셋에 대해 다른 정렬 기준을 적용할 수 있다.
+
+### Comparator의 람다 표현식
+```java
+import java.util.*;
+
+public class ComparatorExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Jane", "Alex", "Tom");
+
+        // Comparator를 람다 표현식으로 구현
+        names.sort((s1, s2) -> s1.compareTo(s2));
+
+        System.out.println(names); // 출력: [Alex, Jane, Tom]
+    }
+}
+```
+설명 : names.sort는 Comparator를 사용하여 리스트를 정렬한다.<br>
+(s1, s2) -> s1.compareTo(s2)는 두 문자열을 사전 순으로 비교하는 람다 표현식이다.<br>
+compareTo메서드는 문자열의 기본 정렬 기준(알파벳 순서)를 따르며, Comparator의 compare메서드로 활용되었다.
+
+### Comparator 인터페이스의 추가 기능
+Java 8에서는 Comparator 인터페이스에 몇 가지 디폴트 메서드와 정적 메서드를 추가하여 더 다양한 정렬 방식을 제공한다.
+
+#### 1. comparing 메서드
+특정 키를 기준으로 Comparator를 생성한다.
+```java
+import java.util.*;
+
+public class ComparingExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Jane", "Alex", "Tom");
+
+        // 문자열 길이를 기준으로 정렬
+        names.sort(Comparator.comparing(String::length));
+
+        System.out.println(names); // 출력: [Tom, Jane, Alex]
+    }
+}
+```
+설명 : ```Comparator.comparing(String::length)```는 문자열의 길이를 기준으로 정렬하는 Comparator를 생성한다.<br>
+```String::length```는 메서드 참조를 통해 문자열의 길이를 반환하는 메서드를 지정한다.
+
+----------------------
+#### 2. thenComparing 메서드
+복수의 정렬 기준을 순차적으로 적용한다.
+```java
+import java.util.*;
+
+class Employee {
+    String name;
+    int salary;
+
+    Employee(String name, int salary) {
+        this.name = name;
+        this.salary = salary;
+    }
+
+    @Override
+    public String toString() {
+        return name + " ($" + salary + ")";
+    }
+}
+
+public class ThenComparingExample {
+    public static void main(String[] args) {
+        List<Employee> employees = Arrays.asList(
+            new Employee("Alice", 5000),
+            new Employee("Bob", 4000),
+            new Employee("Alice", 4000)
+        );
+
+        // 이름 기준으로 정렬 후, 동일한 이름이면 급여 기준으로 정렬
+        employees.sort(
+            Comparator.comparing((Employee e) -> e.name)
+                      .thenComparing(e -> e.salary)
+        );
+
+        System.out.println(employees);
+        // 출력: [Alice ($4000), Alice ($5000), Bob ($4000)]
+    }
+}
+```
+설명 : 첫 번째 기준은 ```name```, 두 번째 기준은 ```salary```이다<br>
+동일한 이름을 가진 경우, 급여를 기준으로 정렬된다.
+
+-------------------
+#### 3. reversed 메서드
+기존 Comparator의 결과를 역순으로 변환한다.
+```java
+import java.util.*;
+
+public class ReversedExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Jane", "Alex", "Tom");
+
+        // 이름을 기준으로 역순 정렬
+        names.sort(Comparator.comparing(String::length).reversed());
+
+        System.out.println(names); // 출력: [Alex, Jane, Tom]
+    }
+}
+```
+설명 : ```Comparator.comparing(String::length)```는 문자열 길이를 기준으로 정렬한다.<br>
+```reversed```메서드는 결과를 역순으로 뒤집는다.
+
+--------------------
+## 람다 표현식의 장점
+람다 표현식은 Java 8에서 도입되어 프로그래머가 코드 작성 시 더 간결하고 효율적으로 작업할 수 있도록 돕는 핵심 요소다.<br>
+다양한 장점들은 Java 개발의 생산성과 가독성을 크게 향상시킨다.
+
+### 1. 코드의 간결성
+람다 표현식은 익명 클래스를 간결하게 대체하여 반복적이고 장황한 코드를 줄인다.<br>
+특히 함수형 인터페이스를 활용하는 코드에서 불필요한 구문을 제거하여 핵심 로직에만 집중할 수 있다.
+
+#### 예제 : 익명 클래스와 람다 표현식 비교
+```java
+// 익명 클래스 사용
+Runnable runnable1 = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("익명 클래스 실행");
+    }
+};
+
+// 람다 표현식 사용
+Runnable runnable2 = () -> System.out.println("람다 표현식 실행");
+
+runnable1.run(); // 출력: 익명 클래스 실행
+runnable2.run(); // 출력: 람다 표현식 실행
+```
+설명 : 익명 클래스는 선언부와 메서드 구현부를 모두 포함하여 코드가 장황하다.<br>
+반면, 람다 표현식은 메서드 본문만 작성하면 되므로 훨씬 간결하다.
+
+### 2. 가독성 향상
+람다 표현식은 작성된 코드의 의도를 명확히 드러낸다.<br>
+불필요한 반복적인 구문을 제거하여, 코드의 핵심 로직에 집중할 수 있도록 돕는다.
+
+#### 예제 : Comparator를 활용한 정렬
+```java
+import java.util.*;
+
+public class LambdaReadabilityExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+
+        // 기존 익명 클래스 사용
+        names.sort(new Comparator<String>() {
+            @Override
+            public int compare(String n1, String n2) {
+                return n1.compareTo(n2);
+            }
+        });
+
+        System.out.println("익명 클래스: " + names);
+
+        // 람다 표현식 사용
+        names.sort((n1, n2) -> n1.compareTo(n2));
+
+        System.out.println("람다 표현식: " + names);
+    }
+}
+```
+설명 : 익명 클래스를 사용한 정렬은 비교 로직에 비해 선언부가 지나치게 길다.<br>
+람다 표현식은 핵심 비교 로직만 표현하므로 더 간결하고 가독성이 좋다.
+
+### 3. 함수형 프로그래밍 지원
+람다 표현식은 함수형 프로그래밍 패러다임을 지원하며, 이를 통해 선언적이고 직관적인 데이터 처리가 가능하다.<br>
+특히 Stream API와 결합하여 필터링, 매핑, 집계 작업 등을 간단히 표현할 수 있다.
+
+#### 예제 : 스트림과 람다 표현식
+```java
+import java.util.*;
+
+public class LambdaStreamExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+
+        // 람다 표현식을 사용한 필터링과 매핑
+        names.stream()
+            .filter(name -> name.startsWith("A")) // 이름이 'A'로 시작하는 항목 필터링
+            .map(String::toUpperCase)            // 필터링된 이름을 대문자로 변환
+            .forEach(System.out::println);       // 출력
+
+        // 출력: ALICE
+    }
+}
+```
+설명 : 스트림 API와 결합한 람다 표현식은 데이터 흐름을 선언적으로 나타낸다.<br>
+반복문 없이도 데이터를 필터링하고 변환하여, 직관적인 코드 작성을 가능하게 한다.
+
+### 4. 코드 재사용성
+람다 표현식은 함수형 인터페이스와 결합하여 재사용 가능한 코드 구성을 가능하게 한다.<br>
+특히, 자주 사용되는 조건이나 로직을 람다 표현식으로 정의하여 여러 곳에서 재사용할 수 있다.
+
+#### 예제 : Predicate를 활용한 조건 정의
+```java
+import java.util.function.Predicate;
+
+public class LambdaReuseExample {
+    public static void main(String[] args) {
+        // 람다 표현식으로 조건 정의
+        Predicate<String> isNotEmpty = str -> str != null && !str.isEmpty();
+
+        // 조건 테스트
+        System.out.println(isNotEmpty.test("Java")); // 출력: true
+        System.out.println(isNotEmpty.test(""));     // 출력: false
+        System.out.println(isNotEmpty.test(null));   // 출력: false
+    }
+}
+```
+설명 : isNotEmpty는 문자열이 null이 아니고 비어 있지 않은지 확인하는 조건을 람다 표현식으로 정의<br>
+동일한 조건을 다양한 곳에서 재사용하여 코드 중복을 줄일 수 있다.
+
+### 5. 지연 실행 지원
+람다 표현식은 **지연 실행(Lazy Evaluation)** 을 지원하여, 필요한 시점에만 실행될 수 있다.<br>
+이를 통해 성능 최적화와 자원 낭비 방지가 가능하다.
+
+#### 예제 : 지연 실행의 활용
+```java
+import java.util.stream.Stream;
+
+public class LambdaLazyExample {
+    public static void main(String[] args) {
+        Stream<Integer> numbers = Stream.of(1, 2, 3, 4, 5)
+            .filter(n -> {
+                System.out.println("필터링: " + n);
+                return n % 2 == 0;
+            });
+
+        System.out.println("필터링 조건 작성 완료");
+
+        // 실제로 데이터를 소비할 때만 필터링 실행
+        numbers.forEach(n -> System.out.println("소비: " + n));
+    }
+}
+출력
+필터링 조건 작성 완료
+필터링: 1
+필터링: 2
+소비: 2
+필터링: 3
+필터링: 4
+소비: 4
+필터링: 5
+```
+설명 : 스트림에서 필터 조건은 데이터가 소비될 때(forEach 호출 시)에만 실행된다.<br>
+이를 통해 불필요한 연산을 줄이고 성능을 최적화할 수 있다.
+
+### 6. 유지보수성 향상
+람다 표현식은 중복 코드를 제거하고 명확한 의도를 나타내므로, 유지보수성을 크게 향상시킨다.<br>
+익명 클래스와 달리 람다 표현식은 간결하며, 재사용 가능성이 높아 코드 변경 시 수정 범위를 줄일 수 있다.
+
+#### 예제 : 재사용 가능한 Comparator
+```java
+import java.util.*;
+
+public class LambdaMaintenanceExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Charlie", "Bob");
+
+        // 재사용 가능한 Comparator
+        Comparator<String> byLength = (s1, s2) -> Integer.compare(s1.length(), s2.length());
+
+        names.sort(byLength); // 길이 기준 정렬
+        System.out.println("길이 기준 정렬: " + names); // 출력: [Bob, Alice, Charlie]
+
+        names.sort(byLength.reversed()); // 역순 정렬
+        System.out.println("역순 정렬: " + names); // 출력: [Charlie, Alice, Bob]
+    }
+}
+```
+설명 : ```byLength``` Comparator는 문자열 길이로 정렬하는 로직을 재사용 가능하게 정의<br>
+동일한 Comparator를 활용해 정렬 기준을 역순으로 변경하거나 다른 리스트에 적용 가능
+
+--------------------------------
+## 람다 표현식의 제한점
+람다 표현식은 Java에서 코드의 간결성과 가독성을 향상시키는 데 중요한 역할을 하지만, 모든 상황에서 완벽한 솔루션은 아니다.<br>
+람다 표현식은 사용할 때 고려해야 할 몇 가지 제한점과 단점이 있다.
+
+### 1. 복잡한 로직의 가동성 저하
+람다 표현식은 단순한 로직을 구현하는 데 매우 유용하지만, 복잡한 로직을 포함할 경우 코드의 가독성이 저하된다.<br>
+특히 여러 조건문이나 복잡한 연산이 포함되면, 코드를 이해하기 어려워질 수 있다.
+
+#### 예제 : 복잡한 로직이 포함된 람다 표현식
+```java
+import java.util.*;
+
+public class LambdaComplexityExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+
+        // 복잡한 정렬 기준을 가진 람다 표현식
+        names.sort((n1, n2) -> {
+            if (n1.length() != n2.length()) {
+                return n1.length() - n2.length();
+            }
+            return n1.compareTo(n2);
+        });
+
+        System.out.println(names); // 출력: [Bob, Alice, Charlie]
+    }
+}
+```
+설명 : 위 코드는 문자열의 길이를 기준으로 정렬하며, 길이가 같을 경우 사전 순으로 정렬된다.<br>
+조건이 복잡해지면서 람다 표현식의 본문이 길어지고 가독성이 저하된다.
+
+#### 해결방법 : 복잡한 로직은 별도의 메서드로 추출하여 가독성을 개선한다.
+```java
+names.sort((n1, n2) -> compareStrings(n1, n2));
+
+private static int compareStrings(String n1, String n2) {
+    if (n1.length() != n2.length()) {
+        return n1.length() - n2.length();
+    }
+    return n1.compareTo(n2);
+}
+```
+
+### 디버깅의 어려움
+람다 표현식은 익명 함수로 실행되기 때문에, 디버깅 시 내부 구현을 확인하기 어렵다.<br>
+특히 스택 트레이스 분석 시 람다 표현식의 정확한 위치와 내용을 추적하기 어려운 경우가 많다.
+
+#### 예제 : 디버깅 어려움
+```java
+import java.util.*;
+
+public class LambdaDebugExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+
+        // 오류가 포함된 람다 표현식
+        names.forEach(name -> {
+            if (name.startsWith("A")) {
+                throw new RuntimeException("Exception in lambda: " + name);
+            }
+        });
+    }
+}
+```
+설명 : 위 코드 실행 시 스택 트레이스는 람다 표현식의 본문이 아닌 ```LambdaDebugExcample.lambda$main$0```과 같은 모호한 정보를 제공한다.<br>
+정확한 위치를 파악하려면 코드나 로그를 별도로 분석해야 한다.
+
+#### 해결 방법 : 디버깅이 필요한 경우, 람다 표현식을 메서드 참조나 명시적인 메서드로 변환하여 사용한다.
+```java
+names.forEach(LambdaDebugExample::processName);
+
+private static void processName(String name) {
+    if (name.startsWith("A")) {
+        throw new RuntimeException("Exception in method: " + name);
+    }
+}
+```
+
+### 3. 익명 클래스의 기능 부족
+람다 표현식은 익명 클래스를 간단히 대체할 수 있지만, 익명 클래스가 제공하는 모든 기능을 지원하지는 않는다.
+
+제한점
+    + 다중 메서드 정의 불가능
+      + 람다 표현식은 단일 추상 메서드만 구현할 수 있다.
+      + 익명 클래스처럼 여러 메서드를 포함하는 복잡한 로직을 작성할 수 없다.
