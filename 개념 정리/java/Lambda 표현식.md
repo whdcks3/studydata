@@ -105,4 +105,166 @@ runnable.run();
 (a, b) -> a + b
 ```
 --------------------
-#### 다양한 표현 방식
+### 다양한 표현 방식
+람다 표현식은 상황과 필요에 따라 다양한 형태로 표현할 수 있다
+Java는 타입 추론과 구문 단순화를 통해 코드를 간결하게 작성하도록 지원한다.
+
+#### 매개변수와 중괄호를 모두 사용하는 방식
+가장 명시적인 형태로, 매개변수 타입과, 실행 코드를 모두 작성한다.
+```java
+(int a, int b) -> { return a + b; }
+```
+
+#### 매개변수 타입 생략
+컴파일러가 타입을 추론할 수 있으므로 매개변수의 타입을 생략 가능하다.
+```java
+(a, b) -> { return a + b; }
+```
+
+#### 중괄호와 return 생략
+실행 코드가 한 줄일 경우, 중괄호와 return 키워드를 생략할 수 있다.
+```java
+(a,b) -> a + b
+```
+
+#### 매개변수가 하나일 경우 괄호 생략
+매개변수가 하나라면 괄호()를 생략할 수 있다.
+```java
+x -> x * x
+```
+
+#### 매개변수가 없는 경우
+매개변수가 없을 때는 빈 괄호 ()를 사용한다.
+```java
+() -> System.out.println("Hello, World!")
+```
+----------------------
+### 람다 표현식 사용 시 주의사항
+람다 표현식은 간결하지만, 몇 가지 중요한 제약과 사용 규칙이 있다.
+
+#### 매개변수 타입 생략 조건
+컴파일러가 매개변수의 타입을 추론할 수 있을 경우에만 생략 가능하다.
+```java
+(x, y) -> x + y  // 타입 추론 가능
+```
+
+#### 중괄호와 return 사용
+실행 코드가 여러 줄일 경우에는 중괄호와 return 문을 반드시 사용해야 한다.
+```java
+(a, b) -> {
+    int result = a + b;
+    return result;
+}
+```
+
+#### 타입 추론 실패 사례
+컴파일러가 추론할 수 없는 경우 명시적으로 타입을 지정해야 한다.
+```java
+(Object x, String y) -> x.toString() + y  // 혼합된 타입으로 명시 필요
+```
+
+#### 익명 함수의 한계
+람다 표현식은 이름이 없는 익명함수로, 상태를 유지하지 못한다. 복잡한 로직이나 상태 관리를 필요로 하는 작업에는 적합하지 않다.
+
+-----------------------
+## 람다 표현식과 Funtional Interface
+람다 표현식은 자바의 함수형 프로그래밍을 지원하기 위한 핵심 기능이며, Funtional Interface와 밀접한 관계가 있다.<br>
+자바에서 람다 표현식은 단독으로 사용할 수 없으며, 반드시 Functional Interface에 의해 참조되어야 한다.<br>
+이 파트에서는 Funtional Interface의 개념과 역할, 그리고 람다 표현식과의 연계에 대해 알아보자.
+
+### Functional Interface란.
+Funtional Interface는 Java에서 오직 하나의 추상 메서드(abstract method)만을 가지는 인터페이스를 말한다.<br>
+Java 8에서 람다 표현식이 도입되면서 함수형 프로그래밍 개념을 지원하기 위해 설계된 구조이다.<br>
+함수형 프로그래밍은 데이터를 반환하고 조작하는 작업을 간결하고 직관적으로 표현하는 데 중점을 두며, Funtional Interface는 람다 표현식을 사용하기 위한 기반을 제공한다.
+
+### Funtional Interface의 정의와 역할
+#### 단일 추상 메서드(Single Abstract Method, SAM)
+
+Funtional Interface는 단 하나의 추상 메서드를 포함해야 한다.<br>
+이 추상 메서드는 람다 표현식을 통해 구현되며, 함수형 프로그래밍의 핵심 원칙인 "함수를 값처럼 전달"하는 개념을 가능하게 한다.
+
+#### 익명 구현체 대체
+
+기존에는 익명 클래스를 사용하여 인터페이스를 구현해야 했다.<br>
+Funtional Interface와 람다 표현식을 사용하면 이러한 익명 구현체를 간결하고 효율적으로 대체할 수 있다.
+
+#### Java의 기존 인터페이스와 호환
+
+Java 8 이전에 사용되던 인터페이스 중,단일 추상 메서드를 가진 인터페이스는 모두 Funtional Interface로 간주될 수 있다. 예 : ```Runnable```,```Callable```,```Comparator```
+
+### Functional Interface의 주요 특징
+```@FunctionalInterface```어노테이션<br>
+Funtional Interface를 명시적으로 표시하기 위해 사용된다.
++ **컴파일 타입 검증**
+  이 어노테이션이 적용된 인터페이스가 단일 추상 메서드를 가지지 않으면 컴파일 에러가 발생한다.
++ **선택적 사용**
+  어노테이션 없이도 단일 추상 메서드 인터페이스는 Funtional Interface로 동작한다.
++ **권장 사항**
+  어노테이션을 추가하면 의도를 명확히 하고, 실수로 다른 추상 메서드를 추가하는 것을 방지할 수 있다.
+```java
+@FunctionalInterface
+interface MyFunctionalInterface {
+    void execute(); // 단일 추상 메서드
+}
+```
+추상 메서드 외 메서드 포함 가능하다.
+
+Functional Interface는 **디폴트 메서드(default method)** 와 **정적 메서드(static method)** 를 가질 수 있다.<br>
+디폴트 및 정적 메서드는 Funtional Interface의 추상 메서드 규칙에 영향을 미치지 않는다.
+```java
+@FunctionalInterface
+interface AdvancedFunctionalInterface {
+    void process(); // 단일 추상 메서드
+
+    default void log(String message) {
+        System.out.println("Log: " + message);
+    }
+
+    static void display() {
+        System.out.println("Static Method in Interface");
+    }
+}
+```
+디폴트 메서드 : 인터페이스에 기본 구현을 제공하며, 구현 클래스에서 선택적으로 오버라이드 가능<br>
+정적 메서드 : 인터페이스 자체에서 호출 할 수 있는 메서드
+
+### 주요 내장 Funtional Interface
+```Predicate<T>```<br>
+입력값을 받아 조건을 검증하여 ```boolean```값을 반환<br>
+메서드 : ```boolean test(T t)
+```java
+Predicate<Integer> isEven = x -> x % 2 == 0;
+System.out.println(isEven.test(4)); // true
+```
+```Function<T, R>```<br>
+입력값을 변환하여 다른 타입의 결과를 반환<br>
+메서드 : ```R apply(T t)
+```java
+Function<String, Integer> lengthFunction = str -> str.length();
+System.out.println(lengthFunction.apply("Hello")); // 5
+```
+```Consumer<T>```<br>
+입력값을 받아 작업을 수행하되, 결과를 반환하지 않음<br>
+메서드 : ```void accept(T t)```
+```java
+Consumer<String> printMessage = msg -> System.out.println(msg);
+printMessage.accept("Hello, World!"); // 출력: Hello, World!
+```
+```Suplier<T>```<br>
+입력값 없이 결과를 반환<br>
+메서드 :```T get```
+```java
+Supplier<Double> randomValue = () -> Math.random();
+System.out.println(randomValue.get());
+```
+```BiFunction<T, U, R>```<br>
+두 개의 입력값을 받아 하나의 결과를 반환<br>
+메서드 : ```R apply(T t, U u)```
+```java
+BiFunction<Integer, Integer, Integer> multiply = (x, y) -> x * y;
+System.out.println(multiply.apply(3, 5)); // 15
+```
+----------------------
+### 람다 표현식과 Functional Interface 사용의 장점
+**코드 간결성**
+
