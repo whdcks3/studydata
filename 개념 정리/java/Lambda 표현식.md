@@ -266,5 +266,22 @@ System.out.println(multiply.apply(3, 5)); // 15
 ```
 ----------------------
 ### 람다 표현식과 Functional Interface 사용의 장점
-**코드 간결성**
+**코드 간결성**<br>
+익명 클래스를 사용하는 방식보다 짧고 간결하게 코드 작성 가능
 
+**유지보수 용이**<br>
+단순하고 명확한 구현 방식 덕분에 가독성이 높아 유지보수가 쉬움
+
+**표준화된 활용**<br>
+Java 내장 Functional Interface를 사용하여 일관성 있고 재사용 가능한 코드 작성 가능
+
+**병렬 처리 지원**<br>
+스트림 API와 결합해 데이터를 병렬 처리하거나 효율적으로 처리 가능
+
+### Comparator와 람다 표현식
+Comparator는 객체 간의 순서를 정의하기 위한 Functional Interface로, 두 객체를 비교하고 정렬 순서를 결정하는 데 사용된다.<br>
+람다 표현식은 이러한 Comparator를 간단하고 효율적으로 구현할 수 있는 방법을 제공하며, Java 8 이후로 가독성과 사용성을 크게 향상시켰다.
+
+#### Comparator의 기본 개념
+```java.util.Comparator<T>```는 두 객체를 비교하여 정렬 기준을 정의하기 위해 사용된다.<br>
+이 인터페이스는 Functional Interface이며, 단일 추상 메서드인 ```compare```를 가진다.
