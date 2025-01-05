@@ -224,5 +224,272 @@ Stream의 모든 요소를 처리한 결과를 리스트(List),셋(Set),맵(Map)
 <R, A> R collect(Collector<? super T, A, R> collector)
 ```
 #### 주요 ```Collectors```메서드
++ toList() : Stream의 요소를 List로 변환
++ toSet() : Stream 요소를 Set으로 변환
++ toMap() : 키-값 쌍으로 데이터를 변환하여 Map으로 변환
++ groupingBy() : 데이터를 특정 기준에 따라 그룹화
++ partitioningBy() : 데이터를 조건에 따라 두 그룹으로 분할
 
+#### 코드 예제
+```java
+import java.util.*;
+import java.util.stream.Collectors;
 
+public class CollectExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "Alice");
+
+        // Set으로 수집 (중복 제거)
+        Set<String> uniqueNames = names.stream()
+                                       .collect(Collectors.toSet());
+        System.out.println("Set: " + uniqueNames); // 출력: Set: [Alice, Bob, Charlie]
+
+        // 리스트를 Map으로 변환
+        Map<String, Integer> nameLengthMap = names.stream()
+                                                  .distinct() // 중복 제거
+                                                  .collect(Collectors.toMap(
+                                                      name -> name,        // 키
+                                                      name -> name.length() // 값
+                                                  ));
+        System.out.println("Map: " + nameLengthMap); // 출력: Map: {Alice=5, Bob=3, Charlie=7}
+    }
+}
+```
+**실행 흐름**
+
+Stream의 각 요소를 수집 전략(Collector)에 따라 처리<br>
+지정된 데이터 구조(List,Set,Map 등)로 결과를 저장<br>
+수집된 데이터 반환
+
+**주의점**
+
+Collectors.toMap() 사용 시 키가 중복되면 예외가 발생한다.<br>
+중복 키를 허용하거나 병합 전략을 지정하려면 mergeFuction을 추가해야 한다.<br>
+데이터 구조의 특성(Set,Map 등)을 고려하여 적절한 Collector를 선택해야 한다.
+
+---------------------------------
+### 최종 연산 시 주의사항
+**Stream 재사용 불가**<br>
+최종 연산이 호출된 Stream은 재사용할 수 없다. 새로운 작업이 필요하다면 Stream을 다시 생성해야 한다.
+
+**Collector 선택** <br>
+데이터를 수집할 때 사용되는 Collector를 데이터 처리 목적에 맞게 선택해야 한다.<br>
+예 : 중복 제거는 toSet(), 순서 유지 리스트는 toList()
+
+**Optional 처리** <br>
+reduce와 같은 일부 연산은 Optional을 반환할 수 있으므로, 결과값이 비어 있을 가능성을 항상 고려해야 한다.
+
+**병렬 처리 유의**<br>
+병렬 스트림에서 최종 연산을 사용할 경우, Collector가 병렬 실행에 적합한지 확인해야 한다.<br>
+병렬 처리가 올바르게 동작하지 않으면 예외나 잘못된 결과가 발생할 수 있다.
+
+-------------------------
+### Stream API의 예제
+
+#### 예제1 : 특정 조건으로 데이터 필터링
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StreamExample1 {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+        // 짝수만 필터링
+        List<Integer> evenNumbers = numbers.stream()
+                                           .filter(n -> n % 2 == 0) // 짝수 조건
+                                           .collect(Collectors.toList()); // 결과를 리스트로 수집
+
+        System.out.println("짝수 리스트: " + evenNumbers); // 출력: 짝수 리스트: [2, 4, 6, 8, 10]
+    }
+}
+```
+설명<br>
+filter 사용 : 각 요소에 조건(짝수)를 검사하여 조건을 만족하는 요소만 유지한다.<br>
+Stream 체이닝 : filter로 데이터를 필터링 한 뒤, collect로 리스트에 저장한다.
+
+-----------------------------
+#### 예제2 : 데이터 매핑
+```java
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StreamExample2 {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+
+        // 대문자로 변환
+        List<String> upperCaseNames = names.stream()
+                                           .map(String::toUpperCase) // 대문자로 변환
+                                           .collect(Collectors.toList()); // 결과를 리스트로 수집
+
+        System.out.println("대문자로 변환된 이름들: " + upperCaseNames); // 출력: 대문자로 변환된 이름들: [ALICE, BOB, CHARLIE]
+    }
+}
+```
+설명<br>
+map 사용 : 각 요소에 변환 로직(대문자 변환)을 적용하여 새로운 데이터로 변환한다.<br>
+Stream 체이닝 : map으로 데이터를 반환한 뒤, collect로 리스트에 저장한다.
+
+----------------
+#### 예제3 : 데이터 누적
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class StreamExample3 {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+        // 숫자의 합 계산
+        int sum = numbers.stream()
+                         .reduce(0, Integer::sum); // 합계 계산
+
+        System.out.println("숫자의 합: " + sum); // 출력: 숫자의 합: 15
+    }
+}
+```
+설명<br>
+reduce 사용 : 초깃값(0)을 설정하고, 요소를 반복적으로 누적하여 최종 합계를 계산한다.<br>
+Stream 체이닝 : Stream의 데이터를 순회하면서 누적 연산을 수행한다.
+
+------------------
+#### 예제4 : 데이터 그룹화
+```java
+import java.util.*;
+import java.util.stream.Collectors;
+
+class Student {
+    String name;
+    int score;
+
+    Student(String name, int score) {
+        this.name = name;
+        this.score = score;
+    }
+}
+
+public class StreamExample4 {
+    public static void main(String[] args) {
+        List<Student> students = Arrays.asList(
+            new Student("Alice", 85),
+            new Student("Bob", 92),
+            new Student("Charlie", 78),
+            new Student("David", 88),
+            new Student("Eve", 65)
+        );
+
+        // 성적 등급별 그룹화
+        Map<String, List<Student>> gradeGroups = students.stream()
+                                                         .collect(Collectors.groupingBy(
+                                                             s -> {
+                                                                 if (s.score >= 90) return "A";
+                                                                 else if (s.score >= 80) return "B";
+                                                                 else if (s.score >= 70) return "C";
+                                                                 else return "D";
+                                                             }
+                                                         ));
+
+        gradeGroups.forEach((grade, group) -> {
+            System.out.println("등급: " + grade);
+            group.forEach(student -> System.out.println(" - " + student.name + ": " + student.score));
+        });
+    }
+}
+```
+설명<br>
+Collectors.groupingBy 사용 : Stream의 요소를 특정 기준에 따라 그룹화한다.<br>
+Stream 체이닝 : 그룹화 기준(등급)을 설정하고 데이터를 그룹별로 수집한다.
+
+---------------------
+#### 예제5 : 데이터 분할
+```java
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class StreamExample5 {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+        // 짝수와 홀수로 분할
+        Map<Boolean, List<Integer>> partitioned = numbers.stream()
+                                                         .collect(Collectors.partitioningBy(n -> n % 2 == 0));
+
+        System.out.println("짝수: " + partitioned.get(true)); // 출력: 짝수: [2, 4, 6, 8, 10]
+        System.out.println("홀수: " + partitioned.get(false)); // 출력: 홀수: [1, 3, 5, 7, 9]
+    }
+}
+```
+설명<br>
+Collectors.partitioningBy 사용 : Stream의 요소를 조건에 따라 두 그룹으로 분리한다.<br>
+Stream 체이닝 : 분할 기준(짝수 여부)를 설정하고 데이터를 그룹별로 분리한다.
+
+--------------------
+## 응용과 확장
+### 1. 병렬 스트림
+병렬 스트림(Parallel Stream)은 데이터를 병렬로 처리하여 성능을 극대화할 수 있는 Stream API의 기능이다.<br>
+단일 CPU에서 작업이 직렬로 처리되는 일반 스트림과 달리, 병렬 스트림은 멀티코어 CPU를 활용하여 데이터를 동시에 처리한다.
+
+### 병렬 스트림의 주요 특징
+**병렬 처리 방식**<br>
+데이터를 여러 청크(chunk)로 나누고, 각각의 청크를 독립적으로 처리한다.<br>
+작업 완료 후 결과를 병합(merge)하여 최종 결과를 생성한다.
+
+**자동 병렬화**<br>
+Stream API는 병렬 처리의 복잡한 구현을 숨기고, 개발자는 ```parallelSteam()```메서드만 호출하면 병렬 처리가 가능하다.
+
+**스레드 풀 활용**<br>
+병렬 스트림은 Java의 ForkJoinPool을 활용하여 내부적으로 작업을 분배하고 병합한다.
+
+-----------------
+### 병렬 스트림 생성
+병렬 스트림은 두 가지 방법으로 생성할 수 있다.
++ Collection에서 생성
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+numbers.parallelStream()
+       .forEach(System.out::println);
+```
++ Stream에서 변환
+```java
+Stream<Integer> stream = Stream.of(1, 2, 3, 4, 5);
+stream.parallel()
+      .forEach(System.out::println);
+```
+
+#### 병렬 스트림 활용 예제
+```java
+import java.util.stream.IntStream;
+
+public class ParallelStreamExample {
+    public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
+
+        // 1부터 1억까지 숫자 중에서 짝수의 합 계산
+        int sum = IntStream.rangeClosed(1, 100_000_000)
+                           .parallel() // 병렬 스트림으로 변환
+                           .filter(n -> n % 2 == 0)
+                           .sum();
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("합계: " + sum);
+        System.out.println("수행 시간: " + (endTime - startTime) + "ms");
+    }
+}
+```
+
+#### 병렬 스트림 사용 시 주의점
+**데이터의 순서 보장**<br>
+병렬 스트림은 기본적으로 순서를 보장하지 않는다.<br>
+순서가 중요한 작업은 ```forEachOrdered```를 사용해야 한다.
+```java
+numbers.parallelStream()
+       .forEachOrdered(System.out::println); // 순서 보장
+```
+**스레드 안전성**<br>
+병렬 스트림에서 공유 자원을 수정하면 데이터 불일치가 발생할 수 있다.<br>
+synchronized나 ConcurrentHashMap 등을 활용하여 스레드 안전성을 확보
+
+**작업 복잡도**<br>
+병렬 처리의 오버헤드가 작업 시간보다 크다면, 병렬 스트림이 성능을 저하시킬 수 있다.
