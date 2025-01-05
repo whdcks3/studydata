@@ -109,7 +109,102 @@ Stream의 각 요소에 변환 로직(mapper) 적용<br>
 
 --------------
 ### 중간 연산의 특징
-**지연 실행(Lazy Evaludation)** <br>
+**지연 실행(Lazy Evaludation)**
 
 중간 연산은 최종 연산이 호출될 때만 실행된다.<br>
 불필요한 데이터에 대해 연산이 수행되지 않으므로 성능이 최적화된다.
+
+**체이닝(Pipelining)**
+
+중간 연산은 체이닝 방식으로 연속적으로 연결할 수 있다.<br>
+각 연산은 새로운 Stream 객체를 반환하며, 최종 연산 호출 시 모든 중간 연산이 한 번에 실행된다.
+
+**원본 데이터 불변성**
+
+중간 연산은 원본 데이터를 변경하지 않고, 가공된 데이터를 새로운 Stream에 저장한다.<br>
+원본 데이터는 그대로 유지되어 안전성이 보장된다.
+
+**다양한 활용 가능성**
+
+중간 연산을 통해 필터링, 변환, 정렬 등의 다양한 데이터 처리 작업을 선언적으로 수행할 수 있다.
+
+---------------
+### 중간 연산 사용 시 주의사항
+
+**최종 연산 필수**
+
+중간 연산만 적상하고 최종 연산을 생략하면 Stream은 실행되지 않는다.<br>
+데이터를 처리하고 결과를 얻기 위해 반드시 최종 연산을 호출해야 한다.
+
+**효율적인 설계**
+
+중간 연산 체이닝은 간결하지만, 지나치게 복잡한 체이닝은 가독성을 저하시킬 수 있다.<br>
+필요한 연산만 포함하여 최적화된 코드를 작성한다.
+
+## 최종 연산
+최종 연산은 중간 연산으로 처리된 데이터를 소비하여 결과를 생성하는 역할을 한다.<br>
+Stream API에서 최종 연산이 호출되면 Stream은 종료되며, 이후에는 더 이상 사용할 수 없다.<br>
+최종 연산은 결과를 단일 값, 컬렉션, 또는 특정 데이터 구조의 형태로 반환한다.
+
+### 1. reduce
+reduce는 Stream의 요소를 누적하여 단일 값을 생성하는 최종 연산이다.<br>
+초깃값과 누적 로직을 정의하여, Stream의 모든 요소를 축약(Aggregation)한다.
+
+**주요 특징**
++ 데이터를 집계하거나 축약 하는 데 사용한다.
++ 연산 과정에서 초깃값(identity)와 누적 로직(accumulator)를 정의할 수 있다.
++ 연산 결과로 단일 값을 반환하며, 필요에 따라 Optional을 사용할 수 있다.
+
+**사용 사례**
++ 숫자의 합계, 곱셈, 최대값 계산
++ 문자열을 하나의 문장으로 연결
++ 특정 조건에 따라 데이터를 집계
+
+#### 메서드 시그니처
+```java
+Optional<T> reduce(BinaryOperator<T> accumulator)
+T reduce(T identity, BinaryOperator<T> accumulator)
+```
+**identity**<br>
+초깃값으로, 연산의 시작값을 정의한다.<br>
+예 : 합계 연산의 초깃값은 0, 곱셈 연산의 초깃값은 1
+
+**accumulator**<br>
+두 개의 값을 받아 누적하는 연산 로직을 정의하는 함수형 인터페이스
+
+#### 코드 예제
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class ReduceExample {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+        // 초깃값이 있는 reduce
+        int sum = numbers.stream()
+                         .reduce(0, Integer::sum); // 합계 계산
+        System.out.println("합계: " + sum); // 출력: 합계: 15
+
+        // 초깃값이 없는 reduce
+        numbers.stream()
+               .reduce(Integer::max) // 최대값 계산
+               .ifPresent(max -> System.out.println("최대값: " + max)); // 출력: 최대값: 5
+    }
+}
+```
+**실행 흐름**
+
+Stream의 초깃값(identity)를 설정(초깃값이 없는 경우 첫 번째 요소 사용)<br>
+Stream의 각 요소를 누적(accumulate)하여 하나의 값으로 축약<br>
+최종 결과 반환
+
+**주의점**
+
+초깃값이 없는 reduce는 빈 Stream에서 결과가 없으므로 Optional을 반환한다.<br>
+연산 로직(accumulator)이 불명확하거나 복잡하면, 결과의 신뢰성이 낮아질 수 있다.
+
+----------------------
+### 2. collect
+collect는 Stream의 데이터를 특정 데이터 구조로 수집하는 최종 연산이다.<br>
+Stream의 모든 요소를 처리한 결과를 리스트(List),셋(Set),맵(Map) 또는 다른 데이터 구조로 반환한다.
