@@ -208,3 +208,21 @@ Stream의 각 요소를 누적(accumulate)하여 하나의 값으로 축약<br>
 ### 2. collect
 collect는 Stream의 데이터를 특정 데이터 구조로 수집하는 최종 연산이다.<br>
 Stream의 모든 요소를 처리한 결과를 리스트(List),셋(Set),맵(Map) 또는 다른 데이터 구조로 반환한다.
+
+**주요 특징**
++ 결과 데이터를 수집하여 저장하거나 후속 작업에 활용할 수 있다.
++ Collectors 클래스를 통해 다양한 수집 전략을 제공한다.
++ 데이터를 그룹화하거나, 통계값을 계산하는 데도 사용할 수 있다.
+
+**사용 사례**
++ Stream의 요소를 List 또는 Set으로 변환
++ 데이터를 그룹화(Grouping)하거나 분할(Partitioning)
++ 통계값(합계, 평균 등) 계산
+
+**메서드 시그니처**
+```java
+<R, A> R collect(Collector<? super T, A, R> collector)
+```
+#### 주요 ```Collectors```메서드
+
+
