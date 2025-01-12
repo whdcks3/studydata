@@ -9,3 +9,19 @@ public enum Day {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
 }
 ```
+위 코드에서 Day는 열거형 타입이며, MONDAY부터 SUNDAY까지 7개의 값이 정의되어 있다. 각각의 값은 Day라는 데이터 타입의 인스턴스로 간주된다.
+**MONDAY는 문자열이나 숫자가 아니라 Day타입의 값으로 다뤄진다.**
+
+-------
+## Enum의 사용 목적
+**고정된 값들의 집합 표현**<br>
+특정 범위 내에서만 값이 허용되는 경우, Enum을 사용하면 값을 명확히 제한할 수 있다.<br>
+예를 들어, 교통 신호는 항상 빨강,노랑,초록 중 하나여야 하며, 이를 문자열이나 정수로 관리한다면 잘못된 값이 포함될 수 있다.<br>
+Enum을 사용하면 이러한 잘못된 값을 컴파일 단계에서 차단할 수 있다.
+```java
+public enum TrafficSignal {
+    RED, YELLOW, GREEN
+}
+```
+**거독성과 유지보수성 향상**<br>
+
