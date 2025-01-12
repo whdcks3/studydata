@@ -119,3 +119,124 @@ public class Example {
 }
 ```
 
+## 1-3 Enum의 장점
+Enum은 Java프로그램에서 매우 유용하며, 다른 데이터 구조보다 여러 면에서 강력한 장점을 제공한다. Enum의 장점은 코드를 작성하고 유지보수하는 과정에서 더욱 빛을 발한다.
+
+### 코드 가독성 향상
+
+**명확한 값 표현**<br>
+Enum은 특정 값들의 집합을 명확하게 표현할 수 있다. 예를 들어, 요일을 나타날 때 int나 String 대신 Enum을 사용하면<br>
+코드의 의도를 훨씬 직관적으로 전달할 수 있다.<br>
+일반적으로 숫자나 문자열로 표현된 값은 의미를 이해하기 어렵지만, Enum은 해당 값의 의미를 바로 알 수 있도록 한다.
+
+```java
+// 숫자 값 사용
+public static final int MONDAY = 1;
+public static final int TUESDAY = 2;
+
+public void printDay(int day) {
+    if (day == MONDAY) {
+        System.out.println("월요일");
+    }
+}
+
+// Enum 사용
+public enum Day {
+    MONDAY, TUESDAY
+}
+
+public void printDay(Day day) {
+    if (day == Day.MONDAY) {
+        System.out.println("월요일");
+    }
+}
+```
+첫 번째 코드에서는 숫자 1과 2가 무엇을 의미하는지 문맥을 통해 추축해야 한다.<br>
+두 번째 코드에서는 Day.MONDAY라는 이름을 통해 바로 월요일을 나타낸다는 점을 이해할 수 있다.
+
+**코드의 의도 표현**<br>
+Enum은 값뿐만 아니라 코드의 의도도 명확히 나타낸다. 예를 들어, 색상 값이 ```RED```,```GREEN```,```BLUE```로 제한되는 경우<br>
+Enum을 사용하면 코드 작성자가 해당 값 외의 입력을 방지하고자 했다는 의도를 전달할 수 있다.
+```java
+public enum Color {
+    RED, GREEN, BLUE
+}
+
+public void setColor(Color color) {
+    System.out.println("색상: " + color);
+}
+```
+위 코드에서 setColor 메소드는 RED,GREEN,BLUE 중 하나의 값만 받을 수 있다. 이로 인해 잘못된 값을 전달할 가능성이 줄어든다.
+
+----------------------
+### 에러 방지
+**타입 안전성 보장**<br>
+Enum은 값이 정해진 집합으로 제한되기 때문에, 잘못된 값을 사용할 가능성을 원칙적으로 차단한다.<br>
+예를 들어, 숫자나 문자열을 사용할 경우, 실수로 잘못된 값을 전달할 위험이 있지만, Enum은 이러한 실수를 방지한다.
+```java
+// 숫자 값 사용 (타입 안전하지 않음)
+public void processDay(int day) {
+    if (day == 8) { // 잘못된 값
+        System.out.println("에러 발생");
+    }
+}
+
+// Enum 사용 (타입 안전)
+public void processDay(Day day) {
+    // Day 값만 허용됨
+    System.out.println("오늘은 " + day + "입니다.");
+}
+```
+
+
+**허용되지 않는 값 차단**<br>
+Enum은 프로그램이 잘못된 입력을 받지 않도록 설계된다.
+```java
+public enum OrderStatus {
+    PENDING, SHIPPED, DELIVERED
+}
+
+public void updateOrderStatus(OrderStatus status) {
+    switch (status) {
+        case PENDING:
+            System.out.println("주문이 처리 대기 중입니다.");
+            break;
+        case SHIPPED:
+            System.out.println("주문이 배송 중입니다.");
+            break;
+        case DELIVERED:
+            System.out.println("주문이 배송 완료되었습니다.");
+            break;
+    }
+}
+```
+
+--------------------
+### 유지보수성 강화
+**집중된 수정**<br>
+Enum은 값의 집합을 한곳에서 관리하므로, 값이 변경되거나 추가될 때 다른 모든 코드를 수정할 필요가 없다.<br>
+예를 들어, 새로운 Enum 값을 추가하거나 기존 값을 수정할 경우, Enum 정의만 업데이트하면 된다.
+```java
+public enum Priority {
+    LOW, MEDIUM, HIGH
+}
+
+public void printPriority(Priority priority) {
+    System.out.println("우선순위: " + priority);
+}
+```
+
+**읽기 쉬운 코드 작성**<br>
+Enum을 사용하면 코드가 단순해지고 명확해져서 유지보수 작업이 수월해진다. 특히 팀 작업에서 다른 개발자가 코드를 이해하고 수정하기가 쉬워진다.
+
+**잘못된 입력에 대한 컴파일러 경고**<br>
+Enum은 잘못된 값 사용 시 컴파일 단계에서 오류를 발생시키므로, 런타임에 발생할 수 있는 문제를 줄여준다.
+
+--------------------------
+## 2. Enum의 고급 기능
+### 2-1 Enum에 메소드 추가
+Enum은 단순히 상수 값을 정의하는 것에 그치지 않고, 내부에 메소드를 추가하여 다양한 동작을 구현할 수 있다.<br>
+이 기능은 Enum을 데이터와 로직이 결합된 강력한 객체로 변환시키며, 각 상수에 고유한 동작을 부여하거나, 공통적인 로직을 정의하는 데 유용하다.
+
+### Enum 내부에 메소드 정의
+
