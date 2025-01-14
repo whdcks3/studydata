@@ -233,10 +233,295 @@ Enum을 사용하면 코드가 단순해지고 명확해져서 유지보수 작�
 Enum은 잘못된 값 사용 시 컴파일 단계에서 오류를 발생시키므로, 런타임에 발생할 수 있는 문제를 줄여준다.
 
 --------------------------
-## 2. Enum의 고급 기능
-### 2-1 Enum에 메소드 추가
+# 2. Enum의 고급 기능
+## 2-1 Enum에 메소드 추가
 Enum은 단순히 상수 값을 정의하는 것에 그치지 않고, 내부에 메소드를 추가하여 다양한 동작을 구현할 수 있다.<br>
 이 기능은 Enum을 데이터와 로직이 결합된 강력한 객체로 변환시키며, 각 상수에 고유한 동작을 부여하거나, 공통적인 로직을 정의하는 데 유용하다.
 
 ### Enum 내부에 메소드 정의
+Enum 내부에 메소드를 정의하면, Enum 상수와 메소드가 함께 동작하도록 구현할 수 있다. 이는 객체 지향적 설계를 따르는 Java에서 매우 자연스러운 방식이다.
+특히, Enum에 메소드를 추가함으로써 각 상수가 독립적인 동작이나 데이터를 가질 수 있다.
 
+**예제 : 메시지를 출력하는 메소드 추가**
+```java
+public enum Day {
+    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY;
+
+    // 요일에 따라 메시지를 반환하는 메소드
+    public String getMessage() {
+        switch (this) {
+            case MONDAY:
+                return "월요일입니다. 힘내세요!";
+            case FRIDAY:
+                return "금요일입니다. 주말이 코앞입니다!";
+            case SATURDAY:
+            case SUNDAY:
+                return "주말입니다. 푹 쉬세요!";
+            default:
+                return "평범한 하루입니다.";
+        }
+    }
+}
+
+public class EnumMethodExample {
+    public static void main(String[] args) {
+        // 요일에 따른 메시지 출력
+        for (Day day : Day.values()) {
+            System.out.println(day + ": " + day.getMessage());
+        }
+    }
+}
+출력
+MONDAY: 월요일입니다. 힘내세요!
+TUESDAY: 평범한 하루입니다.
+WEDNESDAY: 평범한 하루입니다.
+THURSDAY: 평범한 하루입니다.
+FRIDAY: 금요일입니다. 주말이 코앞입니다!
+SATURDAY: 주말입니다. 푹 쉬세요!
+SUNDAY: 주말입니다. 푹 쉬세요!
+```
+### Enum과 static 메소드
+Enum 내부에 static 메소드를 정의하면, Enum과 관련된 유틸리티 기능을 제공할 수 있다. 이는 Enum의 모든 상수에 공통적으로 적용되는 작업을 구현할 때 유용하다.
+
+**예제 :상수 이름으로 Enum 상수 찾기**
+```java
+public enum Day {
+    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY;
+
+    // 문자열로 Enum 상수 찾기
+    public static Day fromString(String name) {
+        for (Day day : Day.values()) {
+            if (day.name().equalsIgnoreCase(name)) {
+                return day;
+            }
+        }
+        throw new IllegalArgumentException("Invalid day: " + name);
+    }
+}
+
+public class EnumStaticMethodExample {
+    public static void main(String[] args) {
+        String input = "friday";
+
+        // 문자열로 Enum 상수 찾기
+        Day day = Day.fromString(input);
+        System.out.println("입력한 요일: " + day);
+    }
+}
+출력
+입력한 요일: FRIDAY
+```
+
+### Enum 메소드 활용의 장점
++ 코드의 응집력 증가 : 데이터와 동작이 하나의 Enum에 결합되어, 코드의 응집력이 높아진다.
++ 가독성 향상 : Enum 내부에 메소드를 정의함으로써 코드의 의도가 명확해진다.
++ 유지보수 용이성 : 각 상수에 대해 동작을 추가하거나 수정할 때, Enum 내부에서만 변경하면 된다.
++ 상수별 동작 지원 : Enum 상수별로 서로 다른 동작을 정의하여, 다양한 요구사항을 효과적으로 처리할 수 있다.
+
+----------------
+## 3-2 Enum과 생성자
+Enum에 생성자를 정의하면 각 Enum 상수에 대해 고유한 속성을 부여하고 이를 초기화할 수 있다. 이는 Enum을 단순한 상수 집합 이상의 객체로 확장하여 더 많은 정보를 저장하고 활용할 수 있게 만든다. 생성자와 속성을 사용하는 Enum은 복잡한 데이터 모델링에도 활용할 수 있어, 코드의 재사용성과 유지보수성을 높인다.
+
+### Enum생성자 정의 방식
+**Enum에 생성자 추가**<br>
+생성자는 클래스와 마찬가지로 ```private```으로 선언한다. 이는 Enum 상수 외부에서 생성자를 호출할 수 없도록 하기 위한 규칙이다.<br>
+생성자는 Enum 상수를 정의하는 부분에서 전달받은 값을 사용하여 초기화된다.
+
+**Enum 상수에 속성 추가**<br> 
+Enum 클래스 내부에 인스턴스 변수를 선언하여 속성을 저장한다. 이 변수는 보통 ```final```로 선언하여 변경 불가능하게 만든다.
+
+**Getter 메소드 추가**<br>
+Enum 상수에 저장된 속성을 외부에서 읽을 수 있도록 ```getter```메소드를 정의한다.
+
+### 예제 : Enum 생성자와 속성 추가
+```java
+public enum CoffeeType {
+    ESPRESSO(2000), AMERICANO(2500), LATTE(3000), MOCHA(3500);
+
+    private final int price; // 커피의 가격
+
+    // 생성자 정의 (private)
+    CoffeeType(int price) {
+        this.price = price;
+    }
+
+    // Getter 메소드
+    public int getPrice() {
+        return price;
+    }
+}
+
+public class CoffeeExample {
+    public static void main(String[] args) {
+        // 모든 커피의 가격 출력
+        for (CoffeeType type : CoffeeType.values()) {
+            System.out.println(type + "의 가격: " + type.getPrice() + "원");
+        }
+    }
+}
+출력
+ESPRESSO의 가격: 2000원
+AMERICANO의 가격: 2500원
+LATTE의 가격: 3000원
+MOCHA의 가격: 3500원
+```
+### Enum 상수에 복수의 속성 추가
+생성자를 활용하면 각 Enum 상수에 복수의 속성을 부여할 수 있다. 이를 통해 Enum 상수가 다양한 정보를 담은 객체로 동작할 수 있게 된다.
+```java
+public enum CoffeeType {
+    ESPRESSO(2000, 5), AMERICANO(2500, 10), LATTE(3000, 120), MOCHA(3500, 150);
+
+    private final int price;    // 커피의 가격
+    private final int calories; // 커피의 칼로리
+
+    // 생성자
+    CoffeeType(int price, int calories) {
+        this.price = price;
+        this.calories = calories;
+    }
+
+    // Getter 메소드
+    public int getPrice() {
+        return price;
+    }
+
+    public int getCalories() {
+        return calories;
+    }
+}
+
+public class CoffeeDetailExample {
+    public static void main(String[] args) {
+        // 각 커피의 가격과 칼로리 출력
+        for (CoffeeType type : CoffeeType.values()) {
+            System.out.println(type + ": 가격=" + type.getPrice() + "원, 칼로리=" + type.getCalories() + "kcal");
+        }
+    }
+}
+출력
+ESPRESSO: 가격=2000원, 칼로리=5kcal
+AMERICANO: 가격=2500원, 칼로리=10kcal
+LATTE: 가격=3000원, 칼로리=120kcal
+MOCHA: 가격=3500원, 칼로리=150kcal
+```
+
+### Enum 생성자와 속성을 사용하는 이유
+데이터와 로직의 결합 : Enum 상수와 관련된 데이터를 생성자에서 초기화하여 데이터를 Enum 내부에 결합할 수 있다.
+가독성 향상 : Enum 상수별 속성을 코드에 명시적으로 나타내어 가독성을 높인다.
+유지보수 용이성 : 데이터와 로직이 하나의 Enum 내부에 있으므로, 수정 시 다른 파일을 탐색할 필요가 줄어든다.
+캡슐화 : Enum 내부의 생성자와 속성은 외부에서 직접 수정할 수 없으며, getter 메소드를 통해서만 접근 가능하다.
+
+------------------
+# 4. Enum과 Constant 비교
+## 4-1 Enum과 상수(Constant)의 차이
+```final static```상수와 Enum의 비교
+Java에서 Enum과 ```final static``` 상수(Constant)는 모두 변경 불가능한 데이터를 나타내는 데 사용된다. 그러나 두 개념 사이에는 몇 가지 중요한 차이점이 존재한다.
+
+### final static 상수
+```final static```키워드를 사용하면 값을 변경할 수 없는 상수를 정의할 수 있다. 보통 클래스나 인터페이스에 선언하며, 상수 값이 바뀌지 않음을 보장한다.
+```java
+public class ConstantExample {
+    public static final int RED = 1;
+    public static final int GREEN = 2;
+    public static final int BLUE = 3;
+
+    public static void main(String[] args) {
+        System.out.println("RED: " + RED);
+        System.out.println("GREEN: " + GREEN);
+        System.out.println("BLUE: " + BLUE);
+    }
+}
+```
+
+**특징**<br>
+간단하고 이해하기 쉬움<br>
+숫자나 문자열로만 사용할 수 있음<br>
+코드 가독성이 떨어질 수 있음(특히 상수 값이 숫자인 경우)
+
+### Enum
+Enum은 상수 집합을 정의할 때 사용하는 더 강력한 방법이다. Enum은 단순히 값을 정의하는 것을 넘어, 추가적인 속성이나 동작(메소드 등)을 함께 정의할 수 있다.
+```java
+public enum Color {
+    RED, GREEN, BLUE
+}
+
+public class EnumExample {
+    public static void main(String[] args) {
+        System.out.println("RED: " + Color.RED);
+        System.out.println("GREEN: " + Color.GREEN);
+        System.out.println("BLUE: " + Color.BLUE);
+    }
+}
+```
+**특징**
+상수 값과 관련된 추가 정보를 정의할 수 있음<br>
+메소드, 필드 등을 포함하여 객체 지향적으로 설계 가능<br>
+코드 가독성과 유지 보수성이 높음
+
+### Enum과 상수의 주요 차이점
+**타입 안정성**
++ ```final static```상수는 값 자체를 기반으로 처리하므로 잘못된 값이 전달될 수 있다.
++ Enum은 명확한 타입을 가지므로 컴파일 타임에 잘못된 값을 방지할 수 있다.
+
+```java
+public static void printColor(int color) {
+    if (color == ConstantExample.RED) {
+        System.out.println("Color: RED");
+    } else if (color == ConstantExample.GREEN) {
+        System.out.println("Color: GREEN");
+    } else {
+        System.out.println("Invalid Color");
+    }
+}
+
+// 잘못된 값 전달 가능
+printColor(5);  // Output: Invalid Color
+```
+반면, Enum은 타입 안정성을 제공한다.
+```java
+public static void printColor(Color color) {
+    switch (color) {
+        case RED -> System.out.println("Color: RED");
+        case GREEN -> System.out.println("Color: GREEN");
+        case BLUE -> System.out.println("Color: BLUE");
+    }
+}
+
+// 잘못된 값 전달 시 컴파일 오류 발생
+// printColor(5); // 오류 발생
+printColor(Color.RED);  // Output: Color: RED
+```
+
+**가독성 및 유지 보수성**
++ ```final static``` 상수는 값이 숫자나 문자열일 경우 코드 가독성이 떨어질 수 있다.
++ Enum은 상수 이름으로 의미를 전달하며, 관련 동작을 함께 정의할 수 있어 유지 보수성이 높다.
+
+**추가 동작 정의**
++ ```final static```상수는 단순한 값만 제공한다.
++ Enum은 각 상수에 메소드나 속성을 추가하여 객체처럼 사용할 수 있다.
+```java
+public enum Color {
+    RED("빨강색"), GREEN("초록색"), BLUE("파랑색");
+
+    private final String description;
+
+    Color(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println(Color.RED.getDescription()); // Output: 빨강색
+    }
+}
+```
+-----------------
+## 언제 Enum을 사용하는가?
++ 상수 값이 의미 있는 이름을 가질 때
++ 상수와 관련된 추가 속성이나 동작이 필요할 때
++ 타입 안정성과 코드 가독성을 중요시할 때
