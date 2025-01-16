@@ -598,3 +598,306 @@ public class Main {
     }
 }
 ```
+
+### Enum과 클래스의 차이점
+#### 상속 제한
+Enum은 자동으로 java.lang.Enum 클래스를 상속받으므로, 다른 클래스를 상속받을 수 없다. 이는 다중 상속을 방지하고 Enum의 일관성을 유지하기 위한 제약이다.<br>
+반면 일반 클래스는 다른 클래스를 자유롭게 상속할 수 있다.
+
+#### 객체 생성 제한
+Enum의 상수는 컴파일 타임에 미리 생성되며, 개발자가 직접 객체를 생성할 수 없다.<br>
+일반 클래스는 원하는 만큼 객체를 생성할 수 있다.
+```java
+// 불가능한 코드
+Color red = new Color(); // 컴파일 오류 발생
+```
+
+#### 타입 안정성(Type Safety)
+Enum은 컴파일 타임에 타입이 강제되므로 잘못된 값이 전달되는 것을 방지할 수 있다.<br>
+일반 클래스는 타입 안정성을 보장하지 않으며, 잘못된 값이 전달될 가능성이 있다.
+```java
+public class Main {
+    public static void main(String[] args) {
+        // 일반 클래스
+        String invalidColor = "PURPLE"; // 유효하지 않은 값
+        System.out.println(invalidColor); // 허용됨
+
+        // Enum
+        // Color invalid = Color.PURPLE; // 컴파일 오류 발생
+    }
+}
+```
+
+#### 고정된 상수 집합
+Enum은 정의된 상수 집합 외에 추가 상수를 정의하거나 수정할 수 없다. 상수 집합은 불변이다.<br>
+일반 클래스는 필드를 추가하거나 삭제하여 동적으로 수정할 수 있다.
+
+#### switch문에서의 활용
+Enum은 switch문과 함께 사용할 수 있어 코드 작성이 간결해지고 가독성이 높아진다. 일반 클래스나 객체는 switch문에서 사용할 수 없다.
+
+---------------------
+# 5. Enum 활용 예제
+## 5-1 Enum으로 상태 관리
+#### 상태 관리의 필요성
+소프트웨어 시스템에서 상태 관리는 중요한 요소이다. 특히, 애플리케이션이 여러 상태를 가질 수 있는 경우, 이를 효율적으로 처리하기 위한 방법이 필요하다.<br>
+예를 들어, 온라인 쇼핑몰에서 주문 상태는 "주문 완료","배송 중","취소"등으로 나눌 수 있다. 이러한 상태를 명확히 정의하고 관리하기 위해 Enum을 사용하는 것이 효과적이다.
+
+#### 주문 상태 관리 예제
+```java
+public enum OrderStatus {
+    ORDERED,   // 주문 완료
+    SHIPPED,   // 배송 중
+    DELIVERED, // 배송 완료
+    CANCELED;  // 주문 취소
+}
+
+public class Order {
+    private String orderId;
+    private OrderStatus status;
+
+    public Order(String orderId) {
+        this.orderId = orderId;
+        this.status = OrderStatus.ORDERED; // 기본 상태는 "주문 완료"
+    }
+
+    public void updateStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    @Override
+    public String toString() {
+        return "Order ID: " + orderId + ", Status: " + status;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // 새로운 주문 생성
+        Order order = new Order("12345");
+        System.out.println(order);
+
+        // 상태를 배송 중으로 업데이트
+        order.updateStatus(OrderStatus.SHIPPED);
+        System.out.println(order);
+
+        // 상태를 배송 완료로 업데이트
+        order.updateStatus(OrderStatus.DELIVERED);
+        System.out.println(order);
+    }
+}
+```
+#### 교통 신호 관리 예제
+```java
+public enum TrafficSignal {
+    RED,    // 정지
+    YELLOW, // 주의
+    GREEN;  // 진행
+
+    public TrafficSignal nextSignal() {
+        switch (this) {
+            case RED:
+                return YELLOW;
+            case YELLOW:
+                return GREEN;
+            case GREEN:
+                return RED;
+            default:
+                throw new IllegalStateException("Unexpected value: " + this);
+        }
+    }
+}
+
+public class TrafficLight {
+    private TrafficSignal signal;
+
+    public TrafficLight() {
+        this.signal = TrafficSignal.RED; // 초기 상태는 빨간불
+    }
+
+    public void changeSignal() {
+        this.signal = signal.nextSignal();
+    }
+
+    public TrafficSignal getSignal() {
+        return signal;
+    }
+
+    @Override
+    public String toString() {
+        return "Current Signal: " + signal;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        TrafficLight trafficLight = new TrafficLight();
+
+        // 신호 변경 테스트
+        for (int i = 0; i < 6; i++) {
+            System.out.println(trafficLight);
+            trafficLight.changeSignal();
+        }
+    }
+}
+```
+
+## 5-2 Enum과 컬렉션
+### Enum과 컬렉션의 조합
+java에서 Enum은 고유한 상수 집합을 정의하는 데 유용하며, 이를 컬렉션과 함께 사용하면 상태 관리 및 데이터 매핑에 매후 효과적이다.<br>
+```HaspMap```,```ArrayList```와 같은 컬렉션은 Enum 값을 키 또는 값으로 사용할 수 있어, 효율적이고 직관적인 데이터 관리를 가능하게 한다.
+
+#### HashMap을 활용한 Enum 데이터 매핑
+```HashMap```은 키-값 쌍으로 데이터를 저장하는 자료구조이다. Enum을 키로 사용하면, 상태나 종류에 따라 데이터를 명확하게 관리할 수 있다.
+```java
+import java.util.HashMap;
+
+public enum Day {
+    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY;
+}
+
+public class TaskManager {
+    private HashMap<Day, String> tasks;
+
+    public TaskManager() {
+        tasks = new HashMap<>();
+    }
+
+    public void addTask(Day day, String task) {
+        tasks.put(day, task);
+    }
+
+    public String getTask(Day day) {
+        return tasks.getOrDefault(day, "No tasks assigned for this day.");
+    }
+
+    public static void main(String[] args) {
+        TaskManager manager = new TaskManager();
+
+        // 요일별 작업 추가
+        manager.addTask(Day.MONDAY, "Team meeting at 10 AM");
+        manager.addTask(Day.WEDNESDAY, "Project deadline");
+        manager.addTask(Day.FRIDAY, "Code review");
+
+        // 작업 조회
+        System.out.println("Monday: " + manager.getTask(Day.MONDAY));
+        System.out.println("Tuesday: " + manager.getTask(Day.TUESDAY));
+        System.out.println("Friday: " + manager.getTask(Day.FRIDAY));
+    }
+}
+```
+
+### Enum과 List 활용
+```ArrayList```를 사용하여 Enum 값을 순차적으로 저장하고 관리할 수도 있다. 예를 들어, 모든 요일을 순서대로 저장하고 반복문을 통해 처리하는 예제도 가능하다.
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class WeekDays {
+    public static void main(String[] args) {
+        // Enum 값을 List에 저장
+        List<Day> daysOfWeek = new ArrayList<>();
+        for (Day day : Day.values()) {
+            daysOfWeek.add(day);
+        }
+
+        // 저장된 요일 출력
+        System.out.println("Days of the week:");
+        for (Day day : daysOfWeek) {
+            System.out.println(day);
+        }
+    }
+}
+```
+
+### HashMap과 List를 결합한 예제
+Enum을 키로 사용하는 HashMap 안에 ArrayList를 값으로 사용하여 복잡한 데이터를 저장할 수도 있다.
+```java
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+public class WeeklyTaskManager {
+    private HashMap<Day, List<String>> weeklyTasks;
+
+    public WeeklyTaskManager() {
+        weeklyTasks = new HashMap<>();
+        for (Day day : Day.values()) {
+            weeklyTasks.put(day, new ArrayList<>());
+        }
+    }
+
+    public void addTask(Day day, String task) {
+        weeklyTasks.get(day).add(task);
+    }
+
+    public List<String> getTasks(Day day) {
+        return weeklyTasks.get(day);
+    }
+
+    public static void main(String[] args) {
+        WeeklyTaskManager manager = new WeeklyTaskManager();
+
+        // 요일별 작업 추가
+        manager.addTask(Day.MONDAY, "Team meeting");
+        manager.addTask(Day.MONDAY, "Prepare presentation");
+        manager.addTask(Day.WEDNESDAY, "Submit report");
+        manager.addTask(Day.FRIDAY, "Release deployment");
+
+        // 요일별 작업 출력
+        for (Day day : Day.values()) {
+            System.out.println(day + ": " + manager.getTasks(day));
+        }
+    }
+}
+```
+
+### 5-3 Enum을 활용한 코딩 규칙 정의
+#### Enum으로 코딩 규칙 관리
+코딩 규칙은 일반적으로 프로그램 내에서 특정 데이터를 정의하거나, 정해진 값의 집합을 관리할 때 사용된다. Enum은 이와 같은 코딩 규칙을 정의하고 관리하는 데 매우 유용하다.<br>
+Enum을 사용하면 코드의 가독성을 높이고, 데이터 값의 변경 및 관리가 용이해진다.
+
+#### HTTP 상태 코드 관리
+HTTP 응답 상태 코드는 서버가 클라이언트의 요청을 처리한 결과를 나타내며, 일반적으로 숫자로 표현된다. Enum을 사용하여 상태 코드와 그에 해당하는 메시지를 매핑하면, 상태 코드 관리가 더 쉬워진다.
+```java
+public enum HttpStatus {
+    OK(200, "Success"),
+    BAD_REQUEST(400, "Bad Request"),
+    UNAUTHORIZED(401, "Unauthorized"),
+    FORBIDDEN(403, "Forbidden"),
+    NOT_FOUND(404, "Not Found"),
+    INTERNAL_SERVER_ERROR(500, "Internal Server Error");
+
+    private final int code;
+    private final String message;
+
+    // Enum 생성자
+    HttpStatus(int code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    // 상태 코드 가져오기
+    public int getCode() {
+        return code;
+    }
+
+    // 상태 메시지 가져오기
+    public String getMessage() {
+        return message;
+    }
+
+    // 코드로 Enum 찾기
+    public static HttpStatus findByCode(int code) {
+        for (HttpStatus status : HttpStatus.values()) {
+            if (status.code == code) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("No matching HttpStatus for code: " + code);
+    }
+}
+```
