@@ -520,8 +520,81 @@ public class Main {
     }
 }
 ```
------------------
-## 언제 Enum을 사용하는가?
+### 언제 Enum을 사용하는가?
 + 상수 값이 의미 있는 이름을 가질 때
 + 상수와 관련된 추가 속성이나 동작이 필요할 때
 + 타입 안정성과 코드 가독성을 중요시할 때
+
+-----------------
+## 4-2 Enum과 클래스
+Java의 Enum은 클래스와 많은 공통점을 공유한다. Enum도 내부적으로는 클래스처럼 동작하며, 다음과 같은 공통점을 가진다.
+
+#### 메스드와 필드 포함 가능
+Enum은 클래스처럼 메소드와 필드를 정의할 수 있다. 각 Enum상수는 별개의 인스턴스로 간주되므로, 상수마다 고유한 속성과 동작을 가질 수 있다.<br>
+예를 들어, RED와 BLUE라는 상수에 서로 다른 값을 할당하거나 별도의 동작을 정의할 수 있다.
+```java
+public enum Color {
+    RED("빨강색"), GREEN("초록색"), BLUE("파랑색");
+
+    private final String description;
+
+    Color(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println(Color.RED.getDescription()); // Output: 빨강색
+        System.out.println(Color.BLUE.getDescription()); // Output: 파랑색
+    }
+}
+```
+#### 생성자 정의 가능
+Enum은 생성자를 통해 상수 값을 초기화할 수 있다. 생성자는 private으로 선언되며, 외부에서 직접 호출할 수 없다. 이는 상수 값의 불변성을 보장하기 위한 설계다.
+```java
+public enum Day {
+    MONDAY("월요일"), TUESDAY("화요일"), WEDNESDAY("수요일");
+
+    private final String koreanName;
+
+    private Day(String koreanName) {
+        this.koreanName = koreanName;
+    }
+
+    public String getKoreanName() {
+        return koreanName;
+    }
+}
+```
+#### 추상 메소드 포함 가능
+Enum은 추상 메소드를 포함할 수 있다. 각 Enum 상수는 추상 메소드를 구현해야 한다. 이를 통해 상수마다 다른 동작을 정의할 수 있다.
+```java
+public enum Operation {
+    ADD {
+        @Override
+        public int apply(int x, int y) {
+            return x + y;
+        }
+    },
+    SUBTRACT {
+        @Override
+        public int apply(int x, int y) {
+            return x - y;
+        }
+    };
+
+    public abstract int apply(int x, int y);
+}
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println(Operation.ADD.apply(5, 3));    // Output: 8
+        System.out.println(Operation.SUBTRACT.apply(5, 3)); // Output: 2
+    }
+}
+```
