@@ -108,3 +108,37 @@ public Optional<User> findUserById(int id) {
 null 값을 직접 다루는 대신, ```Optional```을 사용하는 일관된 방식으로 null 처리를 구현할 수 있다. 이는 코드의 가독성과 유지보수성을 크게 향상시킨다.
 
 --------------------
+## Optional 객체 생성 방식
+Java 8에서 제공하는 ```Optional``` 클래스는 값을 포함하거나 비어 있는 개체를 생성할 수 있는 다양한 정적 팩토리 메서드를 제공한다. 이러한 메서드들은 각각의 사용 목적에 맞게 설계되었으며, 상황에 따라 적절한 생성 방식을 선택할 수 있다.
+
+```Optional.of(value)```<br>
+null이 아닌 값을 포함하는 ```Optional``` 객체를 생성한다.<br>
+이 메서드는 값이 반드시 존재한다고 가정할 때 사용하며, 값이 null인 경우에는 ```NullPointerException```이 발생한다.
+```java
+public Optional<String> createNonNullOptional() {
+    String name = "John Doe";
+    return Optional.of(name); // name이 null이 아니므로 Optional 객체 생성 성공
+}
+```
+주의사항 : Optional.of(value)는 값이 null일 가능성이 전혀 없는 경우에만 사용해야 한다. 값이 null인 상황에서 호출하면 런타임에 NullPonterException이 발생한다.
+
+```Optional.ofNullable(value)```<br>
+값이 null일 수도 있는 상황에서 Optional 객체를 생성한다.<br>
+값이 null인 경우, 비어 있는 Optional 객체를 반환한다.<br>
+값이 null이 아니면 해당 값을 포함하는 Optional 객체를 생성한다.
+```java
+public Optional<String> createNullableOptional(String input) {
+    return Optional.ofNullable(input); // input이 null이면 비어 있는 Optional 반환
+}
+```
+입력 값이 null일 수도 있는 상황에서 Optional 객체를 생성할 때 적합하다.<br>
+예를 들어, 데이터베이스 조회나 외부 API 호출 결과가 null일 가능성이 있을 때 사용한다.
+
+```Optional.empty()```<br>
+비어 있는 Optional 객체를 생성한다.<br>
+이는 null의 안전한 대안으로, 값이 없음을 명시적으로 표현하는 데 사용된다.
+```java
+public Optional<String> createEmptyOptional() {
+    return Optional.empty(); // 비어 있는 Optional 객체 반환
+}
+```
