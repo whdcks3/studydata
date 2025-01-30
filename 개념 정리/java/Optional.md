@@ -255,4 +255,29 @@ public class OptionalOrElseExample {
 결과: 기본값
 결과: Hello, Optional!
 ```
+### orElseGet(Supplier) 메서드
+```orElseGet()```은 ```orElse()```와 유사하지만, 값이 없을 경우에만 기본값을 생성하도록 ```Supplier```를 사용한다. 이 메서드는 기본값 생성이 비용이 많이 드는 경우에 유용하다.
 
+**특징**<br>
+기본값 계산은 값이 없을 때만 수행된다.<br>
+```Supplier```를 통해 동적으로 기본값을 생성할 수 있다.
+
+```java
+public class OptionalOrElseGetExample {
+    public static void main(String[] args) {
+        Optional<String> optionalValue = Optional.ofNullable(null);
+
+        // 값이 없으므로 Supplier에서 기본값 생성
+        String result = optionalValue.orElseGet(() -> "동적으로 생성된 기본값");
+        System.out.println("결과: " + result);
+
+        // 값이 있을 경우 Supplier 호출 생략
+        Optional<String> nonEmptyOptional = Optional.of("Hello, Optional!");
+        String nonEmptyResult = nonEmptyOptional.orElseGet(() -> "동적으로 생성된 기본값");
+        System.out.println("결과: " + nonEmptyResult);
+    }
+}
+출력
+결과: 동적으로 생성된 기본값
+결과: Hello, Optional!
+```
