@@ -281,5 +281,344 @@ public class OptionalOrElseGetExample {
 결과: 동적으로 생성된 기본값
 결과: Hello, Optional!
 ```
+|메서드|동작|주요 활용 사례|
+|:---|:---|:---|
+|get()|값 변환. 값이 없으면 예외 발생|값이 항상 존재한다고 보장되는 경우|
+|orElse()|값이 없을 경우 기본값 반환. 항상 기본값 계산 비용 발생|단순한 기본값이 필요한 경우|
+|orElseGet()|값이 없을 경우에만 기본값을 동적으로 생성|기본값 계산 비용이 높거나 동적 생성이 필요한 경우|
+|orElseThrow()|값이 없을 경우 지정된 예외 발생|값이 없으면 코드 실행을 중단해야 하는 경우|
 
-# 
+------------------
+## 값 변환과 필터링
+### map(Funtion) 메서드
+```map()```메서드는 ```Optional```내부에 값이 존재할 경우, 해당 값을 특정 함수(Function)에 매핑하여 새로운 ```Optional```객체를 반환한다. 이를 통해 값이 있을 때만 변환을 수행하며, 값이 없을 경우에는 변환을 생략하고 빈 ```Optional```을 반환한다.
+
+**특징**<br>
+내부 값이 존재할 때만 변환 로직이 실행된다.<br>
+값을 직접 반환하지 않고, 변환 결과를 새로운 ```Optional``` 객체로 감싼다.<br>
+함수형 인터페이스 ```Function```을 인자로 받아 변환 작업을 수행한다.
+
+```java
+import java.util.Optional;
+
+public class OptionalMapExample {
+    public static void main(String[] args) {
+        Optional<String> optionalValue = Optional.of("Hello");
+
+        // 값이 존재하면 길이를 반환하는 변환 작업 수행
+        Optional<Integer> length = optionalValue.map(String::length);
+        System.out.println("문자열의 길이: " + length.orElse(0));
+
+        // 값이 없는 경우
+        Optional<String> emptyOptional = Optional.empty();
+        Optional<Integer> emptyLength = emptyOptional.map(String::length);
+        System.out.println("빈 Optional의 길이: " + emptyLength.orElse(0));
+    }
+}
+출력
+문자열의 길이: 5
+빈 Optional의 길이: 0
+```
+-------------
+### flatMap(Funtion) 메서드
+```flatMap()```메서드는 ```Optional```내부에 값이 존재할 경우, 해당 값을 특정 함수(Function)에 매핑하여 중첩된 ```Optional```객체를 평탄화(flatten)한다. 이는 함수의 결과로 또 다른 ```Optional``` 객체를 반환할 때 사용된다.
+
+**특징**<br>
+```map()```과는 달리, 변환 결과로 생성된 중첩된 ```Optional```을 하나의 ```Optional```로 평탄화한다.<br>
+중첩된 ```Optional<Optional<T>>```대신 ```Optional<T>```를 반환하여 더 간결한 코드를 작성할 수 있게 한다.
+
+```java
+import java.util.Optional;
+
+public class OptionalFlatMapExample {
+    public static void main(String[] args) {
+        // Optional을 반환하는 함수
+        Optional<String> optionalValue = Optional.of("12345");
+
+        // 문자열을 정수로 변환하는 과정에서 Optional을 반환
+        Optional<Integer> result = optionalValue.flatMap(OptionalFlatMapExample::stringToInt);
+        System.out.println("변환 결과: " + result.orElse(0));
+
+        // 빈 Optional을 사용한 경우
+        Optional<String> emptyOptional = Optional.empty();
+        Optional<Integer> emptyResult = emptyOptional.flatMap(OptionalFlatMapExample::stringToInt);
+        System.out.println("빈 Optional의 변환 결과: " + emptyResult.orElse(0));
+    }
+
+    private static Optional<Integer> stringToInt(String input) {
+        try {
+            return Optional.of(Integer.parseInt(input));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+}
+출력
+변환 결과: 12345
+빈 Optional의 변환 결과: 0
+```
+--------
+## filter(Predicate) 메서드
+```filter()```메서드는 ```Optional```내부에 값이 존재하고 주어진 조건(Predicate)를 만족할 경우, 해당 값을 포함하는 새로운 ```Optional```을 반환한다. 조건을 만족하지 않으면 빈 ```Optional```을 반환한다.
+
+**특징**<br>
+값이 존재하지 않거나 조건을 만족하지 않으면 빈 ```Optional```을 반환한다.<br>
+조건을 만족하는지 여부를 확인할 때 사용한다.
+
+```java
+import java.util.Optional;
+
+public class OptionalFilterExample {
+    public static void main(String[] args) {
+        Optional<Integer> optionalValue = Optional.of(42);
+
+        // 조건을 만족하는 경우
+        Optional<Integer> filteredValue = optionalValue.filter(val -> val > 40);
+        System.out.println("필터링 결과 (조건 만족): " + filteredValue.orElse(-1));
+
+        // 조건을 만족하지 않는 경우
+        Optional<Integer> nonMatchingValue = optionalValue.filter(val -> val < 40);
+        System.out.println("필터링 결과 (조건 불만족): " + nonMatchingValue.orElse(-1));
+    }
+}
+출력
+필터링 결과 (조건 만족): 42
+필터링 결과 (조건 불만족): -1
+```
+
+### 메서드 비교
+|메서드|동작|주요 활용 사례|
+|:---|:---|:---|
+|map()|값을 변환하여 새로운 ```Optional```반환|값이 있을 때 간단한 변환 작업 수행|
+|flatMap()|값을 변환하고 중첩된 ```Optional```을 평탄화|중첩된 ```Optional```처리 및 간결한 코드 작성|
+|filter()|값을 조건에 따라 필터링하여 조건을 만족하지 않으면 빈```Optional```반환|특정 조건을 만족하는 경우에만 값을 전달하거나 작업 수행|
+
+-----------------------
+## 기존 null 처리 방식과 Optional 비교
+### 기존 null 처리 방식
+Java에서 ```Optional```이 도입되기 전에는 null값을 처리하기 위해 주로 조건문(if-else)를 사용했다. 이 방식은 간단하면서도 매우 널리 사용되었지만, 개발 과정에서 몇가지 문제점을 초래했다.
+```java
+public class NullCheckExample {
+    public static void main(String[] args) {
+        String value = getValue();
+
+        // 기존 null 체크 방식
+        if (value != null) {
+            System.out.println("값이 존재합니다: " + value);
+        } else {
+            System.out.println("값이 없습니다.");
+        }
+    }
+
+    private static String getValue() {
+        // null을 반환할 수도 있음
+        return null;
+    }
+}
+출력
+값이 없습니다.
+```
+**문제점**<br>
++ NullPonterException 위험
+  + null값을 처리하지 않으면 런타임에 ```NullPointerException```이 발생하여 프로그램이 중단될 수 있다.
+  + 개발자가 모든 null 상황을 예측하고 처리해야 하므로 코드의 유지보수가 어려워진다.
++ 가독성 저하
+  + null 체크 코드가 반복적으로 등장하여 실제 비즈니스 로직이 묻히는 경우가 많다.
+  + 조건문이 중첩도리수록 코드가 복잡해진다.
++ 의미 전달 부족
+  + 메서드가 반환하는 null 같은 특별한 의미를 내포할 수 있지만, 단순히 null을 반환하면 개발자가 이 의미를 명확히 파악하기 어렵다.
+
+-------------
+## Optional을 활용한 null 처리 방식
+```Optional```은 null을 직접 사용하지 않고, 값의 유무를 명시적으로 표현할 수 있는 객체다. 이를 통해 null 체크 로직을 간결하게 작성하고 null로 인한 문제를 방지할 수 있다.
+
+```java
+import java.util.Optional;
+
+public class OptionalCheckExample {
+    public static void main(String[] args) {
+        Optional<String> optionalValue = getOptionalValue();
+
+        // Optional을 활용한 null-safe 처리
+        optionalValue.ifPresentOrElse(
+            value -> System.out.println("값이 존재합니다: " + value),
+            () -> System.out.println("값이 없습니다.")
+        );
+    }
+
+    private static Optional<String> getOptionalValue() {
+        // 비어 있는 Optional을 반환하거나 값을 포함할 수 있음
+        return Optional.empty();
+    }
+}
+출력
+값이 없습니다.
+```
+
+**장점**
++ NullPointerException 방지
+  + Optional 객체 내부에서 null을 안전하게 처리하므로, 개발자는 null 체크 로직을 직접 작성하지 않아도 된다.
++ 가독성 개선
+  + 조건문 대신 ```ifPresent```,```orElse```,```map```등의 메서드를 사용하여 null-safe 코드를 간결하게 작성할 수 있다.
++ 의미 전달
+  + 반환값이 있을 수도 없을 수도 있음을 Optional 타입으로 명시적으로 표현한다.
+  + 메서드를 사용하는 개발자는 null 가능성을 명확히 이해할 수 있다.
+
+### 기존 null 처리 방식과 Optional의 비교
+|항목|기존 null 처리 방식|Optional 사용|
+|:----|:----|:----|
+|안전성|null을 처리하지 않으면 NullPointerException 발생 가능|Optional 내부에서 null-safe 처리가 자동으로 이루어짐|
+|가독성|null 체크 로직이 반복되며 코드가 장황해짐|메서드 체이닝을 사용하여 간결하고 읽기 쉬운 코드 작성|
+|의미 전달|null이 반환될 수 있다는 것을 명시적으로 표현하지 못함|Optional 타입으로 값의 유무를 명확히 전달|
+|적용 범위|모든 상황에서 사용할 수 있으나, 개발자가 null을 직접 처리해야 함|반환값이 있을 수도 없을 수도 있는 경우에 적합, 필수 값에는 사용하지 않는 것이 권장됨|
+
+---------------------
+## 메서드 체이닝의 개념
+메서드 체이닝(Method Chaining)은 메서드를 연속적으로 호출하여 한 줄의 코드에서 여러 작업을 처리하는 프로그래밍 방식이다. ```Optional```클래스는 이러한 체이닝 방식을 통해 null-safe한 코드 작성을 지원한다.
+
+메서드 체이닝을 활용하면 각 메서드 호출이 값을 처리하고, 그 결과를 다음 메서드 호출로 전달된다. 이를 통해 null체크와 같은 반복적인 코드 없이도 안전하고 간결하게 값을 변환하거나 필터링할 수 있다.
+
+## Optional을 활용한 메서드 체이닝
+```Optional```은 체이닝을 지원하는 여러 메서드를 제공한다. 대표적인 메서드로는 ```map```,```flatMap```,```filter```,```orElse```등이 있다. 각 메서드는 안전하게 값을 처리하거나 조건을 확인한 뒤, 결과를 다음 작업으로 전달한다.
+
+```java
+import java.util.Optional;
+
+public class OptionalChainingExample {
+    public static void main(String[] args) {
+        User user = new User("John", null);
+
+        // 메서드 체이닝을 통한 null-safe 값 처리
+        String country = Optional.ofNullable(user)
+                .map(User::getAddress)
+                .map(Address::getCountry)
+                .orElse("Unknown");
+
+        System.out.println("Country: " + country);
+    }
+}
+
+class User {
+    private String name;
+    private Address address;
+
+    public User(String name, Address address) {
+        this.name = name;
+        this.address = address;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+}
+
+class Address {
+    private String country;
+
+    public Address(String country) {
+        this.country = country;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+}
+출력
+Country: Unknown
+```
+설명<br>
+```Optional.ofNullable(user)``` : User 객체가 null일 수도 있음을 고려하여 Optionalf로 감싼다.<br>
+```map(User::getAddress)``` : User 객체에서 Address를 추출하여, null 일경우 Optional.empty()를 반환한다.<br>
+```map(Address::getCountry)``` : Address 객체에서 country 값을 추출한다.<br>
+```orElse("Unknown")``` : 체이닝 도중 값이 없으면 기본값 "Unknown"을 반환한다.
+
+---------------------
+## 체이닝을 활용한 복잡한 로직 처리
+```Optional```의 메서드 체이닝은 데이터 변환 및 필터링에도 유용하다.
+
+```java
+import java.util.Optional;
+
+public class OptionalFilteringExample {
+    public static void main(String[] args) {
+        User user = new User("Alice", new Address("USA"));
+
+        // 특정 조건을 기반으로 값 처리
+        String country = Optional.ofNullable(user)
+                .map(User::getAddress)
+                .filter(address -> "USA".equals(address.getCountry()))
+                .map(Address::getCountry)
+                .orElse("Not from USA");
+
+        System.out.println("Country: " + country);
+    }
+}
+출력
+Country: USA
+```
+--------------
+## 실무에서의 활용 사례
+### 데이터베이스 조회와 Optional
+데이터베이스와 같은 외부 시스템에서 데이터를 조회할 때는 조회 결과가 항상 존재하지 않을 가능성을 고려해야 한다. 예를 들어, 특정 ID에 해당하는 데이터가 없거나 조회 조건이 충족되지 않는 경우가 대표적이다. 이러한 상황에서 null을 반환하는 대신 Optional을 사용하면 결과를 안전하게 처리할 수 있다.
+
+```java
+import java.util.Optional;
+
+public class DatabaseExample {
+    public static void main(String[] args) {
+        UserRepository repository = new UserRepository();
+
+        // 사용자 ID로 조회
+        String userName = repository.findUserNameById(1)
+                .orElse("Unknown User");
+
+        System.out.println("User Name: " + userName);
+    }
+}
+
+class UserRepository {
+    public Optional<String> findUserNameById(int id) {
+        // 데이터베이스 조회 시도 (예제에서는 간단히 null로 처리)
+        if (id == 1) {
+            return Optional.of("Alice");
+        } else {
+            return Optional.empty(); // 값이 없음을 명시적으로 표현
+        }
+    }
+}
+출력
+User Name: Alice
+```
+---------------
+## API 응답 처리와 Optional
+API 응답 데이터를 처리할 때도 Optional은 null-safe 코드를 작성하는 데 유용하다, 예를 들어 클라이언트로부터 특정 데이터를 요청받았을 때, 해당 데이터가 없더라도 코드가 에외를 발생시키지 않고 기본값을 반환하거나 적절한 처리를 할 수 있도록 한다.
+
+```java
+import java.util.Optional;
+
+public class ApiResponseExample {
+    public static void main(String[] args) {
+        ApiService apiService = new ApiService();
+
+        // API 응답 데이터 처리
+        String result = apiService.getUserEmail(10)
+                .map(email -> "Email found: " + email)
+                .orElse("Email not found");
+
+        System.out.println(result);
+    }
+}
+
+class ApiService {
+    public Optional<String> getUserEmail(int userId) {
+        // 예제에서는 임의로 데이터가 없음을 시뮬레이션
+        if (userId == 1) {
+            return Optional.of("alice@example.com");
+        } else {
+            return Optional.empty(); // 데이터가 없음을 명시적으로 반환
+        }
+    }
+}
+출력
+Email not found
+```
