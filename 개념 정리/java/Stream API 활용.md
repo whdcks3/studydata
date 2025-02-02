@@ -283,6 +283,108 @@ reduce와 같은 일부 연산은 Optional을 반환할 수 있으므로, 결과
 병렬 스트림에서 최종 연산을 사용할 경우, Collector가 병렬 실행에 적합한지 확인해야 한다.<br>
 병렬 처리가 올바르게 동작하지 않으면 예외나 잘못된 결과가 발생할 수 있다.
 
+------------------
+## Stream의 구조
+Stream API는 데이터 처리의 효율성과 간결성을 높이기 위해 데이터 소스, 중간 연산, 최종 연산 으로 구성된 구조를 사용한다.<br>
+이 구조는 데이터를 가공하고 변환하여 최종 결과를 생성하는 단계적인 과정을 나타낸다. 이를 통해 데이터 처리 작업을 명확하게 표현할 수 있다.
+
+### Stream의 구성 요소
+**데이터 소스(Source)**<br>
+Stream은 데이터를 처리하기 위해 반드시 데이터 소스를 필요로 한다.<br>
+데이터 소스는 일반적으로 Java의 컬렉션(List, Set, Map 등), 배열, 파일, 혹은 생성 메서드(```Stream.of()```,```Stream.generate()```)에서 생성된다.
+
+**중간 연산(Intermediate Operation)**<br>
+중간 연산은 스트림의 데이터를 변환하거나 필터링하는 연산이다. 이러한 연산은 데이터를 바로 처리하지 않고, 새로운 스트림을 반환한다.<br>
+중간 연산은 지연 평가(Lazy Evaludation)를 통해 최종 연산이 호출될 때 실제로 실행된다.<br>
+예:```filter```,```map```,```sorted```,```distinct```
+
+**최종 연산(Terminal Operation)**<br>
+최종 연산은 스트림의 데이터를 소비하고 결과를 반환한다. 이 연산이 호출되면 스트림이 종료되며 더 이상 사용할 수 없게 된다.<br>
+예:```forEach```,```collect```,```reduce```
+
+---------------------
+## 데이터 처리 흐름
+Stream API의 데이터 처리 흐름은 다음과 같은 순서로 이루어진다.
+> 데이터 소스 -> 중간 연산 -> 최종 연산
+이 구조는 선언적 방식으로 데이터 처리 작업을 작성할 수 있게 하며, 각 단계의 역할을 명확히 구분한다.
+
+### Stream의 구조 간단 에제
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StreamExample {
+    public static void main(String[] args) {
+        // 데이터 소스: List
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David", "Eve");
+
+        // Stream 처리
+        List<String> filteredNames = names.stream() // 데이터 소스
+                                          .filter(name -> name.startsWith("A")) // 중간 연산
+                                          .sorted() // 중간 연산
+                                          .collect(Collectors.toList()); // 최종 연산
+
+        // 결과 출력
+        System.out.println(filteredNames); // [Alice]
+    }
+}
+```
+설명:<br>
+데이터 소스 : names라는 List를 스트림으로 변환<br>
+중간 연산 : filter:이름이 "A"로 시작하는 요소만 필터링, sorted:알파벳 순서로 정렬<br>
+최종 연산 : collect를 사용해 필터링된 데이터를 다시 List로 변환
+
+--------------------
+## 데이터 소스
+Stream의 데이터 소스는 스트림 생성의 시작점이다. 데이터 소스는 컬렉션, 배열, 파일, 혹은 특정 메서드로부터 생성될 수 있다.
+
+컬렉션(List, Set 등)
+Java의 컬렉션 인터페이스는 ```stream()``` 메서드를 통해 스트림을 생성할 수 있다.
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+Stream<Integer> stream = numbers.stream();
+```
+**배열**<br>
+배열은 ```Arrays.stream()```메서드를 통해 스트림을 생성할 수 있다.
+```java
+int[] numbers = {1, 2, 3, 4, 5};
+IntStream stream = Arrays.stream(numbers);
+```
+**Steam.of()**<br>
+정적으로 지정된 요소들로 스트림을 생성할 수 있다.
+```java
+Stream<String> stream = Stream.of("Alice", "Bob", "Charlie");
+```
+**무한 스트림**<br>
+무한 스트림은 ```Stream.generate()```또는 ```Stream.iterate()```를 사용해 생성된다.
+```java
+Stream<Integer> infiniteStream = Stream.iterate(0, n -> n + 1);
+```
+--------------------
+## 중간 연산
+중간 연산은 데이터 변환과 필터링에 사용된다. 중간 연산은 여러번 체이닝(chain)될 수 있으며, 실제 실행은 최종 연산이 호출될 때까지 지연된다.
+```java
+Stream<String> stream = Stream.of("Alice", "Bob", "Charlie", "David")
+                              .filter(name -> name.length() > 3)
+                              .sorted()
+                              .map(String::toUpperCase);
+```
+-----------------
+## 최종 연산
+최종 연산은 스트림의 데이터를 소비하여 결과를 반환하거나 작업을 수행한다. 최종 연산이 호출되면 스트림은 더 이상 사용할 수 없다.
+```java
+List<String> result = stream.collect(Collectors.toList()); // 스트림을 리스트로 변환
+```
+-------------------
+
+
+
+
+
+
+
+
 -------------------------
 ### Stream API의 예제
 
@@ -493,3 +595,6 @@ synchronized나 ConcurrentHashMap 등을 활용하여 스레드 안전성을 확
 
 **작업 복잡도**<br>
 병렬 처리의 오버헤드가 작업 시간보다 크다면, 병렬 스트림이 성능을 저하시킬 수 있다.
+
+--------------------
+
