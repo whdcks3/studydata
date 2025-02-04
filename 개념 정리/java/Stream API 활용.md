@@ -213,6 +213,7 @@ public class InfiniteStreamExample {
 |값|Stream.of()|정적인 값으로 스트림 생성|
 |무한 데이터|Stream.generate(),Stream.iterate()|무한히 데이터를 생성하며, 종료 조건 설정 필요
 
+--------------------
 
 ## 중간 연산
 중간 연산은 Stream 데이터의 요소를 변환하거나 필터링하며, 항상 새로운 Stream 객체를 생성하여 반환한다.<br>
@@ -220,6 +221,132 @@ public class InfiniteStreamExample {
 중간 연산을 활용하면 데이터를 필터링하거나 변환하는 과정을 선언적으로 정의할 수 있으며, 여러 연산은 **체이닝(Pipelining)방식** 으로 연결하여 복잡한 데이터 처리 로직도 간결하게 표현할 수 있다.
 
 --------------
+## 중간 연산은 지연 평가(Lazy Evaluation)로 동작
+중간 연산은 최종 연산이 호출되기 전까지 실제로 실행되지 않는다. 즉, 중간 연산이 스트림의 각 요소를 처리하는 방법을 정의할 뿐, 데이터 처리는 최종 연산 단계에서 이루어진다.
+
+**지연 평가의 장점**<br>
++ 불필요한 연산을 방지하여 성능을 최적화한다.
++ 대량의 데이터에서 필요한 부분만 처리할 수 있다.
+
+예제 : 지연 평가 동작 확인
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class LazyEvaluationExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David");
+
+        // 중간 연산(실행되지 않음)
+        names.stream()
+             .filter(name -> {
+                 System.out.println("필터링: " + name);
+                 return name.startsWith("A");
+             });
+
+        System.out.println("최종 연산 호출 전");
+
+        // 최종 연산 호출 시 중간 연산 실행
+        names.stream()
+             .filter(name -> {
+                 System.out.println("필터링: " + name);
+                 return name.startsWith("A");
+             })
+             .forEach(System.out::println); // 출력: 필터링: Alice → Alice
+    }
+}
+```
+--------------
+## 중간 연산은 새로운 스트림을 반환
+중간 연산은 기존 스트림을 변경하지 않고, 새로운 스트림을 반환한다. 이 새로운 스트림은 원본 데이터와 독립적으로 동작한다.
+
+예제 : 새로운 스트림 생성
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
+public class StreamIndependenceExample {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+        // 중간 연산으로 새로운 스트림 생성
+        Stream<Integer> filteredStream = numbers.stream()
+                                                .filter(n -> n % 2 == 0);
+
+        // 원본 리스트는 그대로 유지됨
+        System.out.println("원본 리스트: " + numbers); // 출력: [1, 2, 3, 4, 5]
+
+        // 새로운 스트림 출력
+        filteredStream.forEach(System.out::println); // 출력: 2, 4
+    }
+}
+```
+----------------
+## 중간 연산은 여러 개를 연결 가능
+중간 연산은 체이닝(chaining) 방식으로 연결하여 사용할 수 있다. 이렇게 하면 데이터를 단계적으로 처리할 수 있으며, 코드를 간결하고 명확하게 작성할 수 있다.
+
+예제 : 중간 연산 체이닝
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class StreamChainingExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David");
+
+        names.stream()
+             .filter(name -> name.length() > 3) // 길이가 3 초과인 이름 필터링
+             .map(String::toUpperCase)         // 대문자로 변환
+             .sorted()                         // 정렬
+             .forEach(System.out::println);    // 출력
+
+        // 출력:
+        // ALICE
+        // CHARLIE
+        // DAVID
+    }
+}
+```
+--------------
+## 중간 연산은 원본 데이터를 변경하지 않음
+중간 연산은 데이터 처리 과정을 정의할 뿐, 원본 데이터는 영향을 미치지 않는다. 이는 Stream API의 불변성 특성 때문이다.
+
+예제 : 원본 데이터 유지 확인
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class StreamOriginalDataExample {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+        // 중간 연산 적용
+        numbers.stream()
+               .filter(n -> n > 3)
+               .forEach(System.out::println); // 출력: 4, 5
+
+        // 원본 데이터 확인
+        System.out.println("원본 리스트: " + numbers); // 출력: [1, 2, 3, 4, 5]
+    }
+}
+```
+-------------
+## 최종 연산이 없으면 실행되지 않음
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### 1. filter
 filter는 지정된 조건에 따라 Stream의 요소를 선택하거나 제외하는 중간 연산이다.<br>
 각 요소에 대해 조건(Predicate)를 평가하여, 조건을 만족하는 요소만 새로운 Stream에 포함한다.
