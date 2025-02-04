@@ -4,6 +4,216 @@ Stream API는 데이터를 효율적으로 처리하기 위한 다양한 기능�
 중간 연산은 데이터를 변환하거나 필터링하는 역할을 하고, 최종 연산은 변환된 데이터를 소비하여 결과를 생성한다.<br>
 이 두 가지 동작을 적절히 조합하여 복잡한 데이터 처리 로직을 간결하고 선언적으로 구현할 수 있다.
 
+## Stream의 구조
+Stream API는 데이터 처리의 효율성과 간결성을 높이기 위해 데이터 소스, 중간 연산, 최종 연산 으로 구성된 구조를 사용한다.<br>
+이 구조는 데이터를 가공하고 변환하여 최종 결과를 생성하는 단계적인 과정을 나타낸다. 이를 통해 데이터 처리 작업을 명확하게 표현할 수 있다.
+
+### Stream의 구성 요소
+**데이터 소스(Source)**<br>
+Stream은 데이터를 처리하기 위해 반드시 데이터 소스를 필요로 한다.<br>
+데이터 소스는 일반적으로 Java의 컬렉션(List, Set, Map 등), 배열, 파일, 혹은 생성 메서드(```Stream.of()```,```Stream.generate()```)에서 생성된다.
+
+**중간 연산(Intermediate Operation)**<br>
+중간 연산은 스트림의 데이터를 변환하거나 필터링하는 연산이다. 이러한 연산은 데이터를 바로 처리하지 않고, 새로운 스트림을 반환한다.<br>
+중간 연산은 지연 평가(Lazy Evaludation)를 통해 최종 연산이 호출될 때 실제로 실행된다.<br>
+예:```filter```,```map```,```sorted```,```distinct```
+
+**최종 연산(Terminal Operation)**<br>
+최종 연산은 스트림의 데이터를 소비하고 결과를 반환한다. 이 연산이 호출되면 스트림이 종료되며 더 이상 사용할 수 없게 된다.<br>
+예:```forEach```,```collect```,```reduce```
+
+---------------------
+## 데이터 처리 흐름
+Stream API의 데이터 처리 흐름은 다음과 같은 순서로 이루어진다.
+> 데이터 소스 -> 중간 연산 -> 최종 연산
+이 구조는 선언적 방식으로 데이터 처리 작업을 작성할 수 있게 하며, 각 단계의 역할을 명확히 구분한다.
+
+### Stream의 구조 간단 에제
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StreamExample {
+    public static void main(String[] args) {
+        // 데이터 소스: List
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David", "Eve");
+
+        // Stream 처리
+        List<String> filteredNames = names.stream() // 데이터 소스
+                                          .filter(name -> name.startsWith("A")) // 중간 연산
+                                          .sorted() // 중간 연산
+                                          .collect(Collectors.toList()); // 최종 연산
+
+        // 결과 출력
+        System.out.println(filteredNames); // [Alice]
+    }
+}
+```
+설명:<br>
+데이터 소스 : names라는 List를 스트림으로 변환<br>
+중간 연산 : filter:이름이 "A"로 시작하는 요소만 필터링, sorted:알파벳 순서로 정렬<br>
+최종 연산 : collect를 사용해 필터링된 데이터를 다시 List로 변환
+
+--------------------
+## 데이터 소스
+Stream의 데이터 소스는 스트림 생성의 시작점이다. 데이터 소스는 컬렉션, 배열, 파일, 혹은 특정 메서드로부터 생성될 수 있다.
+
+컬렉션(List, Set 등)
+Java의 컬렉션 인터페이스는 ```stream()``` 메서드를 통해 스트림을 생성할 수 있다.
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+Stream<Integer> stream = numbers.stream();
+```
+**배열**<br>
+배열은 ```Arrays.stream()```메서드를 통해 스트림을 생성할 수 있다.
+```java
+int[] numbers = {1, 2, 3, 4, 5};
+IntStream stream = Arrays.stream(numbers);
+```
+**Steam.of()**<br>
+정적으로 지정된 요소들로 스트림을 생성할 수 있다.
+```java
+Stream<String> stream = Stream.of("Alice", "Bob", "Charlie");
+```
+**무한 스트림**<br>
+무한 스트림은 ```Stream.generate()```또는 ```Stream.iterate()```를 사용해 생성된다.
+```java
+Stream<Integer> infiniteStream = Stream.iterate(0, n -> n + 1);
+```
+--------------------
+## 중간 연산
+중간 연산은 데이터 변환과 필터링에 사용된다. 중간 연산은 여러번 체이닝(chain)될 수 있으며, 실제 실행은 최종 연산이 호출될 때까지 지연된다.
+```java
+Stream<String> stream = Stream.of("Alice", "Bob", "Charlie", "David")
+                              .filter(name -> name.length() > 3)
+                              .sorted()
+                              .map(String::toUpperCase);
+```
+-----------------
+## 최종 연산
+최종 연산은 스트림의 데이터를 소비하여 결과를 반환하거나 작업을 수행한다. 최종 연산이 호출되면 스트림은 더 이상 사용할 수 없다.
+```java
+List<String> result = stream.collect(Collectors.toList()); // 스트림을 리스트로 변환
+```
+-------------------
+## Stream 구조의 장점
+
+**단계적 데이터 처리**<br>
+Stream의 구조는 데이터를 처리하는 과정을 단계적으로 나눔으로써, 각 단계에서 수행되는 작업을 명확히 한다.
+
+**모듈화된 데이터 처리**<br>
+중간 연산과 최종 연산을 분리하여 데이터 처리 로직을 재사용 가능하게 만든다.
+
+**지연 평가로 성능 최적화**<br>
+중간 연산이 지연 평가되므로 불필요한 계산을 방지하고, 최종 연산이 호출될 때만 필요한 작업을 수행한다.
+
+--------------
+## 다양한 데이터 소스에서의 스트림 생성
+Stream은 다양한 데이터 소스를 기반으로 생성된다. 이러한 데이터 소스는 Java 프로그램에서 일반적으로 사용하는 컬렉션, 배열, 값 ,혹은 무한히 생성되는 데이터까지 포함한다.
+아래에서는 각각의 데이터 소스에서 스트림을 생성하는 방법을 설명한다.
+
+### 컬렉션 스트림 생성
+컬렉션(```List```,```Set```,```Map``` 등)은 Java에서 데이터를 저장하고 관리하기 위해 가장 널리 사용되는 자료구조 중 하나이다. Java 8에서는 ```Collection``` 인터페이스에 ```stream()```과 ```parrallelStream``` 메서드가 추가되어 컬렉션을 쉽게 스트림으로 변환할 수 있다.
++ ```stream()``` : 순차 스트림을 생성한다.
++ ```parallelStream()``` : 병렬 처리를 위한 병렬 스트림을 생성한다.
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class CollectionStreamExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David");
+
+        // 순차 스트림
+        names.stream()
+             .filter(name -> name.startsWith("A"))
+             .forEach(System.out::println); // 출력: Alice
+
+        // 병렬 스트림
+        names.parallelStream()
+             .filter(name -> name.startsWith("A"))
+             .forEach(System.out::println); // 병렬 처리로 출력 순서가 다를 수 있음
+    }
+}
+```
+------------
+## 배열 스트림 생성
+배열은 Java에서 기본적인 데이터 저장 방식으로 사용된다. Java 8에서는 ```Arrays.stream()``` 메서드를 통해 배열 데이터를 스트림으로 변환 할 수 있다.
+
+```java
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
+public class ArrayStreamExample {
+    public static void main(String[] args) {
+        int[] numbers = {1, 2, 3, 4, 5};
+
+        // 배열 스트림 생성
+        IntStream intStream = Arrays.stream(numbers);
+
+        // 스트림 처리
+        intStream.filter(n -> n % 2 == 0) // 짝수 필터링
+                 .forEach(System.out::println); // 출력: 2, 4
+    }
+}
+```
+-------------------
+## Stream.of()로 스트림 생성
+```Stream.of()```메서드는 개별 요소나 가변 인자를 받아 스트림을 생성할 수 있다. 이 방법은 정적으로 지정된 값으로 스트림을 만들 때 유용하다.
+```java
+import java.util.stream.Stream;
+
+public class StreamOfExample {
+    public static void main(String[] args) {
+        Stream<String> stream = Stream.of("Apple", "Banana", "Cherry");
+
+        // 스트림 처리
+        stream.map(String::toUpperCase) // 모든 요소를 대문자로 변환
+              .forEach(System.out::println); // 출력: APPLE, BANANA, CHERRY
+    }
+}
+```
+-----------
+## 무한 스트림 생성
+Java 8에서 ```Stream.generate()```와 ```Stream.iterate()``` 메서드를 통해 무한 스트림을 생성할 수 있다. 이 두 메서드는 제한되지 않은 데이터를 스트림으로 생성하며,
+일반적으로 ```limit()```와 함께 사용하여 종료 조건을 설정한다.
+
+```Stream.generate(Supplier)```<br>
+주어진 Supplier를 사용해 무한히 요소를 생성하는 스트림을 반환한다.
+> Stream<Double> randomNumbers = Stream.generate(Math::random);
+
+```Stream.iterate(T seed, UnaryOperator)```<br>
+초기값(seed) 에서 시작해 연산(UnaryOperator)를 반복하여 요소를 생성하는 스트림을 반환한다.
+> Stream<Integer> numbers = Stream.iterate(0, n -> n + 2);
+
+```java
+import java.util.stream.Stream;
+
+public class InfiniteStreamExample {
+    public static void main(String[] args) {
+        // Stream.generate()
+        Stream<Double> randomNumbers = Stream.generate(Math::random)
+                                             .limit(5); // 무한 스트림에서 5개만 추출
+        randomNumbers.forEach(System.out::println);
+
+        // Stream.iterate()
+        Stream<Integer> evenNumbers = Stream.iterate(0, n -> n + 2)
+                                            .limit(5); // 무한 스트림에서 5개만 추출
+        evenNumbers.forEach(System.out::println); // 출력: 0, 2, 4, 6, 8
+    }
+}
+```
+----------------
+## Stream 생성 방식 비교
+|데이터 소스|생성 메서드|특징|
+|:---|:---|:---|
+|컬렉션|stream(),parallelStream()|컬렉션 데이터를 순차 또는 병렬로 처리 가능|
+|베열|Arrays.stream()|배열을 스트림으로 변환|
+|값|Stream.of()|정적인 값으로 스트림 생성|
+|무한 데이터|Stream.generate(),Stream.iterate()|무한히 데이터를 생성하며, 종료 조건 설정 필요
+
+
 ## 중간 연산
 중간 연산은 Stream 데이터의 요소를 변환하거나 필터링하며, 항상 새로운 Stream 객체를 생성하여 반환한다.<br>
 이 연산은 **지연 실행(Lazy Evaludation)** 방식을 따르므로, 최종 연산이 호출되기 전까지 실제로 수행되지 않는다.<br>
@@ -284,214 +494,6 @@ reduce와 같은 일부 연산은 Optional을 반환할 수 있으므로, 결과
 병렬 처리가 올바르게 동작하지 않으면 예외나 잘못된 결과가 발생할 수 있다.
 
 ------------------
-## Stream의 구조
-Stream API는 데이터 처리의 효율성과 간결성을 높이기 위해 데이터 소스, 중간 연산, 최종 연산 으로 구성된 구조를 사용한다.<br>
-이 구조는 데이터를 가공하고 변환하여 최종 결과를 생성하는 단계적인 과정을 나타낸다. 이를 통해 데이터 처리 작업을 명확하게 표현할 수 있다.
-
-### Stream의 구성 요소
-**데이터 소스(Source)**<br>
-Stream은 데이터를 처리하기 위해 반드시 데이터 소스를 필요로 한다.<br>
-데이터 소스는 일반적으로 Java의 컬렉션(List, Set, Map 등), 배열, 파일, 혹은 생성 메서드(```Stream.of()```,```Stream.generate()```)에서 생성된다.
-
-**중간 연산(Intermediate Operation)**<br>
-중간 연산은 스트림의 데이터를 변환하거나 필터링하는 연산이다. 이러한 연산은 데이터를 바로 처리하지 않고, 새로운 스트림을 반환한다.<br>
-중간 연산은 지연 평가(Lazy Evaludation)를 통해 최종 연산이 호출될 때 실제로 실행된다.<br>
-예:```filter```,```map```,```sorted```,```distinct```
-
-**최종 연산(Terminal Operation)**<br>
-최종 연산은 스트림의 데이터를 소비하고 결과를 반환한다. 이 연산이 호출되면 스트림이 종료되며 더 이상 사용할 수 없게 된다.<br>
-예:```forEach```,```collect```,```reduce```
-
----------------------
-## 데이터 처리 흐름
-Stream API의 데이터 처리 흐름은 다음과 같은 순서로 이루어진다.
-> 데이터 소스 -> 중간 연산 -> 최종 연산
-이 구조는 선언적 방식으로 데이터 처리 작업을 작성할 수 있게 하며, 각 단계의 역할을 명확히 구분한다.
-
-### Stream의 구조 간단 에제
-```java
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-public class StreamExample {
-    public static void main(String[] args) {
-        // 데이터 소스: List
-        List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David", "Eve");
-
-        // Stream 처리
-        List<String> filteredNames = names.stream() // 데이터 소스
-                                          .filter(name -> name.startsWith("A")) // 중간 연산
-                                          .sorted() // 중간 연산
-                                          .collect(Collectors.toList()); // 최종 연산
-
-        // 결과 출력
-        System.out.println(filteredNames); // [Alice]
-    }
-}
-```
-설명:<br>
-데이터 소스 : names라는 List를 스트림으로 변환<br>
-중간 연산 : filter:이름이 "A"로 시작하는 요소만 필터링, sorted:알파벳 순서로 정렬<br>
-최종 연산 : collect를 사용해 필터링된 데이터를 다시 List로 변환
-
---------------------
-## 데이터 소스
-Stream의 데이터 소스는 스트림 생성의 시작점이다. 데이터 소스는 컬렉션, 배열, 파일, 혹은 특정 메서드로부터 생성될 수 있다.
-
-컬렉션(List, Set 등)
-Java의 컬렉션 인터페이스는 ```stream()``` 메서드를 통해 스트림을 생성할 수 있다.
-```java
-List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
-Stream<Integer> stream = numbers.stream();
-```
-**배열**<br>
-배열은 ```Arrays.stream()```메서드를 통해 스트림을 생성할 수 있다.
-```java
-int[] numbers = {1, 2, 3, 4, 5};
-IntStream stream = Arrays.stream(numbers);
-```
-**Steam.of()**<br>
-정적으로 지정된 요소들로 스트림을 생성할 수 있다.
-```java
-Stream<String> stream = Stream.of("Alice", "Bob", "Charlie");
-```
-**무한 스트림**<br>
-무한 스트림은 ```Stream.generate()```또는 ```Stream.iterate()```를 사용해 생성된다.
-```java
-Stream<Integer> infiniteStream = Stream.iterate(0, n -> n + 1);
-```
---------------------
-## 중간 연산
-중간 연산은 데이터 변환과 필터링에 사용된다. 중간 연산은 여러번 체이닝(chain)될 수 있으며, 실제 실행은 최종 연산이 호출될 때까지 지연된다.
-```java
-Stream<String> stream = Stream.of("Alice", "Bob", "Charlie", "David")
-                              .filter(name -> name.length() > 3)
-                              .sorted()
-                              .map(String::toUpperCase);
-```
------------------
-## 최종 연산
-최종 연산은 스트림의 데이터를 소비하여 결과를 반환하거나 작업을 수행한다. 최종 연산이 호출되면 스트림은 더 이상 사용할 수 없다.
-```java
-List<String> result = stream.collect(Collectors.toList()); // 스트림을 리스트로 변환
-```
--------------------
-## Stream 구조의 장점
-
-**단계적 데이터 처리**<br>
-Stream의 구조는 데이터를 처리하는 과정을 단계적으로 나눔으로써, 각 단계에서 수행되는 작업을 명확히 한다.
-
-**모듈화된 데이터 처리**<br>
-중간 연산과 최종 연산을 분리하여 데이터 처리 로직을 재사용 가능하게 만든다.
-
-**지연 평가로 성능 최적화**<br>
-중간 연산이 지연 평가되므로 불필요한 계산을 방지하고, 최종 연산이 호출될 때만 필요한 작업을 수행한다.
-
---------------
-## 다양한 데이터 소스에서의 스트림 생성
-Stream은 다양한 데이터 소스를 기반으로 생성된다. 이러한 데이터 소스는 Java 프로그램에서 일반적으로 사용하는 컬렉션, 배열, 값 ,혹은 무한히 생성되는 데이터까지 포함한다.
-아래에서는 각각의 데이터 소스에서 스트림을 생성하는 방법을 설명한다.
-
-### 컬렉션 스트림 생성
-컬렉션(```List```,```Set```,```Map``` 등)은 Java에서 데이터를 저장하고 관리하기 위해 가장 널리 사용되는 자료구조 중 하나이다. Java 8에서는 ```Collection``` 인터페이스에 ```stream()```과 ```parrallelStream``` 메서드가 추가되어 컬렉션을 쉽게 스트림으로 변환할 수 있다.
-+ ```stream()``` : 순차 스트림을 생성한다.
-+ ```parallelStream()``` : 병렬 처리를 위한 병렬 스트림을 생성한다.
-```java
-import java.util.Arrays;
-import java.util.List;
-
-public class CollectionStreamExample {
-    public static void main(String[] args) {
-        List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David");
-
-        // 순차 스트림
-        names.stream()
-             .filter(name -> name.startsWith("A"))
-             .forEach(System.out::println); // 출력: Alice
-
-        // 병렬 스트림
-        names.parallelStream()
-             .filter(name -> name.startsWith("A"))
-             .forEach(System.out::println); // 병렬 처리로 출력 순서가 다를 수 있음
-    }
-}
-```
-------------
-## 배열 스트림 생성
-배열은 Java에서 기본적인 데이터 저장 방식으로 사용된다. Java 8에서는 ```Arrays.stream()``` 메서드를 통해 배열 데이터를 스트림으로 변환 할 수 있다.
-
-```java
-import java.util.Arrays;
-import java.util.stream.IntStream;
-
-public class ArrayStreamExample {
-    public static void main(String[] args) {
-        int[] numbers = {1, 2, 3, 4, 5};
-
-        // 배열 스트림 생성
-        IntStream intStream = Arrays.stream(numbers);
-
-        // 스트림 처리
-        intStream.filter(n -> n % 2 == 0) // 짝수 필터링
-                 .forEach(System.out::println); // 출력: 2, 4
-    }
-}
-```
--------------------
-## Stream.of()로 스트림 생성
-```Stream.of()```메서드는 개별 요소나 가변 인자를 받아 스트림을 생성할 수 있다. 이 방법은 정적으로 지정된 값으로 스트림을 만들 때 유용하다.
-```java
-import java.util.stream.Stream;
-
-public class StreamOfExample {
-    public static void main(String[] args) {
-        Stream<String> stream = Stream.of("Apple", "Banana", "Cherry");
-
-        // 스트림 처리
-        stream.map(String::toUpperCase) // 모든 요소를 대문자로 변환
-              .forEach(System.out::println); // 출력: APPLE, BANANA, CHERRY
-    }
-}
-```
------------
-## 무한 스트림 생성
-Java 8에서 ```Stream.generate()```와 ```Stream.iterate()``` 메서드를 통해 무한 스트림을 생성할 수 있다. 이 두 메서드는 제한되지 않은 데이터를 스트림으로 생성하며,
-일반적으로 ```limit()```와 함께 사용하여 종료 조건을 설정한다.
-
-```Stream.generate(Supplier)```<br>
-주어진 Supplier를 사용해 무한히 요소를 생성하는 스트림을 반환한다.
-> Stream<Double> randomNumbers = Stream.generate(Math::random);
-
-```Stream.iterate(T seed, UnaryOperator)```<br>
-초기값(seed) 에서 시작해 연산(UnaryOperator)를 반복하여 요소를 생성하는 스트림을 반환한다.
-> Stream<Integer> numbers = Stream.iterate(0, n -> n + 2);
-
-```java
-import java.util.stream.Stream;
-
-public class InfiniteStreamExample {
-    public static void main(String[] args) {
-        // Stream.generate()
-        Stream<Double> randomNumbers = Stream.generate(Math::random)
-                                             .limit(5); // 무한 스트림에서 5개만 추출
-        randomNumbers.forEach(System.out::println);
-
-        // Stream.iterate()
-        Stream<Integer> evenNumbers = Stream.iterate(0, n -> n + 2)
-                                            .limit(5); // 무한 스트림에서 5개만 추출
-        evenNumbers.forEach(System.out::println); // 출력: 0, 2, 4, 6, 8
-    }
-}
-```
-----------------
-## Stream 생성 방식 비교
-|데이터 소스|생성 메서드|특징|
-|:---|:---|:---|
-|컬렉션|stream(),parallelStream()|컬렉션 데이터를 순차 또는 병렬로 처리 가능|
-|베열|Arrays.stream()|배열을 스트림으로 변환|
-|값|Stream.of()|정적인 값으로 스트림 생성|
-|무한 데이터|Stream.generate(),Stream.iterate()|무한히 데이터를 생성하며, 종료 조건 설정 필요
 
 
 
