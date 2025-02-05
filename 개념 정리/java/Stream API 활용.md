@@ -333,20 +333,27 @@ public class StreamOriginalDataExample {
 ```
 -------------
 ## 최종 연산이 없으면 실행되지 않음
+중간 연산만으로는 스트림이 실행되지 않는다. 반드시 최종 연산이 호출되어야 스트림이 처리된다.
+```java
+import java.util.Arrays;
+import java.util.List;
 
+public class StreamNoTerminalExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
 
+        // 중간 연산만 존재(실행되지 않음)
+        names.stream()
+             .filter(name -> {
+                 System.out.println("필터링: " + name);
+                 return name.startsWith("A");
+             });
 
-
-
-
-
-
-
-
-
-
-
-
+        System.out.println("스트림 처리 종료");
+    }
+}
+```
+------------
 ### 1. filter
 filter는 지정된 조건에 따라 Stream의 요소를 선택하거나 제외하는 중간 연산이다.<br>
 각 요소에 대해 조건(Predicate)를 평가하여, 조건을 만족하는 요소만 새로운 Stream에 포함한다.
