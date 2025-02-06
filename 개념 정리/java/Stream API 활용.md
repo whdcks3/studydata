@@ -442,16 +442,143 @@ public class MapExample {
     }
 }
 ```
-**실행 흐름**<br>
-Stream의 각 요소에 변환 로직(mapper) 적용<br>
-변환된 데이터를 포함한 새로운 Stream 생성<br>
-변환된 Stream 반환
-
-**주의점**<br>
-변환 로직의 복잡성 : 변환 로직이 복잡할 경우, 별도의 메서드 또는 람다 표현식으로 분리하여 코드 가독성을 높인다.<br>
-데이터 누락 방지 : map 연산은 입력 데이터의 각 요소에 대해 반드시 하나의 결과를 반환해야 하며, 데이터 누락이 발생하지 않도록 주의한다.
-
 --------------
+### 3. flatMap(Function)
+flatMap은 스트림의 각 요소를 다른 스트림으로 변환한 후, 중첩된 스트림을 단일 스트림으로 평면화한다. 이는 다차원 데이터를 단순화하는데 유용하다.
+
+**특징**<br>
+중첩 구조(리스트 안의 리스트 등)을 단일 구조로 변환한다.<br>
+새로운 스트림을 생성하며, 각 스트림의 요소를 하나로 합친다.
+
+예제 : 리스트 안의 리스트를 평면화
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class FlatMapExample {
+    public static void main(String[] args) {
+        List<List<String>> nestedList = Arrays.asList(
+            Arrays.asList("a", "b", "c"),
+            Arrays.asList("d", "e"),
+            Arrays.asList("f")
+        );
+
+        nestedList.stream()
+                  .flatMap(List::stream) // 리스트를 평면화
+                  .forEach(System.out::print); // 출력: abcdef
+    }
+}
+
+```
+----------
+### 4. sorted(Comparator)
+sorted는 스트림의 요소를 정렬한다. 기본 정렬 방식(Comparable) 또는 사용자 정의 Comparator를 사용할 수 있다.
+
+**특징**<br>
+기본 정렬 기준 또는 사용자 정의 기준으로 정렬된다.<br>
+새로운 스트림이 반환되며, 원본 데이터는 변경되지 않는다.
+
+예제 : 기본 정렬
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class SortedExample {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(5, 3, 1, 4, 2);
+
+        numbers.stream()
+               .sorted() // 기본 정렬
+               .forEach(System.out::println); // 출력: 1, 2, 3, 4, 5
+    }
+}
+```
+예제 : 역순 정렬
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class CustomSortedExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Charlie", "Alice", "Bob");
+
+        names.stream()
+             .sorted((a, b) -> b.compareTo(a)) // 역순 정렬
+             .forEach(System.out::println); // 출력: Charlie, Bob, Alice
+    }
+}
+```
+-----------
+### 5. distinct()
+distinct는 스트림의 중복 요소를 제거하여 고유한 요소만 포함하는 스트림을 반환한다.
+
+**특징**<br>
+중복된 데이터를 제거한다.<br>
+스트림의 고유성을 유지한다.
+
+예제 : 중복 제거
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class DistinctExample {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 2, 3, 4, 4, 5);
+
+        numbers.stream()
+               .distinct() // 중복 제거
+               .forEach(System.out::println); // 출력: 1, 2, 3, 4, 5
+    }
+}
+```
+------
+### 6. limit(long)
+limit는 스트림의 요소를 지정된 개수만큼 제한한다. 이 연산은 대량 데이터에서 일부만 처리하고 싶을 때 유용하다.
+
+**특징**<br>
+앞에서부터 지정된 개수만큼 요소를 포함한다.<br>
+대량 데이터의 처리 성능을 향상시킨다.
+
+예제 : 처음 3개의 요소만 출력
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class LimitExample {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+        numbers.stream()
+               .limit(3) // 처음 3개의 요소만 포함
+               .forEach(System.out::println); // 출력: 1, 2, 3
+    }
+}
+```
+--------------
+### 7. skip(long)
+skip은 스트림의 앞부분 요소를 지정된 개수만큼 건너뛴다. 이는 페이징 처리 등에 유용하다.
+
+**특징**<br>
+앞부분 데이터를 제외하고 처리한다.<br>
+limit와 조합하여 페이징 처리를 구현할 수 있다.
+
+예제 : 앞의 2개 요소 건너뛰기
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class SkipExample {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+        numbers.stream()
+               .skip(2) // 처음 2개의 요소 건너뛰기
+               .forEach(System.out::println); // 출력: 3, 4, 5
+    }
+}
+
+```
+--------
 ### 중간 연산의 특징
 **지연 실행(Lazy Evaludation)**
 
@@ -485,120 +612,78 @@ Stream의 각 요소에 변환 로직(mapper) 적용<br>
 중간 연산 체이닝은 간결하지만, 지나치게 복잡한 체이닝은 가독성을 저하시킬 수 있다.<br>
 필요한 연산만 포함하여 최적화된 코드를 작성한다.
 
+-------------------
 ## 최종 연산
 최종 연산은 중간 연산으로 처리된 데이터를 소비하여 결과를 생성하는 역할을 한다.<br>
 Stream API에서 최종 연산이 호출되면 Stream은 종료되며, 이후에는 더 이상 사용할 수 없다.<br>
 최종 연산은 결과를 단일 값, 컬렉션, 또는 특정 데이터 구조의 형태로 반환한다.
 
-### 1. reduce
-reduce는 Stream의 요소를 누적하여 단일 값을 생성하는 최종 연산이다.<br>
-초깃값과 누적 로직을 정의하여, Stream의 모든 요소를 축약(Aggregation)한다.
+### 1. forEach(Consumer)
+forEach는 스트림의 각 요소에 특정 작업을 수행하기 위해 사용된다. 반환값이 없으며, 주로 스트림의 요소를 출력하거나 특정 동작을 실행할 때 활용된다.
 
-**주요 특징**
-+ 데이터를 집계하거나 축약 하는 데 사용한다.
-+ 연산 과정에서 초깃값(identity)와 누적 로직(accumulator)를 정의할 수 있다.
-+ 연산 결과로 단일 값을 반환하며, 필요에 따라 Optional을 사용할 수 있다.
-
-**사용 사례**
-+ 숫자의 합계, 곱셈, 최대값 계산
-+ 문자열을 하나의 문장으로 연결
-+ 특정 조건에 따라 데이터를 집계
-
-#### 메서드 시그니처
-```java
-Optional<T> reduce(BinaryOperator<T> accumulator)
-T reduce(T identity, BinaryOperator<T> accumulator)
-```
-**identity**<br>
-초깃값으로, 연산의 시작값을 정의한다.<br>
-예 : 합계 연산의 초깃값은 0, 곱셈 연산의 초깃값은 1
-
-**accumulator**<br>
-두 개의 값을 받아 누적하는 연산 로직을 정의하는 함수형 인터페이스
-
-#### 코드 예제
+예제
 ```java
 import java.util.Arrays;
 import java.util.List;
 
-public class ReduceExample {
+public class ForEachExample {
     public static void main(String[] args) {
-        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
 
-        // 초깃값이 있는 reduce
-        int sum = numbers.stream()
-                         .reduce(0, Integer::sum); // 합계 계산
-        System.out.println("합계: " + sum); // 출력: 합계: 15
-
-        // 초깃값이 없는 reduce
-        numbers.stream()
-               .reduce(Integer::max) // 최대값 계산
-               .ifPresent(max -> System.out.println("최대값: " + max)); // 출력: 최대값: 5
+        names.stream()
+             .forEach(name -> System.out.println("Hello, " + name + "!"));
     }
 }
+출력
+Hello, Alice!
+Hello, Bob!
+Hello, Charlie!
 ```
-**실행 흐름**
+주의 사항 : forEach는 병렬 스트림(parallelStream)사용 시 요소의 처리 순서를 보장하지 않는다.<br>
+데이터를 외부로 출력하거나 변경할 때, 순서 의존적 작업은 지양해야 한다.
 
-Stream의 초깃값(identity)를 설정(초깃값이 없는 경우 첫 번째 요소 사용)<br>
-Stream의 각 요소를 누적(accumulate)하여 하나의 값으로 축약<br>
-최종 결과 반환
-
-**주의점**
-
-초깃값이 없는 reduce는 빈 Stream에서 결과가 없으므로 Optional을 반환한다.<br>
-연산 로직(accumulator)이 불명확하거나 복잡하면, 결과의 신뢰성이 낮아질 수 있다.
-
-----------------------
-### 2. collect
-collect는 Stream의 데이터를 특정 데이터 구조로 수집하는 최종 연산이다.<br>
-Stream의 모든 요소를 처리한 결과를 리스트(List),셋(Set),맵(Map) 또는 다른 데이터 구조로 반환한다.
-
-**주요 특징**
-+ 결과 데이터를 수집하여 저장하거나 후속 작업에 활용할 수 있다.
-+ Collectors 클래스를 통해 다양한 수집 전략을 제공한다.
-+ 데이터를 그룹화하거나, 통계값을 계산하는 데도 사용할 수 있다.
-
-**사용 사례**
-+ Stream의 요소를 List 또는 Set으로 변환
-+ 데이터를 그룹화(Grouping)하거나 분할(Partitioning)
-+ 통계값(합계, 평균 등) 계산
+-----------
+### 2. collect(Collector)
+collect는 스트림 데이터를 특정 형태로 수집할 때 사용된다. 결과는 리스트, 맵, 셋 등 다양한 컬렉션 형태로 변환될 수 있다.
 
 **메서드 시그니처**
 ```java
 <R, A> R collect(Collector<? super T, A, R> collector)
 ```
-#### 주요 ```Collectors```메서드
-+ toList() : Stream의 요소를 List로 변환
-+ toSet() : Stream 요소를 Set으로 변환
-+ toMap() : 키-값 쌍으로 데이터를 변환하여 Map으로 변환
-+ groupingBy() : 데이터를 특정 기준에 따라 그룹화
-+ partitioningBy() : 데이터를 조건에 따라 두 그룹으로 분할
 
-#### 코드 예제
+**주요 Collector 메서드**<br>
++ Collectors.toList() : 스트림을 리스트로 변환
++ Collectors.toSet() : 스트림을 셋으로 변환
++ Collectors.toMap() : 스트림을 키-값 쌍으로 변환
++ Collectors.groupingBy() : 데이터를 그룹화
+
+예제
 ```java
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CollectExample {
     public static void main(String[] args) {
         List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "Alice");
 
-        // Set으로 수집 (중복 제거)
-        Set<String> uniqueNames = names.stream()
-                                       .collect(Collectors.toSet());
-        System.out.println("Set: " + uniqueNames); // 출력: Set: [Alice, Bob, Charlie]
+        // List로 수집
+        List<String> nameList = names.stream()
+                                     .collect(Collectors.toList());
+        System.out.println("List: " + nameList);
 
-        // 리스트를 Map으로 변환
-        Map<String, Integer> nameLengthMap = names.stream()
-                                                  .distinct() // 중복 제거
-                                                  .collect(Collectors.toMap(
-                                                      name -> name,        // 키
-                                                      name -> name.length() // 값
-                                                  ));
-        System.out.println("Map: " + nameLengthMap); // 출력: Map: {Alice=5, Bob=3, Charlie=7}
+        // Set으로 수집
+        Set<String> nameSet = names.stream()
+                                   .collect(Collectors.toSet());
+        System.out.println("Set: " + nameSet);
     }
 }
+출력
+List: [Alice, Bob, Charlie, Alice]
+Set: [Alice, Bob, Charlie]
 ```
+
 **실행 흐름**
 
 Stream의 각 요소를 수집 전략(Collector)에 따라 처리<br>
@@ -627,12 +712,117 @@ reduce와 같은 일부 연산은 Optional을 반환할 수 있으므로, 결과
 병렬 스트림에서 최종 연산을 사용할 경우, Collector가 병렬 실행에 적합한지 확인해야 한다.<br>
 병렬 처리가 올바르게 동작하지 않으면 예외나 잘못된 결과가 발생할 수 있다.
 
-------------------
+----------
+### 3. reduce(BinaryOperator)
+reduce는 Stream의 요소를 누적하여 단일 값을 생성하는 최종 연산이다.<br>
+초깃값과 누적 로직을 정의하여, Stream의 모든 요소를 축약(Aggregation)한다.
 
+**주요 특징**
++ 데이터를 집계하거나 축약 하는 데 사용한다.
++ 연산 과정에서 초깃값(identity)와 누적 로직(accumulator)를 정의할 수 있다.
++ 연산 결과로 단일 값을 반환하며, 필요에 따라 Optional을 사용할 수 있다.
 
+**사용 사례**
++ 숫자의 합계, 곱셈, 최대값 계산
++ 문자열을 하나의 문장으로 연결
++ 특정 조건에 따라 데이터를 집계
 
+#### 메서드 시그니처
+```java
+Optional<T> reduce(BinaryOperator<T> accumulator)
+T reduce(T identity, BinaryOperator<T> accumulator)
+```
++ accumulator : 스트림의 요소들을 결합하는 함수
++ identity : 초기값, 스트림이 비어있을 때 반환되는 기본값
++ conbiner : 병렬 처리 시 사용되는 함수, 스트림을 병렬로 처리할 때만 필요하다.
 
+예제
+```java
+import java.util.Arrays;
+import java.util.List;
 
+public class ReduceExample {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+        // 초깃값이 있는 reduce
+        int sum = numbers.stream()
+                         .reduce(0, Integer::sum); // 합계 계산
+        System.out.println("합계: " + sum); // 출력: 합계: 15
+
+        // 초깃값이 없는 reduce
+        numbers.stream()
+               .reduce(Integer::max) // 최대값 계산
+               .ifPresent(max -> System.out.println("최대값: " + max)); // 출력: 최대값: 5
+    }
+}
+출력
+Sum: 15
+Concatenated: 12345
+```
+**실행 흐름**
+
+Stream의 초깃값(identity)를 설정(초깃값이 없는 경우 첫 번째 요소 사용)<br>
+Stream의 각 요소를 누적(accumulate)하여 하나의 값으로 축약<br>
+최종 결과 반환
+
+**주의점**
+
+초깃값이 없는 reduce는 빈 Stream에서 결과가 없으므로 Optional을 반환한다.<br>
+연산 로직(accumulator)이 불명확하거나 복잡하면, 결과의 신뢰성이 낮아질 수 있다.
+
+--------------
+### 4. count()
+count()는 스트림의 요소 개수를 반환한다. 필터링된 결과의 개수를 계산할 때 주로 사용된다.
+
+예제
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class CountExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+
+        long count = names.stream()
+                          .filter(name -> name.length() > 3)
+                          .count();
+        System.out.println("Count: " + count);
+    }
+}
+출력
+Count: 2
+```
+----------
+### 5. anyMatch(Predicate), allMatch(Predicate), noneMatch(Predicate)
+이 세 연산은 스트림 요소가 특정 조건을 만족하는지 여부를 반환한다.
++ ```anyMatch``` : 하나 이상의 요소가 조건을 만족하면 true 반환
++ ```allMatch``` : 모든 요소가 조건을 만족하면 true 반환
++ ```noneMatch``` : 모든 요소가 조건을 만족하지 않으면 true 반환
+
+예제
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class MatchExample {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+        boolean anyMatch = numbers.stream().anyMatch(n -> n > 4);
+        boolean allMatch = numbers.stream().allMatch(n -> n > 0);
+        boolean noneMatch = numbers.stream().noneMatch(n -> n < 0);
+
+        System.out.println("Any Match (>4): " + anyMatch);
+        System.out.println("All Match (>0): " + allMatch);
+        System.out.println("None Match (<0): " + noneMatch);
+    }
+}
+출력
+Any Match (>4): true
+All Match (>0): true
+None Match (<0): true
+```
 -------------------------
 ### Stream API의 예제
 
@@ -781,6 +971,56 @@ Stream 체이닝 : 분할 기준(짝수 여부)를 설정하고 데이터를 그
 병렬 스트림(Parallel Stream)은 데이터를 병렬로 처리하여 성능을 극대화할 수 있는 Stream API의 기능이다.<br>
 단일 CPU에서 작업이 직렬로 처리되는 일반 스트림과 달리, 병렬 스트림은 멀티코어 CPU를 활용하여 데이터를 동시에 처리한다.
 
+### 병렬 스트림 생성 방법
+**```parallelStream()```메서드** <br>
+컬렉션 인터페이스에서 제공하며, 스트림을 병렬스트림으로 생성한다.<br>
+기존의 순차 스트림(stream())과 동일한 방식으로 작동하지만 내부적으로 병렬 처리 된다.
+
+```java
+import java.util.Arrays;
+import java.util.List;
+
+public class ParallelStreamExample {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David");
+
+        // 병렬 스트림 생성
+        names.parallelStream()
+             .forEach(name -> System.out.println(Thread.currentThread().getName() + " - " + name));
+    }
+}
+출력
+ForkJoinPool.commonPool-worker-3 - Alice
+ForkJoinPool.commonPool-worker-1 - Bob
+main - Charlie
+ForkJoinPool.commonPool-worker-2 - David
+```
+----------
+## stream().parallel() 메서드
+기존의 순차 스트림을 병렬 스트림으로 변환한다.<br>
+병렬 스트림 생성 후, 중간 연산과 최종 연산은 병렬적으로 수행된다.
+
+```java
+import java.util.stream.IntStream;
+
+public class ParallelConversionExample {
+    public static void main(String[] args) {
+        // 순차 스트림 생성
+        IntStream range = IntStream.rangeClosed(1, 10);
+
+        // 병렬 스트림으로 변환
+        range.parallel()
+             .forEach(num -> System.out.println(Thread.currentThread().getName() + " - " + num));
+    }
+}
+출력
+ForkJoinPool.commonPool-worker-3 - 1
+ForkJoinPool.commonPool-worker-1 - 2
+main - 3
+ForkJoinPool.commonPool-worker-2 - 4
+...
+```
+----------
 ### 병렬 스트림의 주요 특징
 **병렬 처리 방식**<br>
 데이터를 여러 청크(chunk)로 나누고, 각각의 청크를 독립적으로 처리한다.<br>
@@ -793,20 +1033,6 @@ Stream API는 병렬 처리의 복잡한 구현을 숨기고, 개발자는 ```pa
 병렬 스트림은 Java의 ForkJoinPool을 활용하여 내부적으로 작업을 분배하고 병합한다.
 
 -----------------
-### 병렬 스트림 생성
-병렬 스트림은 두 가지 방법으로 생성할 수 있다.
-+ Collection에서 생성
-```java
-List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
-numbers.parallelStream()
-       .forEach(System.out::println);
-```
-+ Stream에서 변환
-```java
-Stream<Integer> stream = Stream.of(1, 2, 3, 4, 5);
-stream.parallel()
-      .forEach(System.out::println);
-```
 
 #### 병렬 스트림 활용 예제
 ```java
