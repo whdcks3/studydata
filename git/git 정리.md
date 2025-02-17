@@ -9,13 +9,13 @@
 ```git remote -v```
 현재 디렉토리와 연결된 원격 저장소 확인
 
-```git remote add (저장소 이름) (URL)```
+```git remote add (저장소 이름) (URL)```<br>
 원격 저장소 연결
 
-```git remote rename (기존이름) (변경할 이름)```
+```git remote rename (기존이름) (변경할 이름)```<br>
 원격 저장소 이름 변경
 
-```git remote remove (저장소이름)```
+```git remote remove (저장소이름)```<br>
 원격 저장소 삭제
 
 ```git clone (URL)```<br>
