@@ -6,7 +6,7 @@
 -------------
 ### 원격 저장소
 
-```git remote -v```
+```git remote -v```<br>
 현재 디렉토리와 연결된 원격 저장소 확인
 
 ```git remote add (저장소 이름) (URL)```<br>
