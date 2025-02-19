@@ -134,3 +134,55 @@ Java는 운영 체제에 의존하지 않고 JVM(Java Virtual Machine) 위에서
 JDBC도 이와 같은 원리로 **하나의 표준 인터페이스** 를 제공하여 MySQL, Oracle, PostgreSQL, SQL Server 등 다양한 데이터베이스와 동일한 방식으로 연결하고 SQL를 실행할 수 있도록 한다.
 
 하지만 데이터베이스마다 세부적인 SQL 문법이 다를 수 있기 때문에, 완전한 플랫폼 독립성을 보장하기 위해서는 JDBC 드라이버가 필요하다. JDBC 드라이버는 데이터베이스마다 제공되는 별도의 라이브러리로,JDBC API를 해당 데이터베이스의 네이티브 명령어로 변환하는 역할을 한다. 즉, 애플리케이션에는 JDBC API만 신경 쓰면 되고 DBMS에 따라 드라이버만 변경해주면 동일한 코드가 여러 데이터베이스에서 동작할 수 있다.
+
+## JDBC의 플랫폼 독립성을 가능하게 하는 요소
+**JDBC API(Java Application -> JDBC API)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Java에서 데이터베이스를 제어할 수 있도록 표준화된 API<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```java.sql```패키지에 포함된 인터페이스와 클래스를 제공<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```Connection```,```Statement```,```PreparedStatement```,```ResultSet```등의 객체를 활용하여 데이터베이스와 상호작용
+
+**JDBC 드라이버(JDBC API -> JDBC Driver)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JDBC API 호출을 데이터베이스가 이해할 수 있는 네이티브 코드로 변환<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DBMS마다 다른 JDBC 드라이버를 사용하지만, 코드 변경없이 드라이버만 교체하면 동일한 Java 코드로 다양한 데이터베이스와 연결 가능<br>
+
+**DBMS(JDBC Driver -> Database)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;변환된 SQL 명령을 실행하여 데이터를 처리하고 결과를 반환
+
+### JDBC의 플랫폼 독립성 에제
+```java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class JdbcPlatformIndependence {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/sampledb";
+        String user = "root";
+        String password = "password";
+
+        try {
+            // JDBC 드라이버를 통해 데이터베이스에 연결
+            Connection conn = DriverManager.getConnection(url, user, password);
+            System.out.println("데이터베이스 연결 성공!");
+
+            // 연결 종료
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+위의 코드에서 url, user, password 정보만 변경하면 Oracle, PostrgerSQL, SQL Server 등의 데이터베이스에서도 동일한 코드로 실행가능하다. 즉, JDBC API는 변경되지 않고, 데이터베이스에 맞는 JDBC 드라이버만 변경해주면
+다른 환경에서도 동일하게 동작할 수 있다.
+
+예를 들어, MySQL에서 Oracle로 변경하려면 JDBC URL과 드라이버 설정만 변경하면 된다.
+```java
+String url = "jdbc:oracle:thin:@localhost:1521:orcl";
+String user = "oracle_user";
+String password = "oracle_password";
+```
+
+---------------------
+## JDBC의 SQL 실행 지원
+JDBC의 핵심 기능 중 하나는 SQL 문을 실행하여 데이터베이스와 상호작용하는 것이다. JDBC를 활용하면 다음과 같은 SQL 문을 실행할 수 있다.
