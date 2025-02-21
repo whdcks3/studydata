@@ -253,3 +253,280 @@ public class JdbcSqlExecution {
 }
 ```
 -------
+## JDBC 트랜잭션 관리
+JDBC는 데이터의 일관성을 유지하기 위해 트랜잭션(Transaction) 관리 기능을 제공한다. 트랜잭션은 **하나의 논리적인 작업 단위** 로, 여러 개의 SQL 문을 하나의 작업으로 묶어 실행할 수 있다.
+
+JDBC에서 기본적으로 **자동 커밋(Auto Commit)** 이 활성화되어 있다. 즉, SQL문이 실행될 때마다 자동으로 데이터베이스에 적용된다. 하지만, 이를 비활성화하고 수동으로 ```commit()```과 ```rollback()```을 조작할 수도있다.
+
+예제
+```java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class JdbcTransactionManagement {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/sampledb";
+        String user = "root";
+        String password = "password";
+
+        Connection conn = null;
+        Statement stmt = null;
+
+        try {
+            conn = DriverManager.getConnection(url, user, password);
+            conn.setAutoCommit(false); // 자동 커밋 비활성화
+
+            stmt = conn.createStatement();
+            stmt.executeUpdate("INSERT INTO accounts (name, balance) VALUES ('김철수', 50000)");
+            stmt.executeUpdate("INSERT INTO accounts (name, balance) VALUES ('이영희', 60000)");
+
+            // 일부러 오류 발생시키기
+            int result = 10 / 0; // ArithmeticException 발생
+
+            conn.commit(); // 트랜잭션 커밋
+        } catch (Exception e) {
+            try {
+                if (conn != null) conn.rollback(); // 오류 발생 시 롤백
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+-----------
+## JDBC 드라이버의 개념
+JDBC 드라이버는 JDBC API와 데이터베이스(DBMS) 간의 중재자 역할을 하는 프로그램이다.<br>
+애플리케이션이 데이터베이스와 통신하려면 SQL을 데이터베이스가 이해할 수 있는 형태로 변환해야 하며, 반대로 데이터베이스에서 반환된 결과를 Java 애플리케이션이 이해할 수 있도록 변환해야 한다.<br>
+JDBC 드라이버는 이러한 변환 과정을 담당하는 소프트웨어 계층으로, JDBC API를 통해 전달된 SQL 명령을 적절한 방식으로 DBMS에 전달하고, DBMS의 응답을 Java 애플리케이션이 처리할 수 있도록 변환하는 역할을 한다.
+
+### JDBC 드라이버의 역할
+**JDBC API의 SQL 명령을 DBMS에서 이해할 수 있도록 변환**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Java 애플리케이션에서 작성된 ```SELECT```,```INSERT```,```UPDATE```,```DELETE``` 등의 SQL 문을 데이터베이스가 이해할 수 있는 형태로 변환하여 전달한다.
+
+**DBMS의 응답을 Java에서 사용할 수 있도록 변환**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터베이스에서 실행된 결과를 ResultSet 객체로 변환하여 Java 애플리케이션이 처리할 수 있도록 한다.
+
+**DBMS와의 연결을 관리** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JDBC 드라이버는 Java 애플리케이션과 데이터베이스 간의 연결을 생성하고, 유지하며, 종료하는 역할을 한다.
+
+**트랜잭션 관리 지원**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JDBC 드라이버는 ```commit()```와 ```rollback()```을 처리하여 데이터의 일관성을 유지하는 트랜잭션 관리를 지원한다.
+
+**데이터베이스의 네트워크 통신 처리**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JDBC 드라이버는 데이터베이스 서버와의 네트워크 연결을 관리하며, 클라이언트와 서버 간의 데이터 전송을 수행한다.
+
+### JDBC 드라이버의 동작 과정
+-> Java 애플리케이션이 JDBC API를 통해 데이터베이스 연결을 요청한다.<br>
+-> JDBC 드라이버가 해당 요청을 받아 데이터베이스에 적절한 명령을 전달한다.<br>
+-> 데이터베이스가 SQL 문을 실행하고 결과를 생성한다.<br>
+-> JDBC 드라이버가 실행 결과를 변환하여 Java 애플리케이션으로 반환한다.<br>
+-> 애플리케이션이 반환된 데이터를 처리하고, 필요하면 트랜잭션을 관리한다.
+```java
+Java 애플리케이션
+    │
+    ├──> JDBC API
+    │       │
+    │       ├──> JDBC 드라이버
+    │       │       │
+    │       │       ├──> 데이터베이스 (SQL 실행)
+    │       │       │
+    │       │       └──> SQL 실행 결과 반환
+    │       │
+    │       └──> Java 애플리케이션 (결과 처리)
+```
+예제 : JDBC 드라이버를 활용한 기본 데이터베이스 연결
+```java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class JdbcDriverExample {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/sampledb";
+        String user = "root";
+        String password = "password";
+
+        Connection conn = null;
+
+        try {
+            // JDBC 드라이버를 통해 데이터베이스에 연결
+            conn = DriverManager.getConnection(url, user, password);
+            System.out.println("데이터베이스 연결 성공!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.close();
+                    System.out.println("데이터베이스 연결 종료.");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+## JDBC 드라이버의 필요성
+**SQL문 실행의 표준화**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; JDBC API는 Java 애플리케이션에서 일관된 방식으로 SQL문을 실행할 수 있도록 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, MySQL과 Oracle의 SQL 문법이 다를 수 있지만, JDBC API를 활용하면 동일한 코드로 데이터를 조회하거나 수정할 수 있다.
+
+**DBMS에 대한 의존성 최소화**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터베이스가 변경되더라도, JDBC API를 사용하면 코드를 최소한으로 수정하여 재사용할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, MySQL에서 PostgreSQL로 변경할 경우, JDBC URL과 드라이버만 교체하면 된다.
+
+**운영 체제와 독립적으로 동작**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JDBC는 Java기반이므로 운영체제(OS)와 무관하게 동일한 방식으로 동작한다.
+
+---------------
+### JDBC 드라이버의 라이브러리 형태
+JDBC 드라이버는 보통 JAR(Java Archive)파일 형태로 제공된다.<br>
+JAR 파일을 프로젝트에 추가하면 JDBC 드라이버를 사용할 수 있다.
+
+|데이터베이스|JDBC 드라이버 파일명|
+|:---|:---|
+| MySQL | mysql-connector-java-8.0.26.jar |
+| Oracle | ojdbc8.jar |
+| PostgreSQL | postgresql-42.2.23.jar |
+| SQL Server | mssql-jdbc-9.4.0.jre8.jar | 
+
+## JDBC 드라이버의 종류
+JDBC 드라이버는 내부 구현 방식에 따라 네 가지 유형으로 분류된다. 각 드라이버는 성능, 플랫폼 독립성, 데이터베이스 종속성 등의 특성이 다르므로, 프로젝트의 특성과 환경에 따라 적절한 드라이버를 선택하는것이 중요하다.
+
+### JDBC 드라이버의 네 가지 유형
++ Type 1 : JDBC-ODBC 브리지 드라이버
++ Type 2 : 네이티브 API 드라이버
++ Type 3 : 네트워크 프로토콜 드라이버
++ Type 4 : 순수 Java 드라이버(Thin 드라이버)
+
+---------------------------
+### Type 1 : JDBC-ODBC 브리지 드라이버
+JDBC-ODBC 드라이버는 가장 오래된 JDBC 드라이버 유형으로, ODBC(Open Database Connectivity)드라이버를 이용해 Java 애플리케이션과 데이터베이스를 연결한다.
+
+**작동 방식**<br>
+-> JDBC API 호출을 받으면 JDBC-ODBC 브리지 드라이버가 ODBC API로 변환한다.<br>
+-> ODBC API는 다시 DBMS의 네이티브 드라이버를 호출하여 데이터베이스와 통신한다.<br>
+-> 데이터베이스의 응답이 같은 경로를 통해 Java 애플리케이션으로 반환된다.
+
+**장점**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 다양한 데이터베이스와 호환 가능<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 기존 ODBC 드라이버가 있다면 드라이버 설치 없이 사용 가능
+
+**단점**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 성능이 가장 낮음(JDBC -> ODBC -> 네이티브 드라이버를 거쳐야 하므로 오버헤드가 크다)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 네이티브 코드가 포함되어 있어 플랫폼 독립성이 떨어짐<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 최신 Java 버전에서는 더 이상 지원되지 않음
+
+**사용 예제**
+```java
+String url = "jdbc:odbc:DataSourceName";
+Connection conn = DriverManager.getConnection(url, "user", "password");
+```
+
+**비고**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Type 1 드라이버는 현재 실무에서 거의 사용되지 않으며, Java 8 이후부터는 공식적으로 지원되지 않는다.
+
+---------------
+### Type 2 : 네이티브 API 드라이버
+특정 데이터베이스의 네이티브 API를 직접 호출하는 방식으로 동작한다. 데이터베이스 공급업체가 제공하는 클라이언트 라이브러리를 필요로 하며, 해당 라이브러리가 운영 체제에 설치되어 있어야 한다.
+
+**작동 방식**<br>
+-> Java 애플리케이션에서 JDBC API를 호출한다.<br>
+-> JDBC API가 네이티브 API로 변환된다.
+-> 네이티브 API가 데이터베이스와 직업 통신하여 SQL 명령을 실행한다.
+-> 결과가 Java 애플리케이션으로 반환된다.
+
+**장점**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Type 1 보다 성능이 뛰어남<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터베이스의 네이티비 기능을 활용할 수 있음
+
+**단점**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;특정 데이터베이스에 종속됨(MySQL, Oracle, MSSQL 등 데이터베이스별로 다른 드라이버 필요)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;네이티브 라이브러리를 운영체제에 설치해야 함(운영체제 의존성이 있음)
+
+**사용 예제**
+```java
+String url = "jdbc:oracle:thin:@localhost:1521:xe";
+Connection conn = DriverManager.getConnection(url, "user", "password");
+```
+
+**비고**<br>
+네이티브 API를 직접 활용하는 방식이므로 Type 1보다는 빠르지만, 설치와 유지보수가 까다롭다는 단점이 있다.
+
+----------------
+### Type 3 : 네트워크 프로토콜 드라이버
+이 드라이버는 클라이언트와 데이터베이스 사이에 미들웨어 서버를 두고 네트워크 프로토콜을 사용하여 통신하는 방식이다. JDBC API호출을 네트워크 프로토콜로 변환하여 미들웨어 서버로 전송하고, 미들웨어 서버가
+이를 다시  데이터베이스의 네이티브 프로토콜로 변환하여 실행하는 구조다.
+
+**작동 방식**<br>
+-> Java 애플리케이션에서 JDBC API를 호출한다.<br>
+-> Type 3 드라이버가 JDBC API를 네트워크 프로토콜로 변환하여 미들웨어 서버로 전송한다.<br>
+-> 미들웨어 서버가 네트워크 프로토콜을 데이터베이스의 네이티브 API로 변환하여 실행한다.<br>
+-> 실행 결과를 같은 경로를 거쳐 Java 애플리케이션으로 변환한다.
+
+**장점**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트 측에 데이터베이스별 드라이버 설치가 필요 없음(미들웨어 서버가 모든 드라이버를 관리)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;여러 데이터베이스를 동시에 지원할 수 있음<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;방화벽을 통해 데이터베이스와 쉽게 연결 가능
+
+**단점**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;미들웨어 서버를 별도로 운영해야 하므로 추가적인 인프라가 필요함<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;미들웨어 서버를 거치는 과정에서 성능 저하 발생 가능
+
+**사용 예제**
+```java
+String url = "jdbc:networkprotocol://middleware-server:1521/db";
+Connection conn = DriverManager.getConnection(url, "user", "password");
+```
+
+**비고**<br>
+클라이언트-서버 환경에서 유용하지만, 미들웨어 서버의 추가 비용과 관리 부담이 크다.
+
+------------
+### Type 4 : 순수 Java 드라이버 (Thin 드라이버)
+이 드라이버는 Pure Java로 구현된 JDBC 드라이버로, 네이티브 코드 없이 직접 데이터베이스와 통신하는 방식이다. 네트워크 소켓을 통해 데이터베이스의 프로토콜을 직접 처리하기 떄문에 가장 많이 사용되는 방식이다.
+
+**작동 방식**<br>
+-> Java 애플리케이션에서 JDBC API를 호출한다.<br>
+-> Type 4 드라이버가 네트워크 소켓을 통해 SQL를 데이터베이스에 전달한다.<br>
+-> 데이터베이스가 SQL를 실행한 후 결과를 반환한다.<br>
+-> Type 4 드라이버가 데이터를 Java 애플리케이션이 이해할 수 있는 형태로 변환하여 반환한다.
+
+**장점**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;가장 빠른 성능(중간 계층이 없어 직접 DBMS와 통신)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;운영체제 독립적(Pure Java로 구현되어 있어 어떤 OS에서도 실행 가능)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트 측에 추가적인 네이티브 드라이버 설치가 필요 없음<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;네트워크를 통해 원격 데이터베이스와 쉽게 연결 가능
+
+**단점**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 데이터베이스 별로 다른 드라이버가 필요함
+
+**사용 예제**
+```java
+String url = "jdbc:mysql://localhost:3306/sampledb";
+Connection conn = DriverManager.getConnection(url, "user", "password");
+```
+
+**비고**<br>
+Type 4 드라이버는 현재 가장 널리 사용되는 JDBC 드라이버 유형이며, 대부분의 Java 애플리케이션에서 사용된다.
+
+|드라이버 유형|설명|
+|:---|:---|
+|Type 1|JDBC-ODBC 브리지 드라이버, ODBC를 사용하여 데이터베이스와 연결|
+|Type 2|네이티브 API 드라이버, DBMS의 네이티브 코드 호출|
+|Type 3|네트워크 프로토콜 드라이버, 미들웨어 서버를 경유하여 연결|
+|Type 4|순수 Java 드라이버, 데이터베이스에 직접 연결|
+
+------------
