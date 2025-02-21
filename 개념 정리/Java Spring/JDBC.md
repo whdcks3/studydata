@@ -186,3 +186,70 @@ String password = "oracle_password";
 ---------------------
 ## JDBC의 SQL 실행 지원
 JDBC의 핵심 기능 중 하나는 SQL 문을 실행하여 데이터베이스와 상호작용하는 것이다. JDBC를 활용하면 다음과 같은 SQL 문을 실행할 수 있다.
+
+**SELECT(데이터 조회)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터베이스에서 데이터를 검색하는 기능<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```executeQuery()```를 통해 실행
+
+**INSERT(데이터 삽입)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;새로운 데이터를 추가하는 기능<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```executeUpdate()```를 통해 실행
+
+**UPDATE(데이터 수정)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;기존 데이터를 수정하는 기능<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```executeUpdate()```를 통해 실행
+
+**DELETE(데이터 삭제)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터를 삭제하는 기능<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```executeUpdate()```를 통해 실행
+
+예제
+```java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class JdbcSqlExecution {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/sampledb";
+        String user = "root";
+        String password = "password";
+
+        Connection conn = null;
+        Statement stmt = null;
+
+        try {
+            // 데이터베이스 연결
+            conn = DriverManager.getConnection(url, user, password);
+            stmt = conn.createStatement();
+
+            // INSERT 문 실행
+            String insertSql = "INSERT INTO users (name, email) VALUES ('홍길동', 'hong@example.com')";
+            int rowsInserted = stmt.executeUpdate(insertSql);
+            System.out.println(rowsInserted + "개의 행이 추가되었습니다.");
+
+            // UPDATE 문 실행
+            String updateSql = "UPDATE users SET email = 'gil@example.com' WHERE name = '홍길동'";
+            int rowsUpdated = stmt.executeUpdate(updateSql);
+            System.out.println(rowsUpdated + "개의 행이 수정되었습니다.");
+
+            // DELETE 문 실행
+            String deleteSql = "DELETE FROM users WHERE name = '홍길동'";
+            int rowsDeleted = stmt.executeUpdate(deleteSql);
+            System.out.println(rowsDeleted + "개의 행이 삭제되었습니다.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // 리소스 해제
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+-------
