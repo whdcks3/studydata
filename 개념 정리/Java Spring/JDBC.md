@@ -530,3 +530,240 @@ Type 4 드라이버는 현재 가장 널리 사용되는 JDBC 드라이버 유�
 |Type 4|순수 Java 드라이버, 데이터베이스에 직접 연결|
 
 ------------
+## JDBC 환경 설정
+JDBC 드라이버를 설정하는 과정은 Java 애플리케이션에서 데이터베이스에 접근하기 위한 필수적인 절차이다. 올바른 JDBC 드라이버를 설정하지 않으면 데이터베이스 연결이 불가능하므로, 프로젝트에 적절한 드라이버를 추가하고,
+올바르게 설정하는 방법을 정확히 이해하는 것이 중요하다.
+
+### JDBC 드라이버 다운로드 및 설치
+공식 홈페이지를 통해 설치하거나, Maven 또는 Gradle을 사용한 자동설치가 존재한다.<br>
+프로젝트에서 Maven 또는 Gradle을 사용하면, 직접 파일을 다운로드 하지 않고도 라이브러리를 관리할 수 있다.
+
+Maven 설정 예제(pom.xml파일에 추가)
+```java
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.33</version>
+</dependency>
+```
+Gradle 설정 예제(build.gradle 파일에 추가)
+```java
+dependencies {
+    implementation 'mysql:mysql-connector-java:8.0.33'
+}
+```
+-----------
+### JDBC 드라이버 로드하기
+JDBC 드라이버를 올바르게 설정한 후, 애플리케이션에서 드라이버를 로드하는 과정이 필요하다.JDBC 드라이버는 ```java.sql.DriverManager```클래스를 사용하여 등록된다.
+
+Class.forName()을 사용한 드라이버 로드
+```java
+Class.forName("com.mysql.cj.jdbc.Driver");
+```
+위 코드가 실행되면 JDBC 드라이버 클래스가 로드되고, 해당 드라이버가 DriverManager에 등록된다.<br>
+그러나 JDBC 4.0 이후부터는 명시적인 드라이버 로드가 필요하지 않다.
+
+최신 JDBC 드라이버는 자동으로 ```DriverManager```에 등록되므로, Class.forName() 호출이 불필요하다.<br>
+즉, 단순히 데이터베이스 연결 코드만 작성하면 드라이버가 자동으로 드한다.
+
+-------------
+### JDBC 드라이버 연결 테스트
+JDBC 드ㅏ이버가 정상적으로 설정되었는지 확인하려면, ```DriverManager.getConnetion()```을 사용하여 데이터베이스에 직접 연결해볼 수 있다.
+```java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class JdbcTest {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/sampledb";
+        String user = "root";
+        String password = "password";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password)) {
+            if (conn != null) {
+                System.out.println("데이터베이스 연결 성공!");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### JDBC 드라이버 설징 시 주의할 점
+**JDBC URL의 올바른 설정**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MySQL:```jdbc:mysql://localhost:3306/sampledb```<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PostgreSQL```: jdbc:postgresql://localhost:5432/sampledb```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Oracle: ```jdbc:oracle:thin:@localhost:1521:xe```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSSQL: ```jdbc:sqlserver://localhost:1433;databaseName=sampledb```
+
+**방화벽 및 포트 확인**<br>
+MySQL 기본포트는 ```3306```, PostgreSQL은 ```5432```, MSSQL은 ```1433``` 이다.
+
+-------------------
+## Java 프로젝트에서 JDBC 사용 준비
+JDBC를 활용하려면 프로젝트에서 필요한 설정을 완료해야 한다. 단순히 JDBC 드라이버를 추가하는것만으로는 충분하지 않으며, 올바른 패키지 구성, 연결 관리 방법, 예외 처리 방식 등을 고려해야 한다.
+
+### 프로젝트 설정 방법
+**Maven 프로젝트에서 설정**<br>
+MySQL 드라이버 추가(pom.xml)
+```java
+<dependencies>
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>8.0.33</version>
+    </dependency>
+</dependencies>
+```
+PostgreSQL 드라이버 추가(pom.xml)
+```java
+<dependencies>
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.5.0</version>
+    </dependency>
+</dependencies>
+```
+### 데이터베이스 연결 정보 구성
+JDBC를 사용하여 데이터베이스에 접근하려면 데이터베이스의 연결 정보를 관리해야 한다. 일반적으로 다음 정보가 필요하다
++ JDBC URL : 데이터베이스에 접근하기 위한 주소
++ 사용자명(username) : 데이터베이스 로그인 계정
++ 비밀번호(password) : 해당 계정의 비밀번호
+
+```java
+jdbc.url=jdbc:mysql://localhost:3306/sampledb
+jdbc.username=root
+jdbc.password=password
+```
+### 프로젝트 구조
+JDBC를 사용하는 Java 프로젝트는 기본적으로 다음과 같은 구조를 가지는 것이 일반적이다.
+```java
+/src
+  /main
+    /java
+      /com/example
+        /config
+          DatabaseConfig.java  <-- 데이터베이스 설정 클래스
+        /dao
+          UserDao.java         <-- 데이터 액세스 객체 (DAO)
+        /model
+          User.java            <-- 엔티티 클래스
+        /service
+          UserService.java     <-- 비즈니스 로직
+    /resources
+      db.properties            <-- DB 연결 정보 저장
+```
+이러한 구조를 가지면 데이터베이스 연결 설정과 실제 데이터 접근 로직을 분리할 수 있어 유지보수가 용이하다.
+
+### 데이터베이스 연결을 위한 설정 클래스 작성
+JDBC를 사용할 때 데이터베이스 연결 설정을 별도의 클래스로 분리하면 코드의 재사용성과 유지보수성이 향상된다.
+```java
+package com.example.config;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
+
+public class DatabaseConfig {
+    private static final String PROPERTIES_FILE = "src/main/resources/db.properties";
+
+    public static Connection getConnection() throws SQLException, IOException {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(PROPERTIES_FILE));
+
+        String url = properties.getProperty("jdbc.url");
+        String user = properties.getProperty("jdbc.username");
+        String password = properties.getProperty("jdbc.password");
+
+        return DriverManager.getConnection(url, user, password);
+    }
+}
+```
+
+### 데이터 액세스 개체 (DAO) 패턴 적용
+JDBC를 사용할 때 직접 SQL을 실행하는 대신, 데이터베이스 접근을 담당하는 DAO(Date Access Object)패턴을 적용하면 코드가 더 쳬게적으로 관리될 수 있다.
+```java
+package com.example.dao;
+
+import com.example.config.DatabaseConfig;
+import com.example.model.User;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class UserDao {
+    private static final String SELECT_USER_BY_ID = "SELECT id, name, email FROM users WHERE id = ?";
+
+    public User getUserById(int id) {
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SELECT_USER_BY_ID)) {
+
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return new User(rs.getInt("id"), rs.getString("name"), rs.getString("email"));
+            }
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+}
+```
+
+### JDBC 예외 처리 전략
+JDBC를 사용할 때 발생할 수 있는 대표적인 예외들은 다음과 같다.
++ ClassNotFoundException : JDBC 드라이버가 로드되지 않은 경우 발생
++ SQLException : SQL 실행 중 오류 발생 (잘못된 쿼리,DB 연결 실패 등)
++ IOException : 설정 파일(db.properties)를 읽는 도중 문제가 발생한 경우
+```java
+try {
+    Connection conn = DatabaseConfig.getConnection();
+    System.out.println("DB 연결 성공!");
+} catch (SQLException e) {
+    System.out.println("SQL 오류: " + e.getMessage());
+    e.printStackTrace();
+} catch (IOException e) {
+    System.out.println("설정 파일 로드 실패: " + e.getMessage());
+}
+```
+-------------------
+## 데이터베이스 연결
+JDBC를 이용해 데이터베이스를 연결하려면 ```DriverManager``` 클래스를 사용해야 한다. ```DriverManager```는 데이터베이스와의 연결을 관리하는 역할을 수행하며, 다양한 DBMS와 상호작용할 수 있도록 지원한다.
+
+### DriverManager의 역할
+DriverManager는 JDBC 드라이버를 로드하고, 애플리케이션과 DB 사이의 연결을 설정하는 역할을 한다.
+
+-> JDBC 드라이버 로드<br>
+-> 데이터베이스 연결 생성<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DriverManager.getConnection(String url, String user, String password)를 사용하여 DB와 연결한다.<br>
+-> 연결된 드라이버 관리<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;getConnection()이 호출되면 등록된 JDBC 드라이버 목록을 확인하고, 적절한 드라이버를 선택하여 연결을 수행한다.
+
+### JDBC URL 구성 방식
+JDBC URL은 데이터베이스에 접근하기 위한 문자열로, 특정한 형식을 따른다. 기본 구조는 다음과 같다.
+```java
+jdbc:[DBMS]://[호스트]:[포트]/[데이터베이스명]
+```
+MySQL
+```java
+jdbc:mysql://localhost:3306/sampledb
+```
+PostgreSQL
+```java
+jdbc:postgresql://localhost:5432/sampledb
+```
+Oracle
+```java
+jdbc:oracle:thin:@localhost:1521:xe
+```
