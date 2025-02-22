@@ -125,3 +125,18 @@ emf.close();
 
 **학습 곡선**<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ORM의 개념과 동작 방식을 이해해야 하므로, SQL을 직접 사용하는 것보다 학습 비용이 높을 수 있다.
+
+-----------
+## ORM을 사용할 때 고려할 점
+**데이터 조회 성능**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 대량 데이터를 조회할 때는 ```Lazy Loading(지연 로딩), ```Fetch join```등의 기법을 활용하여 성능 최적화를 해야 한다.
+
+**트랜잭션 관리**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ORM은 내부적으로 트랜잭션을 관리하기 때문에, 개발자는 이를 잘 이해하고 ```@Transactional```등을 적절히 활용해야 한다.
+
+**필요에 따라 SQL을 직접 사용**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;복잡한 보고서 조회나 다량의 데이터 업데이트가 필요한 경우, ORM보다는 JPQL 또는 Native Query를 활용하는 것이 더 효율적일 수 있다.
+
+--------------------
+## 주요 ORM 프레임 워크
+객체-관계 매핑(ORM)은 데이터베이스와 
