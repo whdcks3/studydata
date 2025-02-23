@@ -139,4 +139,10 @@ emf.close();
 
 --------------------
 ## 주요 ORM 프레임 워크
-객체-관계 매핑(ORM)은 데이터베이스와 
+객체-관계 매핑(ORM)은 데이터베이스와 객체 지향 프로그래밍 간의 불일치를 해결하기 위한 기술이다. 이를 구현하는 대표적인 프레임워크는 **JPA(Java Persistence API),Hibernate, MyBatis**가 있으며, 각각의 특징과 차이점을 이해하는것이 좋다.
+
+## JPA(Java Persistence API)
+JPA(Java Persistence API)는 자바의 공식 ORM 표준 명세로, 객체와 관계형 데이터베이스를 연결하는 공통 API를 제공한다. JPA 자체는 구현체가 아니며, 개발자는 JPA를 지원하는 구현체(ex:Hibernate,EclipseLink,OpenJPA 등)을 선택하여 사용할 수 있다.)
+
+**JPA의 핵심 역할**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
