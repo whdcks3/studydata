@@ -312,3 +312,36 @@ JPA는 객체와 관계형 데이터베이스 간의 매핑을 자동화하고, 
 
 ------------
 ### JPA를 이용한 기본적인 데이터 저장 예제
+```java
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    protected User() {}
+
+    public User(String name) {
+        this.name = name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+```
