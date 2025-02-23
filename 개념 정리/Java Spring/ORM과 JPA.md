@@ -145,4 +145,170 @@ emf.close();
 JPA(Java Persistence API)는 자바의 공식 ORM 표준 명세로, 객체와 관계형 데이터베이스를 연결하는 공통 API를 제공한다. JPA 자체는 구현체가 아니며, 개발자는 JPA를 지원하는 구현체(ex:Hibernate,EclipseLink,OpenJPA 등)을 선택하여 사용할 수 있다.)
 
 **JPA의 핵심 역할**<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;엔티티(Entity)와 데이터베이스 테이블을 매핑한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;객체 기반으로, 데이터 조작을 수행하도록 지원한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;영속성 컨텍스트(Persistence Context)를 관리하여 데이터의 상태를 유지한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;트랜잭션 및 데이터 변경을 자동으로 관리한다.<br>
+
+**JPA의 주요 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;표준 인터페이스 : 특정 벤더(Hibernate,EclipseLinke 등)에 종속되지 않음<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SQL 작성이 불필요 : 객체를 이용한 데이터 조작 가능<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPQL(Java Persistence Query Language) 제공 : 객체 기반의 쿼리 작성<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;캐싱과 최적화 기능 제공
+
+```java
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    protected User() {}
+
+    public User(String name) {
+        this.name = name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+```
+위 코드는 User 클래스를 users테이블과 매핑하는 JPA 엔티티이다. @Entity는 이 클래스가 JPA 엔티티임을 명시한다.<br>
+JPA 단독으로 사용하기보다는 구현체화 함께 사용해야 하며, 대표적인 구현체 중 하나가 Hibernate이다.
+
+-------------
+### Hibernate
+Hibernate는 JPA의 가장 널리 사용되는 구현체로, 객체와 관계형 데이터베이스를 매핑하는 강력한 기능을 제공한다. JPA 명세를 따르면서도, JPA에서 지원하지 않는 다양한 고급 기능(캐싱, 배치 처리, 지연 로딩 최적화 등)을 포함하고 있다.
+
+**Hibernate의 주요 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPA의 구현체로, JPA API를 사용할 수 있음<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터베이스 독립성을 보장하며, 다양한 데이터베이스를 지원<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1차 캐시 및 2차 캐시를 활용하여 성능 최적화 가능<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;고급 쿼리 기능(HQL, Criteria API) 제공
+
+Hibernate를 사용하면 SQL을 직접 작성하지 않고도 객체 중심으로 데이터 조작이 가능하다.<br>
+예를 들어, User 엔티티를 Hibernate로 저장하는 코드는 다음과 같다
+```java
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("my-persistence-unit");
+EntityManager em = emf.createEntityManager();
+
+em.getTransaction().begin();
+User user = new User("김철수");
+em.persist(user);
+em.getTransaction().commit();
+
+em.close();
+emf.close();
+```
+위 코드에서 persist(user)를 호출하면 Hibernate가 자동으로 INSERT INTO users (name) VALUES ('김철수') SQL을 실행한다.<br>
+Hiberante는 JPA의 기능을 확장하여 제공하므로, JPA를 사용할 때 기본적으로 Hibernate를 함께 활용하는 경우가 많다.
+
+--------------
+### MyBatis
+MyBatis는 JPA 및 Hibernate와는 다르게 SQL 기반의 반(半)ORM 프레임워크다. 즉, 객체와 데이터베이스 간의 매핑을 지원하지만, SQL을 직접 작성하는 방식을 따른다.
+
+**MyBatis의 주요 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SQL을 직접 작성하여 데이터베이스를 제어할 수 있음<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;객체 매핑을 지원하지만, SQL 자동 생성 기능은 없음<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPA나 Hiberante보다 더 정밀한 SQL 제어가 가능<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;복잡한 쿼리를 작성해야 하는 경우 적합
+
+MyBatis는 XML 기반으로 SQL을 정의하고, Java 코드에서 이를 호출하는 방식으로 동작한다.<br>
+예를 들어, User 데이터를 조회하는 MyBatis XML 매핑 파일(UserMapper.xml)은 다음과 같다.
+```java
+<mapper namespace="com.example.mapper.UserMapper">
+    <select id="findById" parameterType="long" resultType="com.example.model.User">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+</mapper>
+```
+그리고 이를 Java 코드에서 호출할 때는 다음과 같이 사용한다.
+```java
+public interface UserMapper {
+    User findById(@Param("id") Long id);
+}
+```
+MyBastis는 SQL를 직접 관리하기 때문에, 복잡한 SQL이 필요한 경우에는 유용하지만, 객체 중심의 프로그래밍과는 거리가 있다.
+
+### ORM 프레임워크 비교
+|특징|JPA|Hibernate|MyBatis|
+|:---|:---|:---|:---|
+|SQL 자동 생성|O|O|X|
+|데이터베이스 독립성|O|O|X|
+|객체 매핑|O|O|X|
+|SQL 직접제어|X|X|O|
+|캐싱 기능|O|O(확장 기능 포함)|X|
+|학습 난이도|높음|높음|중간|
+|복잡한 쿼리 작성|어려움|어려움|쉬움|
+
+JPA는 표준 ORM API이며, 특정 구현체(Hibernate, EclipseLink 등)을 사용해야 한다.<br>
+Hibernate는 JPA의 구현체로, JPA보다 확장된 기능을 제공한다.<br>
+MyBatis는 SQL을 직접 작성해야 하지만, 세밀한 쿼리 제어가 가능하다.
+
+-------------
+#### 어떤 ORM을 선택해야 할까?
+**JPA + Hibernate 조합**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;객체 중심의 프로그래밍을 선호한다면 JPA + Hibernate 조합이 적합하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SQL을 직접 작성할 필요 없이, 비즈니스 로직에 집중할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;그러나 복잡한 쿼리를 다룰 때는 최적화가 필요하다.
+
+**MyBatis**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터베이스에 대한 제어권이 중요하다면 MyBatis가 적합하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;복잡한 SQL을 직접 작성해야 하지만, 성능 최적화와 세밀한 데이터 처리가 가능하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;그러나 객체 중심의 개발보다는 SQL 중심의 개발이 필요하다.
+
+-----------------------
+## JPA의 개념
+JPA(Java Persistence API)는 자바 애플리케이션에서 **객체와 관계형 데이터베이스(RDBMS)** 간의 데이터를 쉽게 매핑하고 조작할 수 있도록 설계된 ORM 표준 명세이다.<br>
+기존의 JDBC를 직접 활용하여 SQL을 작성하고 데이터를 조작하는 방식과 달리, JPA는 **객체 중심의 프로그래밍 방식**을 유지하면서도 데이터 저장소와의 매핑을 효율적으로 수행한다.
+
+JPA는 Java EE(Enterprise Edition)의 일부로 등장하였으며, 현재는 **Jakarta EE**의 일부로 포함되어 있다.<br>
+하지만 JPA자체는 구현체가 아닌 API이므로, 실제로 API를 사용하려면 Hibernate, EclipseLink, OpenJPA 등의 구현체를 사용해야 한다.
+
+--------------
+## JPA의 핵심 개념
+**엔티티(Entity) 매핑** : 자바 클래스와 데이터베이스 테이블을 매핑하는 방식<br>
+**영속성 컨텍스트(Persistence Context)** : 엔티티 객체의 생명주기를 관리하는 개념<br>
+**JPQL(Java Persistence Query Language)** : SQL과 유사하지만 객체를 대상으로 하는 쿼리 언어<br>
+**트랜잭션 관리** : 데이터 변경 사항을 안전하게 처리하는 기능<br>
+
+--------------------
+## JPA의 주요 기능
+JPA는 객체와 관계형 데이터베이스 간의 매핑을 자동화하고, 데이터 조작을 효율적으로 수행할 수 있도록 다음과 같은 기능을 제공한다.
+
+**엔티티(Entity)와 테이블 매핑**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@Entity```애노테이션을 사용하여 자바 클래스를 데이터과 연결할 수 잇다.
+
+**데이터 저장(Persist)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```EntityManager.persist()```를 이용해 객체를 데이터베이스에 저장한다.
+
+**데이터 조회(Find)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```EntityManager.find()```를 이용해 데이터베이스에석 객체를 조회한다.
+
+**데이터 수정(Update)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPA는 변경 감지(Dirty Checking)기능을 통해 ```persist()```없이도 자동으로 변경 사항을 반영한다.
+
+**데이터 삭제(Delete)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```EntityManager.remove()```를 호출하여 데이터를 삭제할 수 있다.
+
+**JPQL(Java Persistence Query Language)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;객체를 대상으로 하는 쿼리를 작성하여 데이터베이스에서 원하는 정보를 조회할 수 있다.
+
+------------
+### JPA를 이용한 기본적인 데이터 저장 예제
