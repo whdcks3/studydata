@@ -404,5 +404,133 @@ JPA를 활용하면 개발자는 직접 SQL을 사용하지 않고도 객체를 
 
 -------------
 ### 엔티티(Entity) 매핑
+JPA의 가장 기본적인 기능은 객체와 데이터베이스 테이블을 매핑(Mapping)하는 기능이다. 엔티티(Entity)는 JPA에서 데이터베이스 테이블과 매핑되는 자바 객체를 의미한다.<br>
+-> 엔티티를 선언하기 위해 ```@Entity```애노테이션을 사용하며, 이를 통해 JPA가 해당 클래스를 데이터베이스를 연결할 수 있도록 한다.
+-> 테이블 이름을 명시적으로 지정하려면 ```@Table(name = "테이블명")``` 애노테이션을 추가할 수 있다.
 
+예제
+```java
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    protected User() {}
+
+    public User(String name) {
+        this.name = name;
+    }
+
+    // Getter 및 Setter
+}
+```
+----------
+### 영속성 컨텍스트(Persistence Context)
+JPA에서 가장 중요한 개념 중 하나가 영속성 컨텍스트(Persistence Context)이다.<br>
+영속성 컨텍스트는 **엔티티 객체의 상태를 관리하는 공간**으로, 엔티티 객체가 생성되거나 조회될 때 이를 캐싱하여 데이터베이스와의 불필요한 상호작용을 줄인다.
+-> JPA에서 데이터를 조회하면, 동일한 트랜잭션 내에서는 같은 엔티티 객체를 재사용할 수 있다.
+-> 데이터 변경이 발생하면, JPA는 이를 자동으로 감지(Dirty Checking)하여 변경된 데이터만 반영한다.
+
+예제
+```java
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("my-persistence-unit");
+EntityManager em = emf.createEntityManager();
+
+em.getTransaction().begin();
+User user1 = em.find(User.class, 1L);  // 데이터 조회
+User user2 = em.find(User.class, 1L);  // 같은 트랜잭션 내에서 동일한 객체 반환
+em.getTransaction().commit();
+
+em.close();
+emf.close();
+```
 -------------------
+### 트랜잭션(Transaction) 관리
+JPA는 트랜잭션을 기반으로 데이터의 일관성을 유지한다.<br>
+트랜잭션을 사용하면 여러 개의 데이터 조작 작업을 하나의 논리적인 작업 단위로 묶어서 실행할 수 있으며, 이를 통해 데이터 정합성을 보장할 수 있다.
+
+JPA의 트랜잭션은 ```EntityManager.getTransaction().begin()```을 통해 명시적으로 시작되며, ```commit()```를 호출해야 변경 사항이 반영된다.
+
+예제
+```java
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("my-persistence-unit");
+EntityManager em = emf.createEntityManager();
+
+em.getTransaction().begin();  // 트랜잭션 시작
+User user = new User("홍길동");
+em.persist(user);  // 엔티티 저장
+em.getTransaction().commit();  // 트랜잭션 커밋
+
+em.close();
+emf.close();
+```
+```persist(user)```를 호출했을 때 바로 데이터베이스에 INSERT 쿼리가 실행되지 않는다.
+트랜잭션이 ```commit()```되었을 때 JPA가 변경 내용을 감지하고 실제로 데이터베이스에 반영한다.
+
+-----------------
+### JPQL(Java Persistence Query Language)
+JPA는 SQL과 유사한 JPQL을 제공한다.<br>
+JPQL은 객체(Entity)를 대상으로 하는 쿼리 언어로, SQL과 달리 테이블이 아니라 엔티티 객체를 대상으로 동작한다.
+
+예제
+```java
+TypedQuery<User> query = em.createQuery("SELECT u FROM User u WHERE u.name = :name", User.class);
+query.setParameter("name", "홍길동");
+List<User> users = query.getResultList();
+```
+코드에서 "SELECT u FROM User u WHERE u.name = :name" 쿼리는 users 테이블이 아니라 User 엔티티를 대상으로 동작한다.
+
+ ---------------------------
+ ## 엔티티와 테이블 매핑
+ JPA를 사용하기 위해서는 엔티티 개념을 정확히 이해하고 이를 데이터베이스 테이블과 매핑하는 과정이 필수적이다.<br>
+JPA는 엔티티를 이용하여 객체와 테이블을 연결하며, 이를 통해 객체지향적인 방식으로 데이터를 다룰 수 있도록 지원한다.
+
+### 엔티티(Entity)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;엔티티(Entity)란 데이터베이스의 테이블과 매핑되는 객체를 의미한다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPA에서는 엔티티를 정의할 때 @Entity 애노테이션을 사용해야 한다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;객체지향 프로그래밍 방식을 유지하면서도 데이터베이스의 테이블과 쉽게 연동할 수 있도록 도와준다.
+```java
+import jakarta.persistence.*;
+
+@Entity  // 이 클래스를 엔티티로 선언
+@Table(name = "users")  // 매핑할 테이블 지정
+public class User {
+
+    @Id  // 기본 키(PK) 지정
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // 자동 증가 전략
+    private Long id;
+
+    @Column(nullable = false, length = 100)  // name 필드를 테이블의 name 컬럼과 매핑
+    private String name;
+
+    protected User() {}
+
+    public User(String name) {
+        this.name = name;
+    }
+
+    // Getter 및 Setter 생략
+}
+```
+### @Entity 애노테이션
+```@Entity```애노테이션은 JPA가 해당 클래스를 엔티티로 인식할 수 있도록 설정하는 필수적인 애노테이션이다.
+-> @Entity가 선언된 클래스는 **반드시 기본 생성자가 있어야 한다**(protected 또는 public 생성자)
+-> @Entity가 선언된 클래스는 반드시 기본 키(@Id)를 가져야 한다.
+```java
+@Entity
+public class Product {
+    @Id
+    private Long id;
+}
+```
+만약 @Entity를 선언한 클래스에 기본 키를 지정하지 않으면, JPA 실행 시 오류가 발생한다.
+
+### @Table 애노테이션
