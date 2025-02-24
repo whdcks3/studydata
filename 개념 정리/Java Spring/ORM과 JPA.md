@@ -345,3 +345,64 @@ public class User {
     }
 }
 ```
+
+```EntityManager```를 사용해서 저장하는 것도 보자
+```java
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("my-persistence-unit");
+EntityManager em = emf.createEntityManager();
+
+em.getTransaction().begin(); // 트랜잭션 시작
+User user = new User("김철수");
+em.persist(user); // 데이터 저장
+em.getTransaction().commit(); // 트랜잭션 커밋
+
+em.close();
+emf.close();
+```
+--------------
+### JPA의 장점
++ SQL을 직접 작성하지 않아도 되므로 생산성이 향상된다.
++ 데이터베이스 변경 시 애플리케이션 코드의 수정이 최소화된다.
++ 트랜잭션과 변경 감지를 자동으로 처리하여 데이터 일관성 유지가 용이하다.
++ 객체 중심의 개발이 가능하므로 비즈니스 로직에 집중할 수 있다.
+
+### JPA의 단점
++ SQL에 익숙한 개발자에게는 학습 곡선이 높을 수 있다.
++ 복잡한 쿼리를 작성할 때는 JPQL이 SQL보다 어려울 수 있다.
++ 대규모 트랜잭션에서는 성능 최적화를 고려해야 한다.
++ 데이터베이스에 따라 최적화가 필요할 수 있다.
+
+--------------
+## JPA와 Hibernate의 관계
+JPA는 객체와 관계형 데이터베이스(RDBMS)를 연결하는 Java의 표준 API며, Hibernate는 JPA의 대표적인 구현체(Implementation)이다.<br>
+JPA 자체는 데이터베이스와 직접 연결되지 않으며, 이를 사용하려면 반드시 구현체가 필요하다. Hibernate는 JPA의 구현체 중 가장 널리 사용되는 프레임워크로, JPA가 제공하는 인터페이스를 실제로 동작하도록 구현한다.
+
+### JPA와 Hibernate의 역할 구분
+**JPA(Java Persistence API)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자바 애플리케이션에서 ORM을 표준화한 인터페이스 및 명세이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;특정 구현체에 의존하지 않고 **객체와 관계형 데이터베이스를 매핑하는 기능**을 정의한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```javax.persistence``` 혹은 ```jakarta.persistence```패키지 내 인터페이스를 제공한다.
+
+**Hibernate**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPA의 대표적인 구현체로서, **JPA가 제공하는 표준 인터페이스를 실제로 구현**한 프레임워크이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;단순한 JPA 구현체를 넘어, **JPA 표준 외에도 추가적인 성능 최적화 및 확장 기능**을 제공한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```org.hibernate```패키지를 사용하여, JPA 명세를 기반으로 동작한다.
+
+즉, JPA는 규칙(Interface), Hibernate는 실제 구현(Implementation) 이라고 이해하면 된다.
+
+### JPA와 Hibernate의 관계 정리
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; JPA는 ORM을 위한 표준 명세이고, Hibernate는 이를 구현한 프레임워크이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPA는 EntityManager를 사용하여 데이터 저장, 조회, 삭제 등의 기능을 제공한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hibernate는 EntityManager 내부에서 JPA가 정의한 메서드를 실제로 구현하고 SQL을 실행한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPA를 사용하면 특정 구현체(Hibernate, EclipseLink 등)에 의존하지 않는 개발이 가능하지만, 대부분의 경우 Hibernate가 가장 널리 사용된다.
+
+------------------
+## JPA의 주요 기능
+JPA는 Java 애플리케이션에서 객체를 관계형 데이터베이스에 저정하고 관리하는 데 필요한 다양한 기능을 제공한다. JPA가 제공하는 핵심기능들은 엔티티 매핑, 영속성 컨텍스트, 트랜잭션 처리, JPQL(Java Persistence Query Lanugage)등으로 나눌 수 있다.
+
+JPA를 활용하면 개발자는 직접 SQL을 사용하지 않고도 객체를 데이터베이스에 저장, 조회, 수정, 삭제할 수 있으며, 트랜잭션을 통해 데이터의 일관성을 보장할 수 있다.
+
+-------------
+### 엔티티(Entity) 매핑
+
+-------------------
