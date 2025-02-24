@@ -534,3 +534,17 @@ public class Product {
 만약 @Entity를 선언한 클래스에 기본 키를 지정하지 않으면, JPA 실행 시 오류가 발생한다.
 
 ### @Table 애노테이션
+기본적으로 엔티티의 클래스명은 데이터베이스 테이블명과 자동으로 매핑된다.<br>
+하지만 테이블명이 다를 경우 ```@Table(name = "테이블명")``` 애노테이션을 사용하여 지정할 수 있다.
+```java
+@Entity
+@Table(name = "products")
+public class Product {
+    @Id
+    private Long id;
+}
+```
+위 코드는 Product 클래스가 products라는 테이블과 매핑되도록 설정한 것이다.
+만약 @Table 애노테이션을 사용하지 않으면, JPA는 클래스 이름을 그대로 테이블명으로 사용한다.
+
+### @Id와 기본 키 매핑
