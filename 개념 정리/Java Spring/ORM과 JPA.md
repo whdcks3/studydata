@@ -1262,5 +1262,1030 @@ List<Member> members = query.getResultList();
 
 -----------------
 ## Spring Boot에서 JPA 설정
-Spring Boot에서 JPA를 사용하려면 데이터베이스 설정과 JPA 관련 설정을 해야 한다.
+Spring Boot에서 JPA를 사용하려면 데이터베이스 설정과 JPA 관련 설정을 해야 한다.<br>
 Spring Boot는 기본적으로 Spring Data JPA를 포함하고 있으며, 설정을 최소화한 상태에서도 JPA를 손쉽게 사용할 수 있도록 돕는다.
+
+### Spring Boot에서 JPA를 설정하는 과정
+**Spring Boot 프로젝트 생성**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring Initializr(https://start.spring.io/)를 사용하여 프로젝트를 생성한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring Data JPA와 MySQL Driver 또는 H2 Database 의존성을 추가한다.<br>
+
+**데이터베이스 설정**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;application.properties 또는 application.yml 파일에서 데이터베이스 정보를 설정한다.
+
+**JPA 설정 및 동작 방식 확인**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;spring.jpa 속성을 설정하여 자동으로 테이블을 생성하고 관리할 수 있도록 한다.
+
+---------------
+### Spring Boot 프로젝트 생성 및 JPA 의존성 추가
+Spring Boot 프로젝트에서 JPA를 사용하려면 Spring Data JPA를 포함해야 한다.
+다음과 같이 pom.xml에 Spring Data JPA와 데이터베이스 드라이버를 추가할 수 있다.
+
+```java
+<dependencies>
+    <!-- Spring Boot JPA -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- H2 Database (테스트용 내장 DB) -->
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+
+    <!-- MySQL Driver (MySQL 사용 시) -->
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+</dependencies>
+```
+```spring-boot-starter-data-jpa``` : JPA 관련 기능을 제공하는 기본 라이브러리.<br>
+```h2``` : 테스트 환경에서 사용할 수 있는 내장형 데이터베이스.<br>
+```mysql-connector-java``` : MySQL을 사용하는 경우 필요한 드라이버.
+
+------------
+### application.properties 설정 예시
+Spring Boot는 ```application.properties``` 또는 ```application.yml``` 파일에서 데이터베이스와 JPA 설정을 관리한다.
+
+MySQL을 사용하는 경우
+```java
+# 데이터베이스 연결 정보
+spring.datasource.url=jdbc:mysql://localhost:3306/mydb?serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=1234
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA 설정
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+```
+```spring.datasource.url``` : 데이터베이스 연결 URL <br>
+```spring.datasource.username``` : DB 접속 계정 <br>
+```spring.datasource.password``` : DB 접속 비밀번호<br>
+```spring.jpa.database-platform``` : 사용하는 데이터베이스의 방언(Dialect) 설정 <br>
+```spring.jpa.hibernate.ddl-auto```:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;create : 실행 시 기존 테이블 삭제 후 새로 생성<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;update : 변경된 부분만 적용<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;validate : 기존 테이블과 매핑을 검증만 수행<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;none : Hibernate가 테이블을 관리하지 않음
+```spring.jpa.show-sql=true``` : 실행되는 SQL을 콘솔에서 확인할 수 있음 <br>
+```spring.jpa.properties.hibernate.format_sql=true``` : SQL을 보기 좋게 출력
+
+### application.yml 설정 예시
+application.yml 파일을 사용할 수도 있다.
+
+```java
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/mydb?serverTimezone=UTC
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+```
+application.properties와 동일한 내용을 YAML 형식으로 설정할 수 있다.
+
+---------------
+### H2 데이터베이스를 사용하는 경우
+테스트 환경에서는 MySQL 대신 H2 Database를 사용할 수 있다.<br>
+H2는 인메모리 데이터베이스로, 별도의 설치 없이 테스트할 수 있다.
+
+```java
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+```
+```jdbc:h2:mem:testdb``` : 메모리에서 동작하는 H2 데이터베이스 사용<br>
+```org.h2.Driver``` : H2 드라이버 설정<br>
+```sa``` 계정을 사용하며, 비밀번호는 기본적으로 없음<br>
+
+H2 데이터베이스는 브라우저에서 웹 콘솔을 제공하여 쿼리를 직접 실행할 수 있다.
+```java
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+```
+위 설정을 추가하면 ```http://localhost:8080/h2-console```에서 H2 웹 콘솔을 사용할 수 있다.
+
+---------------
+### JPA 설정이 적용된 상태에서 실행 확인
+위 설정을 완료한 후, Spring Boot 애플리케이션을 실행하면 다음과 같은 메시지를 확인할 수 있다.
+```java
+Hibernate: create table member (id bigint not null auto_increment, name varchar(255), primary key (id))
+```
+```show-sql=true``` 설정 덕분에 Hibernate가 실행한 SQL이 콘솔에 출력된다.<br>
+```ddl-auto=update``` 덕분에 Member 엔티티가 테이블로 자동 생성된다.
+
+---------
+### JPA 설정 검증을 위한 엔티티 클래스 작성
+Spring Boot에서 JPA 설정이 정상적으로 동작하는지 확인하기 위해 간단한 엔티티 클래스를 만들어보자.
+```java
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "member")
+public class Member {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    public Member() {}
+
+    public Member(String name) {
+        this.name = name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+```
+@Entity : JPA에서 관리할 엔티티 클래스임을 선언<br>
+@Table(name = "member") : 테이블명을 member로 설정<br>
+@Id : 기본 키(PK) 설정<br>
+@GeneratedValue(strategy = GenerationType.IDENTITY) : 자동 증가(AUTO_INCREMENT) 사용
+
+-----------------
+### Repository 인터페이스 작성
+JPA에서는 JpaRepository를 이용해 데이터 접근을 간편하게 처리할 수 있다.
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MemberRepository extends JpaRepository<Member, Long> {
+}
+```
+```JpaRepository<Member, Long>``` : Member 엔티티의 기본적인 CRUD 기능을 제공하는 Repository<br>
+```@Repository``` 애노테이션이 필요 없으며, Spring Boot가 자동으로 빈(Bean)으로 등록해준다.
+
+---------------
+### Spring Boot 애플리케이션 실행 후 데이터 저장 확인
+Spring Boot 애플리케이션을 실행하고, 테스트 데이터를 저장하는 코드를 작성하면 데이터가 정상적으로 저장되는지 확인할 수 있다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+@Component
+public class MemberInitializer implements CommandLineRunner {
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Override
+    public void run(String... args) throws Exception {
+        Member member = new Member("홍길동");
+        memberRepository.save(member);
+        System.out.println("회원 저장 완료: " + member.getName());
+    }
+}
+```
+애플리케이션 실행 시 CommandLineRunner를 이용해 데이터를 삽입한다.<br>
+memberRepository.save(member); 를 통해 새로운 회원을 저장할 수 있다.
+
+------------------
+## Spring Data JPA 개요
+Spring Data JPA는 JPA를 보다 쉽고 효율적으로 사용할 수 있도록 도와주는 Spring의 하위 프로젝트다.<br>
+기존 JPA에서 ```EntityManager```를 사용하여 데이터를 관리하던 방식과 달리,<br>
+Spring Data JPA는 **Repository 패턴을 제공하여 간단한 인터페이스 선언만으로도 데이터 조작**이 가능하다.
+
+Spring Data JPA의 핵심 목표는 반복적인 데이터 접근 코드의 제거와 개발 생산성 향상이다.
+
+-------
+### Spring Data JPA의 특징
+**JPA 사용을 위한 인터페이스 기반의 Repository 제공**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;개발자가 직접 SQL을 작성하지 않아도 된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인터페이스를 선언하는 것만으로 기본적인 CRUD 기능이 자동으로 제공된다.
+
+**Query Method 기능 지원**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;메서드 이름을 기반으로 자동으로 쿼리를 생성할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;findByName(String name)과 같이 findBy 키워드를 사용하면 WHERE name = ? 같은 쿼리가 자동으로 만들어진다.
+
+**JPQL 및 Native Query 지원**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;복잡한 쿼리가 필요할 경우 @Query 애노테이션을 사용하여 직접 JPQL 또는 Native Query를 작성할 수 있다.
+
+**페이징 및 정렬 기능 지원**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;대량의 데이터를 조회할 때 유용한 Pageable과 Sort 인터페이스를 제공하여 쉽게 페이징과 정렬을 할 수 있다.
+
+-------------
+### Spring Data JPA의 핵심 인터페이스
+Spring Data JPA에서 제공하는 주요 인터페이스는 다음과 같다.
+
+```CrudRepository<T, ID>```<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;기본적인 CRUD(Create, Read, Update, Delete) 기능을 제공하는 인터페이스<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;모든 JPA Repository의 기반이 된다.
+
+```PagingAndSortingRepository<T, ID>```<br>
+CrudRepository를 확장하여 추가적인 페이징과 정렬 기능을 제공하는 인터페이스.<br>
+
+```JpaRepository<T, ID>```<br>
+CrudRepository와 PagingAndSortingRepository를 모두 포함한 인터페이스<br>
+가장 많이 사용되는 인터페이스로, 기본적인 CRUD 기능과 페이징 및 정렬 기능을 모두 제공한다.
+
+-------------
+### Spring Data JPA의 Repository 사용 예시
+Spring Data JPA를 사용하여 Member 엔티티의 데이터를 관리하는 Repository를 구현해보자.
+
+**1. Member 엔티티 클래스**<br>
+먼저, JPA를 활용하여 Member 엔티티를 정의한다.
+```java
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "member")
+public class Member {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private int age;
+
+    public Member() {}
+
+    public Member(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+}
+```
+@Entity : JPA에서 관리할 엔티티임을 선언<br>
+@Table(name = "member") : 데이터베이스에서 member 테이블과 매핑됨<br>
+@Id : 기본 키 설정<br>
+@GeneratedValue(strategy = GenerationType.IDENTITY) : AUTO_INCREMENT 방식으로 기본 키를 자동 생성
+
+----------------
+**2. 기본적인 CRUD Repository 구현**<br>
+Spring Data JPA를 활용하면, 단순한 인터페이스 선언만으로 CRUD 기능을 자동으로 제공받을 수 있다.
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MemberRepository extends JpaRepository<Member, Long> {
+}
+```
+JpaRepository<Member, Long> : Member 엔티티의 기본적인 CRUD 기능 제공<br>
+별도의 구현 없이, save(), findById(), findAll(), deleteById() 등의 기능을 자동으로 사용할 수 있다.
+
+--------------
+**3. Query Method 사용**<br>
+Spring Data JPA에서는 메서드 이름만으로 자동으로 SQL을 생성할 수 있다.
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface MemberRepository extends JpaRepository<Member, Long> {
+    List<Member> findByName(String name);
+    List<Member> findByAgeGreaterThan(int age);
+    List<Member> findByNameContaining(String keyword);
+}
+```
+```findByName(String name)```<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT * FROM member WHERE name = ?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name이 특정 값과 일치하는 데이터를 찾음.
+
+```findByAgeGreaterThan(int age)```<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT * FROM member WHERE age > ? <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;특정 나이보다 많은 회원을 조회.
+
+```findByNameContaining(String keyword)```<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SELECT * FROM member WHERE name LIKE %?%<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;특정 키워드를 포함하는 이름을 가진 회원 검색.
+
+------------
+**4. @Query 애노테이션 사용**<br>
+Spring Data JPA에서는 직접 JPQL을 작성할 수도 있다.
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.util.List;
+
+public interface MemberRepository extends JpaRepository<Member, Long> {
+
+    @Query("SELECT m FROM Member m WHERE m.age >= :age")
+    List<Member> findMembersOlderThan(@Param("age") int age);
+
+    @Query(value = "SELECT * FROM member WHERE age >= :age", nativeQuery = true)
+    List<Member> findMembersOlderThanNative(@Param("age") int age);
+}
+```
+```@Query("SELECT m FROM Member m WHERE m.age >= :age")```<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPQL을 사용하여 특정 나이 이상의 회원을 조회.
+
+```@Query(value = "SELECT * FROM member WHERE age >= :age", nativeQuery = true)```<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```nativeQuery = true``` 옵션을 사용하여 순수 SQL을 직접 실행.
+
+------------
+### Spring Data JPA의 장점
+**SQL 없이도 데이터 조회 및 조작 가능**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;단순한 인터페이스 선언만으로 기본적인 CRUD 기능 제공.
+
+**자동으로 쿼리 생성 (Query Method 기능)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;메서드 네이밍 규칙을 이용하여 자동으로 SQL을 생성해준다.
+
+**페이징 및 정렬 기능 제공**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pageable과 Sort 인터페이스를 활용하여 손쉽게 페이징 가능.
+
+**JPQL 및 Native Query 지원**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;복잡한 쿼리가 필요할 경우 @Query를 통해 직접 JPQL 또는 SQL을 작성 가능.
+
+**트랜잭션 관리가 용이**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring에서 제공하는 @Transactional과 함께 사용하면 데이터 일관성을 쉽게 유지할 수 있다.
+
+-------------------
+### Repository 계층과 트랜잭션 처리
+Spring Boot에서 JPA를 사용할 때 가장 중요한 부분 중 하나는 Repository 계층과 트랜잭션 처리다.<br>
+Repository 계층은 데이터베이스와 직접적으로 소통하는 역할을 하며,<br>
+트랜잭션 처리는 데이터 일관성을 유지하기 위한 핵심적인 요소다.
+
+### Repository 계층의 역할
+Repository 계층은 비즈니스 로직과 데이터 접근을 분리하는 역할을 한다.<br>
+Spring Boot에서는 JpaRepository 또는 CrudRepository를 활용하여<br>
+별도의 구현 없이 데이터베이스 작업을 수행할 수 있다.
+
+기본적으로 Repository 계층의 역할은 다음과 같다.<br>
++ 데이터 저장, 조회, 수정, 삭제 기능 제공
++ 트랜잭션 내에서 데이터 일관성 유지
++ 비즈니스 로직과 데이터 접근 로직의 분리
++ 페이징 및 정렬 기능 제공
++ SQL 작성 없이 자동으로 CRUD 메서드 제공
+
+--------------------
+### Repository 인터페이스 예제
+JPA의 JpaRepository를 활용하여 기본적인 CRUD 기능을 제공하는 Repository를 구현할 수 있다.
+
+**1. Member 엔티티<br>**
+먼저, Member 엔티티를 생성한다.
+```java
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "member")
+public class Member {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private int age;
+
+    public Member() {}
+
+    public Member(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+}
+```
+@Entity : JPA에서 관리할 엔티티임을 선언<br>
+@Table(name = "member") : 데이터베이스의 member 테이블과 매핑됨<br>
+@Id : 기본 키 설정<br>
+@GeneratedValue(strategy = GenerationType.IDENTITY) : AUTO_INCREMENT 방식으로 기본 키를 자동 생성
+
+-----------------
+**2. MemberRepository 인터페이스**
+Spring Data JPA를 활용하면 Repository 인터페이스를 선언하는 것만으로 기본적인 CRUD 기능을 자동으로 사용할 수 있다.
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MemberRepository extends JpaRepository<Member, Long> {
+}
+```
+```JpaRepository<Member, Long>``` : Member 엔티티의 기본적인 CRUD 기능 제공<br>
+기본적으로 save(), findById(), findAll(), deleteById() 등의 기능을 제공한다.
+
+----------
+## 트랜잭션 처리
+JPA를 사용할 때 트랜잭션(Transaction) 처리는 필수적이다.<br>
+트랜잭션이란 **데이터의 일관성을 유지하기 위해 작업을 하나의 단위로 묶어 처리하는 것**을 의미한다.
+
+Spring Boot에서는 @Transactional 애노테이션을 사용하여 간편하게 트랜잭션을 적용할 수 있다.
+
+**1. @Transactional을 적용한 Service 클래스**<br>
+다음은 MemberService 클래스에서 트랜잭션을 적용한 예제다.
+```java
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    @Transactional
+    public void updateMember(Long id, String newName, int newAge) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        member.setName(newName);
+        member.setAge(newAge);
+    }
+}
+```
+@Service : 비즈니스 로직을 처리하는 서비스 클래스임을 선언<br>
+@Transactional : 메서드 실행 시 트랜잭션이 자동으로 시작되고, 메서드 종료 시 자동으로 커밋 또는 롤백됨<br>
+findById(id) : 특정 ID를 가진 회원을 조회<br>
+orElseThrow() : 해당 회원이 존재하지 않을 경우 예외 발생<br>
+member.setName(newName), member.setAge(newAge) : 회원 정보 수정
+
+----------------
+### 트랜잭션의 주요 개념
+트랜잭션의 원칙 (ACID)
++ 원자성 (Atomicity): 하나의 작업 단위가 모두 완료되거나, 전혀 실행되지 않아야 함.
++ 일관성 (Consistency): 트랜잭션 수행 전후에 데이터가 일관성을 유지해야 함.
++ 격리성 (Isolation): 동시에 실행되는 트랜잭션이 서로 영향을 미치지 않아야 함.
++ 지속성 (Durability): 트랜잭션이 성공적으로 완료되면 그 변경사항이 영구적으로 저장되어야 함.
+
+**Spring에서 트랜잭션 관리 방식**<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Transactional 애노테이션 사용<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AOP 기반 트랜잭션 관리<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;트랜잭션 전파 (Propagation) 설정 가능<br>
+
+-------------------
+### 트랜잭션 전파 옵션
+트랜잭션을 처리할 때 전파(Propagation) 옵션을 설정할 수 있다.<br>
+이 옵션은 이미 실행 중인 트랜잭션이 있을 때, 새로운 트랜잭션을 어떻게 처리할지를 결정한다.
+
+|옵션|설명|
+|:---|:---|
+|REQUIRED|기본값. 기존 트랜잭션이 있으면 참여하고, 없으면 새로운 트랜잭션을 생성|
+|REQUIRES_NEW|기존 트랜잭션을 무시하고 새로운 트랜잭션을 생성|
+|SUPPORTS|트랜잭션이 있으면 참여하고, 없으면 트랜잭션 없이 실행|
+|MANDATORY|기존 트랜잭션이 반드시 있어야 하며, 없으면 예외 발생|
+|NEVER|트랜잭션 없이 실행하며, 기존 트랜잭션이 있으면 예외 발생|
+|NESTED|기존 트랜잭션 내부에서 새로운 트랜잭션을 실행|
+
+------------------
+2. 트랜잭션 전파 예제
+다음은 REQUIRES_NEW 옵션을 설정한 예제다.
+```java
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    @Transactional
+    public void mainTransaction() {
+        saveMember();  // 첫 번째 트랜잭션
+
+        try {
+            saveAnotherMember(); // 새로운 트랜잭션 실행
+        } catch (Exception e) {
+            System.out.println("새로운 트랜잭션에서 예외 발생!");
+        }
+    }
+
+    @Transactional
+    public void saveMember() {
+        Member member = new Member("John", 30);
+        memberRepository.save(member);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveAnotherMember() {
+        Member member = new Member("Jane", 25);
+        memberRepository.save(member);
+
+        throw new RuntimeException("강제 예외 발생");
+    }
+}
+```
+```saveMember()``` : 기존 트랜잭션에서 실행됨<br>
+```saveAnotherMember()``` : Propagation.REQUIRES_NEW로 설정하여 새로운 트랜잭션에서 실행<br>
+```RuntimeException``` 발생 시, ```saveAnotherMember()```의 트랜잭션만 롤백되고 ```saveMember()```는 정상적으로 커밋됨
+
+---------------
+## JPA의 데이터베이스 작업
+### CRUD(Create, Read, Update, Delete) 구현
+JPA를 사용하면 기본적인 CRUD(Create, Read, Update, Delete) 작업을 손쉽게 수행할 수 있다.<br>
+Spring Data JPA는 JpaRepository를 통해 이러한 기능을 자동으로 제공하며,<br>
+특별한 설정 없이도 데이터베이스 작업을 수행할 수 있도록 돕는다.
+
+### JPA에서 제공하는 기본적인 CRUD 메서드
+Spring Data JPA의 JpaRepository 인터페이스에는 기본적인 CRUD 메서드가 포함되어 있다.
+
+|메서드|설명|
+|:---|:---|
+|save(T entity)|엔티티 저장 및 수정|
+|findById(ID id)|특정 ID의 엔티티 조회|
+|findAll()|모든 엔티티 조회|
+|delete(T entity)|특정 엔티티 삭제|
+|deleteById(ID id)|특정 ID의 엔티티 삭제|
+|count()|전체 데이터개수 반환|
+|existsById(ID id)|특정 ID의 데이터 존재 여부 확인|
+
+-----------
+### Member 엔티티 클래스
+CRUD 연산을 수행할 Member 엔티티를 먼저 정의한다.
+```java
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "member")
+public class Member {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private int age;
+
+    public Member() {}
+
+    public Member(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+```
+@Entity : JPA에서 관리하는 엔티티임을 선언<br>
+@Table(name = "member") : 데이터베이스의 member 테이블과 매핑됨<br>
+@Id : 기본 키 설정<br>
+@GeneratedValue(strategy = GenerationType.IDENTITY) : AUTO_INCREMENT 방식으로 기본 키를 자동 생성<br>
+
+--------------
+### MemberRepository 인터페이스
+Spring Data JPA의 JpaRepository를 사용하여 Member 엔티티의 기본적인 CRUD 기능을 제공한다.
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MemberRepository extends JpaRepository<Member, Long> {
+}
+```
+```JpaRepository<Member, Long>```을 상속하면 기본적인 CRUD 기능을 자동으로 사용할 수 있다.
+
+-----------------
+### 1. 데이터 저장 (Create)
+데이터를 저장할 때는 save() 메서드를 사용한다.
+```java
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    @Transactional
+    public void saveMember(String name, int age) {
+        Member member = new Member(name, age);
+        memberRepository.save(member);
+    }
+}
+```
+save() 메서드는 새로운 데이터를 추가하거나, 기존 데이터가 존재할 경우 업데이트를 수행한다.
+
+---------------
+### 2. 데이터 조회 (Read)
+데이터를 조회할 때는 findById() 또는 findAll() 메서드를 사용한다.
+```java
+import java.util.List;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    public Member getMemberById(Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+    }
+
+    public List<Member> getAllMembers() {
+        return memberRepository.findAll();
+    }
+}
+```
+findById(id) : 특정 ID를 가진 데이터를 조회한다. 데이터가 존재하지 않으면 Optional.empty()를 반환하므로, 예외 처리를 해야 한다.<br>
+findAll() : 모든 데이터를 리스트로 반환한다.
+
+----------
+### 3. 데이터 수정 (Update)
+데이터를 수정할 때는 먼저 조회한 후, 엔티티 값을 변경하면 된다.
+```java
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    @Transactional
+    public void updateMember(Long id, String newName, int newAge) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        member.setName(newName);
+        member.setAge(newAge);
+    }
+}
+```
+findById(id)를 이용해 기존 데이터를 조회한 후, setName(), setAge()를 호출하여 값을 변경하면 자동으로 변경이 감지되어 업데이트된다.<br>
+JPA는 Dirty Checking(더티 체킹) 기능을 제공하여 @Transactional이 적용된 상태에서 별도로 save()를 호출하지 않아도 자동으로 변경사항이 반영된다.
+
+----------------
+### 4. 데이터 삭제 (Delete)
+데이터를 삭제할 때는 deleteById() 또는 delete() 메서드를 사용할 수 있다.
+```java
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    @Transactional
+    public void deleteMember(Long id) {
+        if (!memberRepository.existsById(id)) {
+            throw new IllegalArgumentException("Member not found");
+        }
+        memberRepository.deleteById(id);
+    }
+}
+```
+deleteById(id) : 특정 ID를 가진 데이터를 삭제<br>
+existsById(id) : 데이터가 존재하는지 확인 후, 존재하지 않으면 예외 발생
+
+------------
+### CRUD 메서드 활용 예제
+CRUD 기능을 수행하는 MemberService를 컨트롤러에서 호출하면,<br>
+REST API를 통해 쉽게 데이터 조작이 가능하다.
+```java
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/members")
+public class MemberController {
+
+    private final MemberService memberService;
+
+    public MemberController(MemberService memberService) {
+        this.memberService = memberService;
+    }
+
+    @PostMapping
+    public String createMember(@RequestParam String name, @RequestParam int age) {
+        memberService.saveMember(name, age);
+        return "Member created successfully";
+    }
+
+    @GetMapping("/{id}")
+    public Member getMember(@PathVariable Long id) {
+        return memberService.getMemberById(id);
+    }
+
+    @GetMapping
+    public List<Member> getAllMembers() {
+        return memberService.getAllMembers();
+    }
+
+    @PutMapping("/{id}")
+    public String updateMember(@PathVariable Long id, @RequestParam String name, @RequestParam int age) {
+        memberService.updateMember(id, name, age);
+        return "Member updated successfully";
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteMember(@PathVariable Long id) {
+        memberService.deleteMember(id);
+        return "Member deleted successfully";
+    }
+}
+```
+@PostMapping : 새로운 회원 추가 (saveMember)<br>
+@GetMapping("/{id}") : 특정 회원 조회 (getMemberById)<br>
+@GetMapping : 모든 회원 조회 (getAllMembers)<br>
+@PutMapping("/{id}") : 특정 회원 정보 수정 (updateMember)<br>
+@DeleteMapping("/{id}") : 특정 회원 삭제 (deleteMember)
+
+------------
+## 페이징과 정렬
+JPA를 사용하면 대량의 데이터를 효율적으로 처리할 수 있도록 페이징(Paging)과 정렬(Sorting) 기능을 지원한다.<br>
+Spring Data JPA는 Pageable 인터페이스를 활용하여 간단한 방법으로 페이징과 정렬을 구현할 수 있다.<br>
+이를 활용하면 클라이언트가 요청한 데이터의 일부만 가져와서 성능을 향상시키고, 특정 기준에 따라 데이터를 정렬할 수 있다.
+
+### 페이징이 필요한 이유
+대부분의 애플리케이션에서 데이터베이스에 저장된 모든 데이터를 한 번에 조회하는 것은 비효율적이다.<br>
+특히 수천 개 이상의 데이터가 있는 경우 한 번에 모든 데이터를 가져오면 성능이 저하되고 불필요한 메모리 사용이 발생할 수 있다.
+
+페이징을 적용하면 다음과 같은 장점이 있다.<br>
++ 성능 최적화: 필요한 데이터만 가져와서 처리 속도를 향상시킴
++ 메모리 절약: 한 번에 로딩되는 데이터의 양을 줄여 서버 부담을 감소
++ 유저 경험 개선: 빠른 응답 속도로 사용자 경험 향상
+
+-------------
+Spring Data JPA에서 제공하는 페이징과 정렬 관련 인터페이스
+Spring Data JPA는 Pageable, Page, Sort 인터페이스를 제공하여 페이징과 정렬을 쉽게 구현할 수 있도록 한다.
+
+|인터페이스|설명|
+|:---|:---|
+|Pageable|요청된 페이지 정보(페이지 번호, 크기, 정렬 방식)를 담는 인터페이스|
+|Page<T>|페이징 처리된 데이터 목록을 포함하는 인터페이스|
+|Sort|특정 컬럼을 기준으로 데이터를 정렬하는 인터페이스|
+
+----
+### Pageable을 사용한 페이징 구현
+Spring Data JPA에서 Pageable을 사용하면 자동으로 페이징 처리를 할 수 있다.<br>
+페이징 처리를 위해서는 JpaRepository를 활용하면 된다.
+
+**Member 엔티티**<br>
+페이징과 정렬을 적용할 Member 엔티티를 정의한다.
+```java
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "member")
+public class Member {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private int age;
+
+    public Member() {}
+
+    public Member(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+```
+------------
+**MemberRepository 인터페이스**<br>
+페이징을 적용하려면 JpaRepository를 상속받아 Pageable을 활용할 수 있다.
+```java
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MemberRepository extends JpaRepository<Member, Long> {
+
+    Page<Member> findAll(Pageable pageable);
+}
+```
+Page<T>를 반환하는 메서드를 정의하면, 자동으로 페이징 기능이 적용된다.<br>
+findAll(Pageable pageable) : 전체 데이터를 페이징하여 반환.
+
+--------------
+**페이징을 적용한 MemberService**<br>
+페이징 기능을 활용하여 특정 페이지의 데이터를 조회하는 MemberService를 작성한다.
+```java
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    public Page<Member> getMembersByPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return memberRepository.findAll(pageable);
+    }
+}
+```
+```PageRequest.of(page, size)``` : 특정 페이지(page)의 데이터를 가져오며, 한 페이지에 포함될 데이터 개수(size)를 지정한다.<br>
+반환된 Page<Member> 객체에는 총 데이터 개수, 현재 페이지 정보, 전체 페이지 개수 등이 포함된다.
+
+------------
+### 정렬(Sorting) 적용
+데이터를 특정 컬럼 기준으로 정렬할 수도 있다.<br>
+Sort 객체를 사용하여 오름차순(ASC) 또는 내림차순(DESC) 정렬을 지정할 수 있다.
+
+정렬을 적용한 Repository
+```java
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface MemberRepository extends JpaRepository<Member, Long> {
+
+    List<Member> findAll(Sort sort);
+}
+```
+findAll(Sort sort) 메서드는 특정 컬럼을 기준으로 정렬된 데이터를 반환한다.
+
+-------------
+**정렬을 적용한 MemberService**<br>
+정렬을 적용하여 데이터를 가져오도록 MemberService를 수정한다.
+
+```java
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    public List<Member> getAllMembersSortedByName() {
+        return memberRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+    }
+
+    public List<Member> getAllMembersSortedByAgeDesc() {
+        return memberRepository.findAll(Sort.by(Sort.Direction.DESC, "age"));
+    }
+}
+```
+Sort.by(Sort.Direction.ASC, "name") : name 컬럼 기준으로 오름차순 정렬.<br>
+Sort.by(Sort.Direction.DESC, "age") : age 컬럼 기준으로 내림차순 정렬.
+
+------------
+### 페이징과 정렬을 함께 적용
+페이징과 정렬을 함께 적용하려면 Pageable에 정렬 정보를 추가하면 된다.
+
+페이징과 정렬을 함께 적용한 MemberService
+```java
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    public Page<Member> getMembersByPageSorted(int page, int size, String sortBy, boolean isAscending) {
+        Sort sort = isAscending ? Sort.by(Sort.Direction.ASC, sortBy) : Sort.by(Sort.Direction.DESC, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return memberRepository.findAll(pageable);
+    }
+}
+```
+PageRequest.of(page, size, sort) : 페이징과 정렬을 동시에 적용.<br>
+사용자가 sortBy(정렬 기준 컬럼)와 isAscending(오름차순 여부)을 입력하면 원하는 방식으로 데이터를 가져올 수 있다.
+
+-------------
+### 페이징과 정렬을 적용한 Controller
+페이징과 정렬을 API를 통해 활용할 수 있도록 컨트롤러를 구현한다.
+```java
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/members")
+public class MemberController {
+
+    private final MemberService memberService;
+
+    public MemberController(MemberService memberService) {
+        this.memberService = memberService;
+    }
+
+    @GetMapping("/paged")
+    public Page<Member> getPagedMembers(@RequestParam int page, @RequestParam int size) {
+        return memberService.getMembersByPage(page, size);
+    }
+
+    @GetMapping("/sorted")
+    public List<Member> getSortedMembers(@RequestParam String sortBy, @RequestParam boolean isAscending) {
+        return memberService.getMembersByPageSorted(0, Integer.MAX_VALUE, sortBy, isAscending).getContent();
+    }
+}
+```
+```/members/paged?page=0&size=5``` : 첫 번째 페이지(0번 페이지)에서 5개의 데이터 조회.<br>
+```/members/sorted?sortBy=age&isAscending=false``` : age 컬럼을 기준으로 내림차순 정렬된 데이터 반환.
