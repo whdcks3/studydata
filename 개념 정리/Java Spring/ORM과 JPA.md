@@ -520,6 +520,7 @@ public class User {
     // Getter 및 Setter 생략
 }
 ```
+------------------
 ### @Entity 애노테이션
 ```@Entity```애노테이션은 JPA가 해당 클래스를 엔티티로 인식할 수 있도록 설정하는 필수적인 애노테이션이다.
 -> @Entity가 선언된 클래스는 **반드시 기본 생성자가 있어야 한다**(protected 또는 public 생성자)
@@ -533,6 +534,7 @@ public class Product {
 ```
 만약 @Entity를 선언한 클래스에 기본 키를 지정하지 않으면, JPA 실행 시 오류가 발생한다.
 
+--------------
 ### @Table 애노테이션
 기본적으로 엔티티의 클래스명은 데이터베이스 테이블명과 자동으로 매핑된다.<br>
 하지만 테이블명이 다를 경우 ```@Table(name = "테이블명")``` 애노테이션을 사용하여 지정할 수 있다.
@@ -547,4 +549,44 @@ public class Product {
 위 코드는 Product 클래스가 products라는 테이블과 매핑되도록 설정한 것이다.
 만약 @Table 애노테이션을 사용하지 않으면, JPA는 클래스 이름을 그대로 테이블명으로 사용한다.
 
+---------------
 ### @Id와 기본 키 매핑
+모든 엔티티 클래스는 반드시 기본 키(Primary Key)를 가져야 하며, JPA는 기본 키를 기준으로 엔티티 객체를 관리한다.<br>
+기본 키는 @Id 애노테이션을 통해 지정할 수 있으며, 기본 키 값을 자동으로 생성할 수도 있다.
+
+기본 키를 자동으로 생성하는 방법은 다음과 같이 ```@GeneratedValue```를 활용할 수 있다.
+```java
+@Entity
+public class Order {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String orderNumber;
+}
+```
+```GenerationType.IDENTITY``` : 데이터베이스가 자동으로 기본 키를 생성하도록 설정한다.(예: MySQL의 AUTO_INCREMENT)<br>
+```GenerationType.SEQUENCE``` : 데이터베이스의 시퀀스를 활용하여 기본 키를 생성한다. (주로 PostgreSQL, Oracle에서 사용)<br>
+```GenerationType.TABLE``` : 키 생성 전용 테이블을 사용하여 기본 키를 관리한다.<br>
+```GenerationType.AUTO``` : 데이터베이스 방언에 맞게 자동으로 선택된다.
+
+-----------------
+### @Column 애노테이션
+@Column 애노테이션은 엔티티의 필드를 데이터베이스의 컬럼과 매핑할 때 사용한다.
+생략하면 필드 이름이 자동으로 컬럼명이 되지만, 필요한 경우 명시적으로 설정할 수도 있다.
+```java
+@Entity
+public class Customer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "customer_name", nullable = false, length = 50)
+    private String name;
+}
+```
+위 코드에서 name 필드는 customer_name이라는 컬럼과 매핑되며,<br>
+```nullable = false``` : 해당 컬럼이 NULL 값을 허용하지 않도록 설정한다.<br>
+```length = 50``` : 문자열 길이를 최대 50자로 제한한다.
