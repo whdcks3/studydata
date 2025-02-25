@@ -904,3 +904,363 @@ public class Course {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;다대다 관계에서는 **중간 테이블을 생성하여 매핑하는 것이 일반적**이다.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@ManyToMany(mappedBy = "courses")```를 사용하여 반대 방향의 관계도 설정할 수 있다.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;다대다 관계는 자주 사용되지 않으며, 중간 엔티티를 따로 만들어 OneToMany + ManyToOne 구조로 바꾸는 것이 더 일반적이다.
+
+---------------
+## 영속성 컨텍스트(Persistence Context)
+JPA의 핵심 개념 중 하나인 영속성 컨텍스트(Persistence Context) 는 엔티티 객체를 관리하고 데이터베이스와의 동기화를 자동으로 처리하는 메커니즘이다.<br>
+이 개념을 올바르게 이해하면 JPA가 엔티티 객체를 어떻게 관리하고 트랜잭션 내에서 어떤 방식으로 동작하는지를 깊이 이해할 수 있다.
+
+### 영속성 컨텍스트란?
+영속성 컨텍스트는 JPA에서 엔티티 객체를 관리하는 일종의 캐시(cache) 또는 저장소(storage) 이다.<br>
+JPA의 핵심 역할 중 하나는 객체와 데이터베이스를 매핑하는 것인데, 단순히 매핑하는 것이 아니라 엔티티의 생명주기를 관리하며 효율적인 데이터 변경을 돕는다.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;영속성 컨텍스트는 EntityManager에 의해 관리된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;엔티티 객체는 영속성 컨텍스트에 의해 저장, 수정, 삭제 등의 작업이 자동으로 처리된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPA는 영속성 컨텍스트를 이용하여 데이터베이스와 애플리케이션 간의 일관성을 유지한다.
+```java
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("example");
+EntityManager em = emf.createEntityManager();
+
+em.getTransaction().begin(); // 트랜잭션 시작
+
+Member member = new Member();
+member.setName("홍길동");
+
+em.persist(member); // 영속성 컨텍스트에 저장
+
+em.getTransaction().commit(); // 데이터베이스에 반영
+em.close();
+```
+위 코드에서 persist(member) 메서드를 호출하면, member 객체는 영속성 컨텍스트에 등록되고, commit()을 실행하면 데이터베이스에 반영된다.
+
+-------------
+### 엔티티의 생명주기(Lifecycle)
+JPA에서는 엔티티 객체가 특정한 상태(State) 를 가지며, 이 상태는 영속성 컨텍스트와의 관계에 따라 결정된다.<br>
+엔티티 객체는 크게 다음과 같은 네 가지 생명주기 상태를 가진다.
+
++ 비영속(Transient) 상태
++ 영속(Managed) 상태
++ 준영속(Detached) 상태
++ 삭제(Removed) 상태
+
+----------------
+### 1. 비영속(Transient) 상태
+비영속 상태는 JPA와 전혀 연관이 없는 객체 상태를 의미한다.<br>
+즉, 아직 영속성 컨텍스트에 등록되지 않은 상태이며, 데이터베이스와도 관계가 없다.
+```java
+Member member = new Member(); // 객체 생성 (비영속 상태)
+member.setName("이순신");
+```
+```new``` 키워드로 객체를 생성하면 해당 객체는 비영속 상태에 놓인다.<br>
+영속성 컨텍스트에 저장되지 않았으므로 데이터베이스에 영향을 미치지 않는다.
+
+### 2. 영속(Managed) 상태
+영속 상태는 JPA가 관리하는 상태를 의미한다.<br>
+즉, 엔티티가 영속성 컨텍스트에 저장되었으며, 변경 사항이 자동으로 감지되고 데이터베이스에 반영될 수 있는 상태이다.
+
+```java
+em.persist(member); // 영속성 컨텍스트에 저장
+```
+persist() 메서드를 호출하면 객체가 영속 상태가 된다.<br>
+영속 상태가 되면 엔티티는 자동 변경 감지(Dirty Checking) 기능을 활용할 수 있다.<br>
+트랜잭션이 commit()될 때 데이터베이스에 반영된다.
+
+### 3. 준영속(Detached) 상태
+준영속 상태는 JPA가 더 이상 관리하지 않는 상태이다.<br>
+즉, 영속성 컨텍스트에서 엔티티를 분리(detach)하면 더 이상 변경 사항이 반영되지 않는다.
+```java
+em.detach(member); // 준영속 상태로 변경
+```
+```detach(member)```를 호출하면 해당 엔티티는 영속성 컨텍스트에서 분리된다.<br>
+이후 member 객체를 변경해도 JPA가 감지하지 않으며, 데이터베이스에 반영되지 않는다.
+
+--------------
+### 4. 삭제(Removed) 상태
+삭제 상태는 데이터베이스에서 제거될 예정인 상태이다.<br>
+즉, remove() 메서드를 호출하면 엔티티는 삭제 상태가 되고, 트랜잭션이 commit()될 때 실제로 데이터베이스에서 삭제된다.
+```java
+em.remove(member); // 삭제 상태로 변경
+```
+```remove(member)```를 호출하면 해당 엔티티는 삭제 상태가 된다.<br>
+트랜잭션이 commit()되면 DELETE SQL이 실행되어 데이터베이스에서 삭제된다.
+
+----------------
+## EntityManager와 주요 메서드
+JPA에서 엔티티를 관리하고 데이터베이스와 상호작용하기 위해서는 EntityManager를 사용해야 한다.<br>
+EntityManager는 영속성 컨텍스트를 통해 엔티티 객체의 생명주기를 관리하며, 데이터베이스와의 직접적인 연산을 수행할 수 있는 다양한 메서드를 제공한다.
+
+### EntityManager란?
+EntityManager는 JPA에서 엔티티의 저장, 수정, 삭제, 조회 등의 작업을 수행하는 주요 객체이다.<br>
+JPA는 엔티티 객체를 직접 다루는 것이 아니라 EntityManager를 통해서만 엔티티를 관리할 수 있도록 한다.
+
+
++ 영속성 컨텍스트 관리: 엔티티 객체를 영속성 컨텍스트에 추가하거나 제거한다.
++ 트랜잭션 관리: 데이터베이스 연산을 수행할 때 트랜잭션을 시작하고 종료한다.
++ 엔티티 검색: 데이터베이스에서 엔티티를 조회하고 가져온다.
++ 엔티티 상태 변경 감지(Dirty Checking): 변경된 엔티티의 상태를 감지하여 자동으로 업데이트한다.
+
+EntityManager는 보통 EntityManagerFactory를 통해 생성되며, 일반적으로 애플리케이션에서 여러 개의 EntityManager를 사용할 수 있다.
+
+-----------------
+## EntityManager 생성 및 사용 방법
+EntityManager는 EntityManagerFactory를 통해 생성할 수 있으며, 일반적으로 JPA를 사용하는 애플리케이션에서는 스레드마다 하나의 EntityManager 인스턴스를 생성하여 사용한다.
+```java
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("exampleUnit");
+EntityManager em = emf.createEntityManager(); // EntityManager 생성
+
+em.getTransaction().begin(); // 트랜잭션 시작
+
+Member member = new Member();
+member.setName("홍길동");
+
+em.persist(member); // 엔티티 저장
+
+em.getTransaction().commit(); // 데이터베이스에 반영
+em.close(); // EntityManager 종료
+emf.close(); // EntityManagerFactory 종료
+```
+
+```EntityManagerFactory.createEntityManager()``` → 새로운 EntityManager 생성<br>
+```em.getTransaction().begin()``` → 트랜잭션 시작<br>
+```em.persist(entity)``` → 엔티티를 영속성 컨텍스트에 추가<br>
+```em.getTransaction().commit()``` → 변경 사항을 데이터베이스에 반영<br>
+```em.close()``` → EntityManager 종료
+
+---------------
+### 1. persist() - 엔티티 저장
+persist() 메서드는 엔티티 객체를 영속성 컨텍스트에 추가하는 역할을 한다.<br>
+이 메서드를 호출하면 엔티티는 영속 상태가 되며, 트랜잭션이 commit()될 때 데이터베이스에 반영된다.
+
+```java
+Member member = new Member();
+member.setName("이순신");
+
+em.persist(member); // 영속성 컨텍스트에 저장
+```
+
+```persist()``` 호출 후에는 엔티티가 영속 상태(Managed) 가 된다.<br>
+트랜잭션이 커밋(commit) 될 때 INSERT SQL이 실행된다.<br>
+같은 트랜잭션 내에서는 해당 객체가 1차 캐시에서 관리되므로 반복 조회 시 SQL이 실행되지 않는다.
+
+------------
+### 2. find() - 엔티티 조회
+find() 메서드는 데이터베이스에서 엔티티를 검색하는 기능을 수행한다.<br>
+조회할 때는 기본 키(Primary Key)를 기준으로 검색하며, 조회한 엔티티는 자동으로 영속 상태가 된다.
+
+```java
+Member member = em.find(Member.class, 1L); // 1번 회원 조회
+```
+
+첫 번째 인자는 조회할 엔티티의 클래스 타입, 두 번째 인자는 기본 키 값이다.<br>
+조회된 엔티티 객체는 영속 상태(Managed) 가 되어 영속성 컨텍스트에서 관리된다.<br>
+동일한 트랜잭션 내에서 같은 ID로 조회하면 1차 캐시에서 값을 가져오기 때문에 추가적인 SELECT 쿼리가 실행되지 않는다.
+
+------------
+### 3. remove() - 엔티티 삭제
+remove() 메서드는 엔티티를 삭제하는 역할을 한다.<br>
+삭제 요청된 엔티티는 삭제 상태(Removed) 가 되며, 트랜잭션이 commit()될 때 DELETE SQL이 실행된다.
+
+```java
+Member member = em.find(Member.class, 1L); // 1번 회원 조회
+em.remove(member); // 삭제 요청
+```
+find() 메서드로 조회한 엔티티를 삭제할 수 있다.<br>
+remove()를 호출하면 엔티티가 삭제 상태(Removed) 로 변경된다.<br>
+트랜잭션을 commit()하면 DELETE SQL이 실행된다.
+
+-------------
+### 4. merge() - 준영속 상태 엔티티 병합
+merge() 메서드는 준영속 상태의 엔티티를 다시 영속 상태로 변경하는 역할을 한다.<br>
+일반적으로 detach()된 엔티티를 다시 관리하려고 할 때 사용된다.
+
+```java
+Member member = em.find(Member.class, 1L);
+em.detach(member); // 준영속 상태로 변경
+
+member.setName("강감찬"); // 변경 사항 반영되지 않음
+em.merge(member); // 다시 영속 상태로 변경
+```
+
+detach()를 호출하면 엔티티가 준영속 상태(Detached) 가 되어 JPA가 변경 사항을 감지하지 않는다.<br>
+merge()를 호출하면 새로운 영속 상태의 엔티티가 반환되며, 데이터베이스에 업데이트된다.
+
+------------
+### 5. detach() - 엔티티를 준영속 상태로 변경
+detach() 메서드는 특정 엔티티를 영속성 컨텍스트에서 분리(Detached)하는 역할을 한다.<br>
+이 메서드를 사용하면 해당 엔티티는 더 이상 변경 사항이 자동 반영되지 않는다.
+
+```java
+Member member = em.find(Member.class, 1L);
+em.detach(member); // 준영속 상태로 변경
+member.setName("유관순"); // 변경 감지되지 않음
+```
+
+detach()를 호출하면 엔티티가 영속성 컨텍스트에서 분리된다.<br>
+이후 엔티티의 변경 사항이 데이터베이스에 반영되지 않는다.<br>
+다시 관리하려면 merge()를 사용해야 한다.
+
+----------
+### 6. clear() - 영속성 컨텍스트 초기화
+clear() 메서드는 현재 영속성 컨텍스트를 완전히 비우는 역할을 한다.<br>
+즉, 관리되던 모든 엔티티가 준영속 상태로 변경된다.
+
+```java
+em.clear(); // 영속성 컨텍스트 초기화
+```
+
+clear()를 호출하면 영속성 컨텍스트에 저장된 모든 엔티티가 준영속 상태가 된다.<br>
+이후 동일한 엔티티를 조회하면 다시 데이터베이스에서 조회하게 된다.<br>
+
+---------
+### 7. close() - EntityManager 종료
+close() 메서드는 EntityManager를 종료하는 역할을 한다.<br>
+한 번 close()된 EntityManager는 다시 사용할 수 없다.
+
+```java
+em.close(); // EntityManager 종료
+```
+EntityManager를 닫으면 더 이상 사용할 수 없다.<br>
+새로운 EntityManager를 생성해야 다시 사용할 수 있다
+
+--------------
+## JPQL(Java Persistence Query Language)
+JPQL(Java Persistence Query Language)은 JPA에서 제공하는 객체 지향 쿼리 언어이다.<br>
+SQL과 비슷한 문법을 가지지만, **데이터베이스의 테이블이 아니라 엔티티 객체를 대상으로 쿼리를 작성한다는 점**이 가장 큰 차이점이다.<br>
+JPQL을 사용하면 객체와 관계형 데이터베이스 사이의 불일치를 줄이고, 객체 지향적인 코드 스타일을 유지하면서도 SQL의 강력한 기능을 사용할 수 있다.
+
+### JPQL의 특징
+**객체 중심의 쿼리 작성**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SQL과 달리 JPQL은 테이블이 아닌 엔티티 객체를 대상으로 쿼리를 작성한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, SQL에서는 SELECT * FROM MEMBER라고 하지만, JPQL에서는 SELECT m FROM Member m처럼 엔티티를 사용한다.<br>
+
+**데이터베이스에 종속되지 않음**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPQL은 특정 DBMS(Oracle, MySQL 등)에 의존하지 않으며, 다양한 데이터베이스에서도 일관되게 동작한다.<br>
+
+**쿼리 실행 결과가 엔티티 객체로 반환됨**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JPQL을 통해 조회한 결과는 엔티티 객체이므로, JPA의 영속성 컨텍스트에서 관리될 수 있다.
+
+**동적 쿼리 작성 가능**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;필요한 경우 Criteria API나 QueryDSL과 같은 라이브러리를 활용하여 동적으로 쿼리를 생성할 수 있다.
+
+--------------
+### JPQL 기본 문법
+JPQL의 문법은 SQL과 유사하지만, 몇 가지 차이점이 있다.
+기본적인 JPQL 문법을 살펴보자.
+
+```java
+SELECT m FROM Member m WHERE m.name = '홍길동'
+```
+위 JPQL은 Member 엔티티에서 이름이 '홍길동'인 멤버를 찾는 쿼리이다.
+SQL과 비교하면 아래와 같은 차이가 있다.
+|SQL|JPQL|
+|:---|:---|
+|SELECT * FROM MEMBER|SELECT m FROM Member m|
+|WHERE name = '홍길동'|WHERE m.name = '홍길동'|
+
+JPQL에서는 테이블 이름이 아니라 엔티티 클래스명을 사용하고, 컬럼이 아니라 필드명을 사용한다.
+
+------------
+JPQL의 주요 키워드
+|키워드|설명|
+|:---|:---|
+|SELECT|데이터를 조회할 때 사용|
+|FROM|엔티티 객체를 지정|
+|WHERE|특정 조건을 만족하는 데이터 검색|
+|ORDER BY|정렬 기준 지정|
+|GROUP BY|특정 필드를 기준으로 그룹화|
+|HAVING|그룹화된 데이터에서 특정 조건을 만족하는 데이터만 선택|
+|JOIN|엔티티 간 조인을 수행|
+|FETCH|연관된 엔티티를 함께 조회할 때 사용|
+
+--------------
+## JPQL의 기본 예제
+### 1. 단순 조회(Query 조회)
+JPQL을 사용하여 특정 엔티티 객체를 조회하는 방법이다.
+
+```java
+String jpql = "SELECT m FROM Member m WHERE m.name = :name";
+TypedQuery<Member> query = em.createQuery(jpql, Member.class);
+query.setParameter("name", "이순신");
+Member member = query.getSingleResult();
+```
+```:name``` → 바인딩 변수로, 실행 시점에 값을 지정할 수 있다.<br>
+```query.setParameter("name", "이순신")``` → 바인딩 변수에 값을 설정한다.<br>
+```getSingleResult()``` → 결과가 한 개일 경우 사용하며, 여러 개의 결과가 반환되면 getResultList()를 사용한다.
+
+-----------
+### 2. 결과 리스트 조회
+getResultList()를 사용하면 여러 개의 결과를 리스트로 받을 수 있다.
+
+```java
+String jpql = "SELECT m FROM Member m";
+List<Member> members = em.createQuery(jpql, Member.class).getResultList();
+
+for (Member member : members) {
+    System.out.println("회원 이름: " + member.getName());
+}
+```
+```getResultList()``` → 결과를 리스트(List) 형태로 반환한다.<br>
+조회된 엔티티는 영속성 컨텍스트에 관리되므로 변경 감지 기능을 사용할 수 있다.
+
+----------
+### 3. 정렬 (ORDER BY)
+JPQL에서 ORDER BY를 사용하면 데이터를 정렬할 수 있다.
+
+```java
+String jpql = "SELECT m FROM Member m ORDER BY m.age DESC";
+List<Member> members = em.createQuery(jpql, Member.class).getResultList();
+```
+ORDER BY m.age DESC → 나이(age)를 기준으로 내림차순 정렬한다.<br>
+ASC(오름차순)는 생략 가능하며, 기본 정렬 방식이다.
+
+----------
+### 4. 조건 검색 (WHERE)
+WHERE 절을 사용하여 특정 조건을 만족하는 데이터를 검색할 수 있다.
+
+```java
+String jpql = "SELECT m FROM Member m WHERE m.age >= 30";
+List<Member> members = em.createQuery(jpql, Member.class).getResultList();
+```
+m.age >= 30 → 나이가 30 이상인 회원을 조회한다.
+
+----------
+### 5. 조인 (JOIN)
+JPQL에서 JOIN을 사용하면 엔티티 간의 관계를 기반으로 데이터를 조회할 수 있다.
+
+```java
+String jpql = "SELECT m FROM Member m JOIN m.team t WHERE t.name = :teamName";
+TypedQuery<Member> query = em.createQuery(jpql, Member.class);
+query.setParameter("teamName", "개발팀");
+List<Member> members = query.getResultList();
+```
+```JOIN m.team t``` → Member 엔티티의 team 연관 관계를 조인하여 Team 엔티티의 데이터를 활용할 수 있다.
+
+----------------
+### 6. Fetch Join (즉시 로딩)
+FETCH JOIN을 사용하면 연관된 엔티티를 한 번의 쿼리로 가져올 수 있다.
+이는 N+1 문제를 해결하는 방법 중 하나이다.
+
+```java
+String jpql = "SELECT m FROM Member m JOIN FETCH m.team";
+List<Member> members = em.createQuery(jpql, Member.class).getResultList();
+```
+```JOIN FETCH```를 사용하면 연관된 Team 엔티티를 함께 조회한다.<br>
+일반 JOIN과 다르게 즉시 로딩(EAGER LOADING) 방식으로 동작하여 성능을 최적화할 수 있다.
+
+---------
+### 7. 네이티브 쿼리 사용 (Native Query)
+JPQL 외에도 SQL을 직접 사용할 수 있는 네이티브 쿼리 기능이 있다.
+
+```java
+String sql = "SELECT * FROM MEMBER WHERE name = ?";
+Query query = em.createNativeQuery(sql, Member.class);
+query.setParameter(1, "홍길동");
+List<Member> members = query.getResultList();
+```
+```createNativeQuery()```를 사용하면 네이티브 SQL을 직접 실행할 수 있다.<br>
+테이블명을 직접 지정해야 하며, DBMS 종속적인 쿼리가 될 가능성이 있다.
+
+-----------------
+## Spring Boot에서 JPA 설정
+Spring Boot에서 JPA를 사용하려면 데이터베이스 설정과 JPA 관련 설정을 해야 한다.
+Spring Boot는 기본적으로 Spring Data JPA를 포함하고 있으며, 설정을 최소화한 상태에서도 JPA를 손쉽게 사용할 수 있도록 돕는다.
