@@ -573,7 +573,7 @@ public class Order {
 
 -----------------
 ### @Column 애노테이션
-@Column 애노테이션은 엔티티의 필드를 데이터베이스의 컬럼과 매핑할 때 사용한다.
+@Column 애노테이션은 엔티티의 필드를 데이터베이스의 컬럼과 매핑할 때 사용한다.<br>
 생략하면 필드 이름이 자동으로 컬럼명이 되지만, 필요한 경우 명시적으로 설정할 수도 있다.
 ```java
 @Entity
@@ -590,3 +590,317 @@ public class Customer {
 위 코드에서 name 필드는 customer_name이라는 컬럼과 매핑되며,<br>
 ```nullable = false``` : 해당 컬럼이 NULL 값을 허용하지 않도록 설정한다.<br>
 ```length = 50``` : 문자열 길이를 최대 50자로 제한한다.
+
+-------------
+### @Transient 애노테이션
+JPA는 엔티티 객체의 모든 필드가 자동으로 컬럼으로 매핑되지만,<br>
+**일부 필드는 데이터베이스와 매핑하지 않고, 객체 내부에서만 사용하고 싶은 경우**가 있다.<br>
+이때 ```@Transient``` 애노테이션을 사용하면 해당 필드는 데이터베이스와 무관한 필드로 취급된다.
+```java
+@Entity
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @Transient
+    private int discountPrice;  // 데이터베이스 컬럼으로 매핑되지 않음
+}
+```
+discountPrice 필드는 데이터베이스에 저장되지 않고, 애플리케이션 내부에서만 사용된다.
+계산된 값을 임시적으로 저장하거나, 특정 로직에서만 필요한 데이터를 관리할 때 활용된다.
+
+-----------
+## 필드 매핑
+JPA에서는 엔티티의 각 필드가 데이터베이스의 컬럼과 자동으로 매핑된다. 하지만 단순히 필드명과 컬럼명을 일치시키는 것만으로는 충분하지 않다.
+데이터베이스 스키마 설계에 따라 필드의 속성을 세밀하게 조정해야 하는 경우가 많으며, 이를 위해 JPA는 다양한 매핑 애노테이션을 제공한다.
+
+### 기본적인 필드 매핑
+JPA에서는 **엔티티의 필드명을 기반으로 자동으로 데이터베이스의 컬럼을 생성**한다.<br>
+예를 들어, name필드가 있다면, 이를 자동으로 name이라는 컬럼으로 매핑한다.
+```java
+@Entity
+public class Member {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;  // 자동으로 'name' 컬럼에 매핑됨
+
+    private int age;  // 자동으로 'age' 컬럼에 매핑됨
+}
+```
+이처럼 필드 이름과 컬럼 이름이 같다면 별도의 설정 없이 자동으로 매핑된다.<br>
+하지만 컬럼명을 직접 지정하거나 추가적인 설정이 필요한 경우 @Column 애노테이션을 활용할 수 있다.
+
+--------------------
+### @Column 애노테이션
+```@Column``` 애노테이션을 사용하면 컬럼의 이름, 길이, 제약 조건 등을 직접 설정할 수 있다.
+```java
+@Entity
+public class Employee {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "emp_name", length = 100, nullable = false, unique = true)
+    private String name;
+
+    @Column(name = "salary", precision = 10, scale = 2)
+    private Double salary;
+}
+```
+위 코드를 보면 @Column 애노테이션을 통해 컬럼의 속성을 설정할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```name``` : 컬럼명을 명시적으로 지정 (기본값은 필드명과 동일)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```length``` : 문자열의 최대 길이 지정 (기본값 : 255)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```nullable``` : false로 설정하면 Not Null 제약 조건이 추가됨<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```unique``` : true로 설정하면 해당 컬럼에 UNIQUE 제약 조건이 추가됨<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```precision``` 및 ```scale``` : BigDecimal 또는 Double과 같은 숫자형 데이터의 정밀도와 소수점 자리수를 설정
+
+**주의할 점**<br>
+```nullable = false```로 설정하면, 데이터가 반드시 존재해야 하므로, 데이터 입력시 null값을 허용하지 않는다.<br>
+```unique = true```는 데이터베이스 수준에서 유니크 제약 조건을 추가한다. 하지만 인덱스 생성까지 포함하지는 않으므로 성능 최적화를 위해 추가적인 인덱스 설정이 필요할 수 있다.
+
+----------------
+### @Transient 애노테이션
+일부 필드는 **데이터베이스에 저장되지 않고 애플리케이션 내에서만 사용될 수 있다.** <br>
+이러한 필드는 @Transient 애노테이션을 사용하여 매핑에서 제외할 수 있다.
+```java
+@Entity
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @Transient
+    private int discountedPrice;  // 데이터베이스 컬럼으로 매핑되지 않음
+}
+```
+discountedPrice 필드는 데이터베이스에 저장되지 않고, 애플리케이션 내부에서만 사용된다.<br>
+예를 들어, 할인가를 계산하여 UI에서 표시해야 하지만, 데이터베이스에 저장할 필요가 없는 경우 유용하게 사용할 수 있다.
+
+----------------
+### @Lob 애노테이션
+대용량 데이터(Lob, Large Object)를 저장할 때 사용되는 애노테이션이다.<br>
+LOB데이터는 텍스트 또는 바이너리(BLOB)형태로 저장될 수 있다.
+```java
+@Entity
+public class Article {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")  // MySQL에서는 columnDefinition 필요
+    private String content;  // 긴 문자열 저장
+
+    @Lob
+    private byte[] image;  // 이미지 파일 등 바이너리 데이터 저장
+}
+```
+```@Lo```b을 사용하면 데이터베이스의 TEXT 또는 BLOB 타입으로 매핑된다.<br>
+```String``` 타입에 사용하면 ```CLOB(Character Large Object)```,<br>
+```byte[]``` 타입에 사용하면 ```BLOB(Binary Large Object)```으로 매핑된다.
+
+**주의할 점**<br>
+@Lob 필드는 데이터 크기가 크기 때문에 조회 및 수정 성능 저하 가능성이 있다.<br>
+MySQL에서는 TEXT 또는 BLOB을 명확하게 지정해야 오류가 발생하지 않는다.
+
+----------------
+### @Enumerated 애노테이션
+Java의 enum 타입을 데이터베이스에 저장하려면 ```@Enmberated``` 애노테이션을 사용해야 한다.<br>
+기본적으로 enum타입은 ORDINAL(숫자) 또는 STRING(문자열) 방식으로 저장할 수 있다.
+```java
+public enum Role {
+    USER, ADMIN, MANAGER
+}
+
+@Entity
+public class Account {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)  // ENUM 값을 문자열로 저장
+    private Role role;
+}
+```
+```EnumType.ORDINAL```(기본값) : ```USER(0), ADMIN(1), MANAGER(2)``` 처럼 숫자로 저장됨<br>
+-> 순서 변경 시 데이터 문제 발생 가능하므로 권장되지 않음<br>
+```EnumType.STRING``` : ```USER, ADMIN, MANAGER``` 처럼 문자열 그대로 저장됨<br>
+-> 값이 변경되어도 안전하며, 유지보수 측면에서 권장됨
+
+**주의할 점**<br>
+```EnumType.ORDINAL``` 방식은 ENUM 순서가 변경되면 기존 데이터가 잘못 매핑될 위험이 있다.
+```EnumType.STRING``` 방식을 권장하지만, 저장 공간이 더 필요할 수 있다.
+
+-------------
+## 관계 매핑
+JPA에서는 객체 간의 관계를 데이터베이스 테이블의 관계와 연결하여 관리할 수 있도록 다양한 연관 관계 매핑을 지원한다.<br>
+이러한 관계 매핑을 활용하면 데이터베이스의 외래 키(Foreign Key) 개념을 객체 지향적인 방식으로 사용할 수 있다.<br>
+객체 간 관계를 매핑할 때는 크게 다음과 같은 네 가지 방식이 존재한다.
+
++ 일대일(OneToOne)
++ 일대다(OneToMany)
++ 다대일(ManyToOne)
++ 다대다(ManyToMany)
+
+-----------
+### 일대일(OneToOne) 관계
+일대일 관계는 한 엔티티가 다른 엔티티와 1:1로 연결될 때 사용된다.<br>
+예를 들어, ```User``` 엔티티가 ```UserDetail``` 엔티티와 1:1 관계를 가질 수 있다.
+```java
+@Entity
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String username;
+
+    @OneToOne
+    @JoinColumn(name = "user_detail_id")  // 외래 키를 지정
+    private UserDetail userDetail;
+}
+@Entity
+public class UserDetail {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String address;
+}
+```
+```@OneToOne``` : 1:1 관계를 설정하는 애노테이션
+```@JoinColumn(name = "user_detail_id")``` : 외래 키 컬럼을 직접 지정
+위 코드에서는 ```User``` 엔티티가 ```UserDetail``` 엔티티를 참조하는 관계를 맺고 있으며, user_detail_id가 외래 키로 사용된다.
+
+**일대일 관계의 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;하나의 User는 하나의 UserDetail만을 가질 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;하나의 UserDetail은 하나의 User만을 가질 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;외래 키를 어느 테이블에 둘 것인지 결정할 수 있으며, 기본적으로 주 테이블(User)에 배치하는 것이 일반적이다.
+
+--------------
+### 일대다(OneToMany) 관계
+일대다 관계는 하나의 엔티티가 여러 개의 엔티티를 가질 수 있는 경우 사용된다.<br>
+예를 들어, 하나의 Department는 여러 개의 Employee를 가질 수 있다.
+```java
+@Entity
+public class Department {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @OneToMany(mappedBy = "department")
+    private List<Employee> employees = new ArrayList<>();
+}
+@Entity
+public class Employee {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+}
+```
+```@OneToMany(mappedBy = "department")``` : Department 엔티티가 여러 개의 Employee를 가질 수 있도록 설정<br>
+```@ManyToOne``` : Employee가 Department를 참조하도록 설정<br>
+```@JoinColumn(name = "department_id")``` : Employee 테이블이 department_id를 외래 키로 가짐
+
+**일대다 관계의 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```OneToMany``` 관계는 mappedBy를 설정하여 외래 키를 다측(Many) 엔티티에 둔다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;다측(Many) 엔티티(Employee)는 반드시 @ManyToOne을 사용하여 외래 키를 직접 관리해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Department는 여러 Employee를 포함할 수 있지만, 각 Employee는 하나의 Department만 가질 수 있다.
+
+------------------
+### 다대일(ManyToOne) 관계
+다대일 관계는 여러 개의 엔티티가 하나의 엔티티를 참조하는 경우 사용된다.<br>
+이는 앞서 본 일대다(OneToMany) 관계와 반대 방향이다.
+```java
+@Entity
+public class Employee {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+}
+```
+위의 Employee 엔티티는 ManyToOne 관계를 통해 Department 엔티티를 참조한다.<br>
+이는 여러 명의 직원이 하나의 부서에 속할 수 있지만, 한 직원은 하나의 부서만 가질 수 있는 상황을 나타낸다.
+
+**다대일 관계의 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@ManyToOne```을 사용하여 다수의 엔티티가 하나의 엔티티를 참조할 수 있도록 설정한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@JoinColumn(name = "department_id")```를 지정하여 외래 키를 직접 관리한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;다대일 관계는 일대다 관계의 반대 방향이며, 이를 조합하여 양방향 관계를 설정할 수 있다.
+
+------------------
+### 다대다(ManyToMany) 관계
+다대다 관계는 한 엔티티가 여러 개의 엔티티를 가질 수 있으며, 동시에 다른 엔티티도 여러 개의 관계를 가질 수 있는 경우 사용된다.<br>
+예를 들어, Student와 Course는 다대다 관계를 가질 수 있다.<br>
+즉, 하나의 학생(Student)은 여러 과목(Course)을 수강할 수 있고, 하나의 과목(Course)도 여러 학생이 들을 수 있다.
+```java
+@Entity
+public class Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @ManyToMany
+    @JoinTable(
+        name = "student_course",
+        joinColumns = @JoinColumn(name = "student_id"),
+        inverseJoinColumns = @JoinColumn(name = "course_id")
+    )
+    private List<Course> courses = new ArrayList<>();
+}
+@Entity
+public class Course {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+
+    @ManyToMany(mappedBy = "courses")
+    private List<Student> students = new ArrayList<>();
+}
+```
+```@ManyToMany```는 다대다 관계를 설정하는 애노테이션이다.<br>
+```@JoinTable```을 사용하여 중간 테이블(student_course)을 생성하고, 관계를 정의한다.<br>
+```joinColumns = @JoinColumn(name = "student_id")``` → Student의 외래 키<br>
+```inverseJoinColumns = @JoinColumn(name = "course_id")``` → Course의 외래 키
+
+**다대다 관계의 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;다대다 관계에서는 **중간 테이블을 생성하여 매핑하는 것이 일반적**이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@ManyToMany(mappedBy = "courses")```를 사용하여 반대 방향의 관계도 설정할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;다대다 관계는 자주 사용되지 않으며, 중간 엔티티를 따로 만들어 OneToMany + ManyToOne 구조로 바꾸는 것이 더 일반적이다.
