@@ -183,7 +183,7 @@ public class Application {
 -------------
 ### 2. 빈(Bean) 관리 및 의존성 주입 (Dependency Injection)
 Spring Boot는 의존성 주입(DI, Dependency Injection) 을 기반으로 동작하며,<br>
-이를 위해 @Component, @Service, @Repository 등의 애노테이션을 사용한다.
+이를 위해 ```@Component```, ```@Service```,```@Repository``` 등의 애노테이션을 사용한다.
 ```java
 @Service
 public class UserService {
@@ -192,10 +192,11 @@ public class UserService {
     }
 }
 ```
-위 코드에서 @Service 애노테이션을 사용하면,<br>
-Spring Boot가 UserService 클래스를 빈(Bean)으로 등록하고 자동으로 관리한다.
+위 코드에서 ```@Service``` 애노테이션을 사용하면,<br>
+Spring Boot가 ```UserService``` 클래스를 빈(Bean)으로 등록하고 자동으로 관리한다.
 
-이렇게 등록된 빈은 @Autowired를 사용하여 다른 클래스에서 주입받아 사용할 수 있다.
+이렇게 등록된 빈은 ```@Autowired```를 사용하여 다른 클래스에서 주입받아 사용할 수 있다.
+```java
 @RestController
 public class UserController {
 
@@ -211,6 +212,63 @@ public class UserController {
         return userService.getUser();
     }
 }
-@RestController: REST API 컨트롤러로 동작하도록 설정
-@Autowired: UserService 빈을 자동 주입
+```
+```@RestController```: REST API 컨트롤러로 동작하도록 설정<br>
+```@Autowired```: UserService 빈을 자동 주입<br>
 이처럼 Spring Boot의 애노테이션을 활용하면 객체 간의 의존성을 자동으로 관리할 수 있다.
+
+------------------
+### 3. 데이터베이스 연동 및 트랜잭션 관리
+Spring Boot에서 데이터베이스와의 연동을 위해 Spring Data JPA를 사용할 경우,<br>
+애노테이션을 통해 간단하게 리포지토리(Repository)를 정의할 수 있다.
+```java
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+}
+```
+```@Repository``` : 데이터 접근 계층(DAO)을 나타내며, Spring이 자동으로 인식하도록 함<br>
+```JpaRepository<User, Long>``` : JPA의 기본 기능을 제공하며, 별도의 SQL 없이 CRUD 지원
+
+또한, 데이터베이스 트랜잭션을 관리하기 위해 @Transactional 애노테이션을 사용할 수 있다.
+```java
+@Service
+public class OrderService {
+
+    private final OrderRepository orderRepository;
+
+    @Autowired
+    public OrderService(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+
+    @Transactional
+    public void createOrder(Order order) {
+        orderRepository.save(order);
+        // 예외 발생 시 자동으로 롤백됨
+    }
+}
+```
+```@Transactional```: 트랜잭션을 관리하며, 예외가 발생하면 자동으로 롤백<br>
+이러한 애노테이션 덕분에 데이터베이스 연동 및 트랜잭션 처리를 간단하게 구현할 수 있다.
+
+-------------
+### 4. RESTful API 및 요청 처리
+Spring Boot에서는 RESTful API를 쉽게 구현할 수 있도록
+@RestController, @RequestMapping, @GetMapping, @PostMapping 등의 애노테이션을 제공한다.
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @GetMapping("/{id}")
+    public String getUser(@PathVariable Long id) {
+        return "User ID: " + id;
+    }
+}
+위 코드에서 사용하는 애노테이션의 역할은 다음과 같다.
+
+@RestController: 해당 클래스를 REST 컨트롤러로 지정
+@RequestMapping("/users"): users 경로로 들어오는 요청을 처리
+@GetMapping("/{id}"): GET /users/{id} 요청을 해당 메서드와 매핑
+@PathVariable: URL 경로 변수 값을 메서드 파라미터로 전달
+이처럼 Spring Boot의 애노테이션을 활용하면 REST API를 간결하게 정의할 수 있다.
