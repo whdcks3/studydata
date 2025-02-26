@@ -160,4 +160,57 @@ public class UserService {
 이처럼 애노테이션을 활용하면 코드를 더욱 간결하고 직관적으로 만들 수 있으며, 유지보수성을 높일 수 있다.
 
 ------------
-### 애노테이션
+### 1. 애플리케이션 구성 및 자동 설정 (Auto Configuration)
+Spring Boot의 가장 큰 장점 중 하나는 자동 설정(Auto Configuration) 이다.<br>
+이를 가능하게 하는 핵심 애노테이션이 바로 ```@SpringBootApplication```이다.
+```java
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+위 코드에서 @SpringBootApplication 애노테이션은 사실 여러 개의 애노테이션을 조합한 것이다.
+
+```@SpringBootConfiguration```: 애플리케이션의 설정 클래스로 지정<br>
+```@EnableAutoConfiguration```: 자동 설정을 활성화<br>
+```@ComponentScan```: 특정 패키지 이하의 빈(Bean)을 자동으로 검색<br>
+
+즉, ```@SpringBootApplication``` 하나만 추가해도 자동 설정 및 빈 등록이 활성화되며,<br>
+개발자는 복잡한 설정 없이 애플리케이션을 빠르게 개발할 수 있다.
+
+-------------
+### 2. 빈(Bean) 관리 및 의존성 주입 (Dependency Injection)
+Spring Boot는 의존성 주입(DI, Dependency Injection) 을 기반으로 동작하며,<br>
+이를 위해 @Component, @Service, @Repository 등의 애노테이션을 사용한다.
+```java
+@Service
+public class UserService {
+    public String getUser() {
+        return "사용자 정보 반환";
+    }
+}
+```
+위 코드에서 @Service 애노테이션을 사용하면,<br>
+Spring Boot가 UserService 클래스를 빈(Bean)으로 등록하고 자동으로 관리한다.
+
+이렇게 등록된 빈은 @Autowired를 사용하여 다른 클래스에서 주입받아 사용할 수 있다.
+@RestController
+public class UserController {
+
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/user")
+    public String getUser() {
+        return userService.getUser();
+    }
+}
+@RestController: REST API 컨트롤러로 동작하도록 설정
+@Autowired: UserService 빈을 자동 주입
+이처럼 Spring Boot의 애노테이션을 활용하면 객체 간의 의존성을 자동으로 관리할 수 있다.
