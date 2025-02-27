@@ -346,3 +346,119 @@ public class HomeController {
 
 하지만 **@Controller만 사용하면 메서드의 반환값은 기본적으로 "뷰(view) 이름"으로 인식된다.** <br>
 따라서 템플릿 엔진(Thymeleaf, JSP 등)과 함께 사용할 때 적절하다.
+
+--------------------
+### 2. @RestController - REST API 컨트롤러 정의
+```@Controller```는 뷰를 반환하는 용도로 사용되지만,<br>
+RESTful API를 구현할 때는 @RestController를 사용하는 것이 일반적이다.
+```java
+@RestController
+public class ApiController {
+
+    @GetMapping("/api/message")
+    public String getMessage() {
+        return "Hello, REST API!";
+    }
+}
+```
+위 코드에서 ```@RestController```는 컨트롤러가 문자열 데이터를 직접 반환하도록 설정한다.<br>
+즉, "Hello, REST API!"라는 응답이 JSON 형식으로 클라이언트에게 전달된다.
+
+@RestController는 내부적으로 @Controller와 @ResponseBody를 포함하고 있어<br>
+모든 메서드의 반환값이 자동으로 JSON 또는 XML과 같은 응답 본문(Response Body)으로 처리된다.
+
+-----------------
+### 3. @RequestMapping - 요청 URL 매핑
+@RequestMapping 애노테이션은 클래스 또는 메서드에 특정 URL을 매핑하는 역할을 한다.
+```java
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    @GetMapping("/user")
+    public String getUser() {
+        return "User information";
+    }
+}
+```
+위 코드에서 @RequestMapping("/api")는 해당 컨트롤러의 모든 엔드포인트가 "/api"를 포함하도록 설정한다.<br>
+즉, /api/user로 요청하면 "User information" 응답이 반환된다.
+
+```@RequestMapping```은 단순한 URL 매핑뿐만 아니라 요청 방식(HTTP Method)도 지정할 수 있다.
+```java
+@RequestMapping(value = "/users", method = RequestMethod.GET)
+public String getUsers() {
+    return "User List";
+}
+```
+하지만, Spring Boot에서는 HTTP 메서드를 처리하는 전용 애노테이션(@GetMapping, @PostMapping 등)이 존재하기 때문에
+요청 방식이 명확한 경우 @RequestMapping보다 전용 애노테이션을 사용하는 것이 권장된다.
+
+----------------
+### 4. HTTP 메서드 매핑 애노테이션
+Spring Boot에서는 HTTP 요청 방식(메서드)에 따라 별도의 매핑 애노테이션을 제공한다.
+
+```@GetMapping``` - GET 요청을 처리<br>
+```@PostMapping``` - POST 요청을 처리<br>
+```@PutMapping``` - PUT 요청을 처리<br>
+```@DeleteMapping``` - DELETE 요청을 처리<br>
+이러한 애노테이션을 활용하면 보다 간결하게 RESTful API를 구현할 수 있다.
+```java
+@RestController
+@RequestMapping("/products")
+public class ProductController {
+
+    @GetMapping("/{id}")
+    public String getProduct(@PathVariable Long id) {
+        return "Product ID: " + id;
+    }
+
+    @PostMapping
+    public String createProduct(@RequestBody String product) {
+        return "Product created: " + product;
+    }
+
+    @PutMapping("/{id}")
+    public String updateProduct(@PathVariable Long id, @RequestBody String product) {
+        return "Product " + id + " updated: " + product;
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteProduct(@PathVariable Long id) {
+        return "Product " + id + " deleted";
+    }
+}
+```
+위 코드에서 각 애노테이션은 다음과 같은 역할을 한다.
+
+```@GetMapping("/{id}")``` → 특정 ID의 제품 정보를 조회<br>
+```@PostMapping``` → 새로운 제품을 생성<br>
+```@PutMapping("/{id}")``` → 특정 ID의 제품 정보를 업데이트<br>
+```@DeleteMapping("/{id}")``` → 특정 ID의 제품을 삭제<br>
+이처럼 @RequestMapping 대신 HTTP 메서드별 애노테이션을 사용하면 코드의 가독성이 높아지고 직관적으로 이해할 수 있다.
+
+------------------
+### 컨트롤러 계층에서 애노테이션의 활용 요약
+컨트롤러 계층은 사용자의 요청을 처리하고 응답을 반환하는 핵심적인 역할을 하며,<br>
+Spring Boot에서는 다음과 같은 애노테이션을 활용하여 컨트롤러를 정의하고 요청을 처리한다.
+
+**컨트롤러 정의**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Controller → 뷰(View) 반환을 위한 MVC 컨트롤러<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@RestController → REST API 응답을 위한 컨트롤러
+
+**요청 URL 매핑**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@RequestMapping → 클래스 또는 메서드에 특정 URL 매핑<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@GetMapping, @PostMapping, @PutMapping, @DeleteMapping → HTTP 요청 방식에 따라 매핑
+
+이러한 애노테이션을 활용하면 간결한 코드로 가독성이 높은 컨트롤러를 작성할 수 있으며,<br>
+Spring Boot의 강력한 요청 처리 기능을 효율적으로 사용할 수 있다.
+
+---------------------
+## 서비스 계층의 주요 애노테이션
+서비스(Service) 계층은 애플리케이션에서 비즈니스 로직을 처리하는 핵심적인 역할을 수행한다.<br>
+이 계층은 컨트롤러와 데이터 접근 계층(Repository) 사이에서 동작하며, 비즈니스 로직을 캡슐화하여 코드의 재사용성과 유지보수성을 높이는 역할을 한다.
+
+Spring Boot에서는 서비스 계층을 명확히 정의하고 관리하기 위해 @Service 애노테이션을 제공한다.<br>
+또한, 서비스 계층에서 종종 활용되는 트랜잭션 관리 애노테이션(@Transactional) 에 대해서도 함께 알아보자.
+
+----------------
