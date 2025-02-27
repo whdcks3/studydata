@@ -267,8 +267,82 @@ public class UserController {
 }
 위 코드에서 사용하는 애노테이션의 역할은 다음과 같다.
 
-@RestController: 해당 클래스를 REST 컨트롤러로 지정
-@RequestMapping("/users"): users 경로로 들어오는 요청을 처리
-@GetMapping("/{id}"): GET /users/{id} 요청을 해당 메서드와 매핑
-@PathVariable: URL 경로 변수 값을 메서드 파라미터로 전달
+```@RestController```: 해당 클래스를 REST 컨트롤러로 지정<br>
+```@RequestMapping("/users")```: users 경로로 들어오는 요청을 처리<br>
+```@GetMapping("/{id}")```: GET /users/{id} 요청을 해당 메서드와 매핑<br>
+```@PathVariable```: URL 경로 변수 값을 메서드 파라미터로 전달<br>
+
 이처럼 Spring Boot의 애노테이션을 활용하면 REST API를 간결하게 정의할 수 있다.
+
+-----------------
+### 5. AOP(Aspect-Oriented Programming) 및 공통 기능 적용
+Spring Boot에서는 **AOP(Aspect-Oriented Programming)** 를 활용하여<br>
+로깅, 보안, 성능 모니터링 등의 공통 기능을 적용할 수 있다.
+
+예를 들어, ```@Aspect```와 ```@Before```를 사용하여 특정 메서드가 실행되기 전에 로그를 남길 수 있다.
+```java
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @Before("execution(* com.example.service.*.*(..))")
+    public void logBeforeMethod() {
+        System.out.println("메서드 실행 전 로그 출력");
+    }
+}
+```
+```@Aspect```: 해당 클래스가 AOP 기능을 수행하는 Aspect 클래스임을 지정<br>
+```@Before("execution(* com.example.service.*.*(..))")```:com.example.service 패키지의 모든 메서드 실행 전에 로그 출력
+
+이러한 AOP 애노테이션을 사용하면 코드를 수정하지 않고도 공통 기능을 추가할 수 있다.
+
+----------
+### Spring Boot에서 애노테이션의 역할 요약
+Spring Boot의 애노테이션은 단순한 코드 주석이 아니라,<br>
+애플리케이션의 동작을 정의하고 설정을 자동화하는 핵심적인 요소이다.
+
+**자동 설정 (Auto Configuration)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@SpringBootApplication을 사용하여 자동으로 설정을 활성화
+
+**빈(Bean) 등록 및 의존성 주입**<br>
+@Component, @Service, @Repository 등을 활용하여 자동 빈 관리<br>
+@Autowired를 사용하여 의존성을 자동 주입
+
+**데이터베이스 연동 및 트랜잭션 관리**<br>
+@Repository를 통해 데이터 접근 계층 자동 설정<br>
+@Transactional을 사용하여 데이터베이스 트랜잭션 관리
+
+**RESTful API 및 요청 처리**<br>
+@RestController, @RequestMapping, @GetMapping 등을 활용하여 REST API 개발
+
+**AOP 및 공통 기능 적용**<br>
+@Aspect, @Before를 활용하여 로깅, 보안, 성능 모니터링 등의 기능 적용<br>
+
+Spring Boot의 애노테이션을 이해하고 활용하면 더욱 효율적인 애플리케이션 개발이 가능하다
+
+---------------------
+## 2. 컨트롤러 계층의 주요 애노테이션
+Spring Boot의 웹 애플리케이션에서 컨트롤러(Controller) 계층은 사용자의 요청을 처리하고, 응답을 반환하는 역할을 담당한다.<br>
+Spring MVC 패턴에서 컨트롤러는 비즈니스 로직을 수행하는 서비스(Service) 계층과 데이터베이스를 처리하는 리포지토리(Repository) 계층을 연결하는 핵심적인 역할을 한다.
+
+Spring Boot에서는 컨트롤러를 효율적으로 정의하고 요청을 매핑할 수 있도록 여러 개의 애노테이션을 제공하며,<br>
+이러한 애노테이션들은 코드를 간결하게 유지하면서도 가독성과 유지보수성을 높이는 역할을 한다.
+
+### 1. @Controller - MVC 컨트롤러 정의
+Spring MVC에서 가장 기본적인 컨트롤러 역할을 수행하는 애노테이션은 ```@Controller이다.```<br><br>
+이 애노테이션은 클래스를 컨트롤러로 인식하고, 해당 클래스의 메서드가 웹 요청을 처리하도록 설정한다.
+```java
+@Controller
+public class HomeController {
+
+    @GetMapping("/")
+    public String home() {
+        return "home"; // home.html 또는 home.jsp 뷰 반환
+    }
+}
+```
+위 코드에서 @Controller는 Spring이 해당 클래스를 웹 컨트롤러로 인식하도록 지정한다.<br>
+그리고 @GetMapping("/")을 통해 루트 경로("/")에 대한 요청을 처리한다.
+
+하지만 **@Controller만 사용하면 메서드의 반환값은 기본적으로 "뷰(view) 이름"으로 인식된다.** <br>
+따라서 템플릿 엔진(Thymeleaf, JSP 등)과 함께 사용할 때 적절하다.
