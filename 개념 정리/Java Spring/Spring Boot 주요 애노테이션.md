@@ -462,3 +462,188 @@ Spring Boot에서는 서비스 계층을 명확히 정의하고 관리하기 위
 또한, 서비스 계층에서 종종 활용되는 트랜잭션 관리 애노테이션(@Transactional) 에 대해서도 함께 알아보자.
 
 ----------------
+### @Service - 서비스 클래스 정의
+```@Service``` 애노테이션은 Spring이 해당 클래스를 서비스 계층의 컴포넌트로 인식하고 관리할 수 있도록 설정한다.<br>
+Spring 컨테이너는 ```@Service```가 붙은 클래스를 자동으로 빈(Bean)으로 등록하고, 필요한 곳에서 이를 주입하여 사용할 수 있도록 한다.
+```java
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    public String getUserInfo(Long id) {
+        return "User Info for ID: " + id;
+    }
+}
+```
+위 코드에서 ```@Service```는 UserService 클래스를 Spring의 서비스 빈으로 등록한다.<br>
+이제 컨트롤러에서 UserService를 의존성 주입을 통해 사용할 수 있다.
+```java
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/{id}")
+    public String getUser(@PathVariable Long id) {
+        return userService.getUserInfo(id);
+    }
+}
+```
+여기서 UserService는 생성자 주입 방식으로 컨트롤러에 주입되었으며,<br>
+컨트롤러는 ```userService.getUserInfo(id)```를 호출하여 사용자 정보를 조회하는 역할을 수행한다.
+
+-------------------
+### @Transactional - 트랜잭션 관리
+서비스 계층에서는 데이터베이스와 직접적인 연산을 수행할 일이 많으며,<br>
+이때 트랜잭션(Transaction)을 관리하는 것이 필수적이다.<br>
+Spring Boot에서는 트랜잭션을 손쉽게 관리할 수 있도록 @Transactional 애노테이션을 제공한다.
+
+**트랜잭션(Transaction)이란?**<br>
++ 여러 개의 데이터베이스 연산을 하나의 단위로 묶어 관리하는 개념이다.<br>
++ 트랜잭션 내에서 하나라도 실패하면 전체 작업을 취소(rollback)하여 데이터 정합성을 유지한다.<br>
++ 트랜잭션이 정상적으로 완료되면 commit을 수행하여 변경 사항을 확정한다.
+
+다음은 @Transactional을 활용한 서비스 계층 코드 예제이다.
+```java
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class AccountService {
+
+    private final AccountRepository accountRepository;
+
+    public AccountService(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+
+    @Transactional
+    public void transferMoney(Long fromAccountId, Long toAccountId, double amount) {
+        Account fromAccount = accountRepository.findById(fromAccountId)
+                .orElseThrow(() -> new RuntimeException("송금 계좌를 찾을 수 없습니다."));
+        Account toAccount = accountRepository.findById(toAccountId)
+                .orElseThrow(() -> new RuntimeException("입금 계좌를 찾을 수 없습니다."));
+
+        if (fromAccount.getBalance() < amount) {
+            throw new RuntimeException("잔액이 부족합니다.");
+        }
+
+        fromAccount.withdraw(amount);
+        toAccount.deposit(amount);
+
+        accountRepository.save(fromAccount);
+        accountRepository.save(toAccount);
+    }
+}
+```
+위 코드에서 @Transactional이 적용된 transferMoney 메서드는 모든 데이터베이스 연산이 성공해야만 변경 사항이 적용된다.<br>
+즉, 송금 계좌에서 출금한 후 입금 계좌에 입금하기까지의 과정에서 오류가 발생하면, 이전 작업도 자동으로 취소(rollback)되어 데이터의 일관성을 유지할 수 있다.
+
+------------------------
+###  @Service와 @Transactional을 함께 사용할 때 주의할 점
+**서비스 클래스의 메서드에서 다른 내부 메서드를 호출하면 트랜잭션이 정상적으로 동작하지 않을 수 있다.** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Transactional이 선언된 메서드를 같은 클래스의 내부에서 호출하면, Spring 프록시(proxy)가 적용되지 않아 트랜잭션이 제대로 동작하지 않을 가능성이 높다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;해결 방법: 자신이 아닌 다른 빈을 통해 메서드를 호출해야 한다.
+
+**트랜잭션이 필요한 메서드는 퍼블릭(public) 접근자로 선언해야 한다.** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Transactional은 기본적으로 Spring의 AOP(Aspect-Oriented Programming) 방식으로 동작하며,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring이 관리하는 프록시(proxy) 객체를 통해 트랜잭션을 적용한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;따라서 메서드가 private이거나 같은 클래스 내에서 직접 호출되면 트랜잭션이 적용되지 않는다.<br>
+
+**트랜잭션의 전파(Propagation) 설정을 고려해야 한다.** <br>
++ 트랜잭션은 전파(Propagation) 옵션을 설정할 수 있으며, 대표적인 값은 다음과 같다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REQUIRED (기본값) : 기존 트랜잭션이 있으면 참여하고, 없으면 새로운 트랜잭션을 생성한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REQUIRES_NEW : 기존 트랜잭션을 무시하고, 항상 새로운 트랜잭션을 생성한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUPPORTS : 기존 트랜잭션이 있으면 참여하고, 없으면 트랜잭션 없이 실행한다.
+
+다음은 @Transactional의 전파 옵션을 설정하는 예제이다.
+```java
+@Transactional(propagation = Propagation.REQUIRES_NEW)
+public void updateAccount(Account account) {
+    accountRepository.save(account);
+}
+```
+위 설정에서는 항상 새로운 트랜잭션을 생성하여 updateAccount 메서드를 실행한다.<br>
+이렇게 하면 부모 트랜잭션이 롤백되더라도 이 메서드에서 수행된 작업은 독립적으로 커밋될 수 있다
+
+------------------
+### 서비스 계층에서 애노테이션의 활용 요약
+**서비스 계층을 정의하는 애노테이션**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Service → 비즈니스 로직을 처리하는 서비스 클래스를 정의<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Transactional → 트랜잭션 처리를 적용하여 데이터의 일관성을 유지
+
+**트랜잭션 관리**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Transactional을 사용하여 트랜잭션을 자동으로 관리<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;내부 메서드 호출 시 트랜잭션이 정상적으로 동작하지 않을 가능성이 있으므로 주의<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;트랜잭션 전파(Propagation) 옵션을 활용하여 원하는 트랜잭션 정책을 설정 가능
+
+이처럼 ```@Service```와``` @Transactional```을 적절히 활용하면,<br>
+서비스 계층에서 비즈니스 로직을 모듈화하고 데이터의 정합성을 유지하는 효과적인 구조를 만들 수 있다.
+
+---------------
+## 리포지토리 계층의 주요 애노테이션
+리포지토리(Repository) 계층은 데이터베이스와 직접적으로 상호작용하는 계층으로,<br>
+애플리케이션에서 데이터를 저장, 조회, 수정, 삭제하는 기능을 담당한다.
+
+Spring Boot에서는 이 계층을 효율적으로 관리하기 위해 ```@Repository``` 애노테이션을 제공하며,<br>
+Spring Data JPA를 활용하면 별도의 구현 없이도 CRUD 메서드를 사용할 수 있다.<br>
+또한, 리포지토리 계층에서 트랜잭션 관리를 위해 ```@Transactional``` 애노테이션이 함께 사용되는 경우가 많다.
+
+-----------------
+### @Repository - 데이터 접근 계층을 위한 애노테이션
+@Repository 애노테이션은 DAO(Data Access Object) 클래스에서 사용되며,<br>
+Spring이 해당 클래스를 빈(Bean)으로 관리하도록 설정한다.
+
+이 애노테이션의 주요 역할은 다음과 같다.<br>
++ 데이터 액세스 계층(DAO)으로 인식하여 관리
++ JPA, JDBC, MyBatis 등의 데이터 액세스 기술과 결합 가능
++ Spring이 발생하는 특정 예외를 DataAccessException으로 변환하여 처리
+
+다음은 ```@Repository``` 애노테이션을 적용한 기본적인 예제이다.
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.Optional;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+}
+```
+위 코드는 ```JpaRepository<User, Long>```를 상속받아,<br>
+User 엔티티를 기반으로 CRUD 연산을 수행하는 리포지토리 클래스를 정의한다.
+
+이제 서비스 계층에서 ```UserRepository```를 활용하면,<br>
+DB에 접근하는 로직을 직접 구현할 필요 없이 Spring Data JPA가 자동으로 처리한다.
+```java
+import org.springframework.stereotype.Service;
+import java.util.Optional;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    }
+}
+```
+여기서 ```findByUsername``` 메서드는 JPA의 메서드 네이밍 규칙을 따르기만 하면 자동으로 구현된다.<br>
+즉, findBy필드명 형식으로 선언하면 Spring Data JPA가 이를 해석하여 쿼리를 자동 생성한다.
+
+--------------
+### @Repository와 예외 변환 (Spring 예외 처리 기능)
