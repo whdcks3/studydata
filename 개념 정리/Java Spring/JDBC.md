@@ -148,7 +148,7 @@ JDBC도 이와 같은 원리로 **하나의 표준 인터페이스** 를 제공�
 **DBMS(JDBC Driver -> Database)** <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;변환된 SQL 명령을 실행하여 데이터를 처리하고 결과를 반환
 
-### JDBC의 플랫폼 독립성 에제
+### JDBC의 플랫폼 독립성 예제
 ```java
 import java.sql.Connection;
 import java.sql.DriverManager;
