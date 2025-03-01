@@ -199,7 +199,7 @@ JDBC의 핵심 기능 중 하나는 SQL 문을 실행하여 데이터베이스�
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;기존 데이터를 수정하는 기능<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```executeUpdate()```를 통해 실행
 
-**DELETE(데이터 삭제)
+**DELETE(데이터 삭제)**<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터를 삭제하는 기능<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```executeUpdate()```를 통해 실행
 
