@@ -18,7 +18,7 @@ JDBC는 Java 프로그램과 데이터베이스를 연결하는 중간 계층으
 
 **SQL 실행(SQL Execution)**<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터베이스에서 데이터를 조작하기 위해 SQL 문을 실행할 수 있도록 지원한다.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```SLECT```,```INSERT```,```UPDATE```,```DELETE```와 같은 SQL 명령을 실행할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```SELECT```,```INSERT```,```UPDATE```,```DELETE```와 같은 SQL 명령을 실행할 수 있다.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```Statement```,```PreparedStatement```,```CallableStatement``` 등의 객체를 사용하여 SQL을 실행한다.
 
 **결과 처리(Result Processing)**<br>
