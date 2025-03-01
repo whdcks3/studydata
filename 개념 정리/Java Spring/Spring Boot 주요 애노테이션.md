@@ -647,3 +647,116 @@ public class UserService {
 
 --------------
 ### @Repository와 예외 변환 (Spring 예외 처리 기능)
+Spring에서 ```@Repository```를 사용할 때의 중요한 특징 중 하나는 예외 변환(Exception Translation) 이다.<br>
+Spring은 SQL 또는 JPA 관련 예외가 발생했을 때,<br>
+이를 Spring의 공통 예외 클래스(DataAccessException)로 변환하여 일관되게 처리할 수 있도록 해준다.
+
+예를 들어, JDBC를 사용하여 직접 데이터베이스에 접근할 경우,<br>
+```SQLException```이 발생할 수 있다.
+하지만 ```@Repository```가 적용된 클래스에서 예외가 발생하면,
+Spring이 이를 자동으로 ```DataAccessException``` 계열의 예외로 변환한다.
+
+예제
+```java
+try {
+    userRepository.findByUsername("testUser")
+            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+} catch (DataAccessException e) {
+    // Spring이 데이터 액세스 관련 예외를 변환하여 처리 가능하게 해줌
+    throw new RuntimeException("데이터베이스 접근 중 오류가 발생했습니다.", e);
+}
+```
+위 코드에서 ```DataAccessException```을 캐치하면,<br>
+데이터베이스 연결 문제, SQL 구문 오류, 무결성 제약 조건 위반 등 다양한 데이터베이스 관련 오류를 한 곳에서 처리할 수 있다.<br>
+이러한 예외 변환 기능은 Spring이 제공하는 큰 장점 중 하나이다.
+
+-----------------
+### Spring Data JPA와 @Repository의 결합
+Spring Boot에서 리포지토리 계층을 더 효율적으로 관리하기 위해,<br>
+```@Repository```와 함께 Spring Data JPA를 활용하면 자동으로 CRUD 메서드를 제공받을 수 있다.
+
+Spring Data JPA를 사용할 경우,<br>
+인터페이스만 선언하면 Spring이 구현체를 자동 생성한다.
+
+기본적인 CRUD 기능을 제공하는 인터페이스 예제
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+}
+```
+위 인터페이스는 다음과 같은 기능을 자동으로 제공한다.
+|메서드|기능|
+|:---|:---|
+|```save(T entity)```|엔티티 저장 및 업데이트|
+|```findById(ID id)```|ID로 엔티티 조회|
+|```findAll()```|모든 엔티티 조회|
+|```deleteById(ID id)```|ID로 엔티티 삭제|
+
+즉, ```ProductRepository```는 별도의 구현 없이도 위와 같은 CRUD 기능을 사용할 수 있다.
+------------------
+### 커스텀 쿼리 메서드 작성
+Spring Data JPA는 기본적인 CRUD 메서드뿐만 아니라,<br>
+메서드 네이밍 규칙을 기반으로 사용자 지정 쿼리 메서드를 생성할 수도 있다.
+
+예를 들어, 특정 카테고리에 속하는 모든 상품을 조회하는 메서드를 정의해보자.
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    List<Product> findByCategory(String category);
+}
+```
+위 코드에서는 ```findByCategory(String category)```라는 메서드를 선언했을 뿐이지만,
+Spring Data JPA가 자동으로 ```SELECT * FROM product WHERE category = ?```SQL 쿼리를 생성해준다.
+
+서비스 계층에서 이를 호출하면, 특정 카테고리에 해당하는 상품 목록을 쉽게 가져올 수 있다.
+```java
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+public class ProductService {
+
+    private final ProductRepository productRepository;
+
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
+
+    public List<Product> getProductsByCategory(String category) {
+        return productRepository.findByCategory(category);
+    }
+}
+```
+이처럼 리포지토리 계층에서는 SQL을 직접 작성하지 않고도 쿼리 메서드만으로 원하는 데이터를 쉽게 조회할 수 있다.
+
+----------------------
+### @Repository를 사용할 때 주의할 점
+**Spring Data JPA 사용 시 별도로 @Repository를 선언하지 않아도 된다.** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JpaRepository를 상속하면 Spring이 자동으로 빈(Bean)으로 등록하므로,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;필수적으로 @Repository를 붙이지 않아도 동작한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;하지만 명시적으로 @Repository를 선언하면 Spring이 예외 변환 기능을 제공하기 때문에,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JDBC, MyBatis 등 다른 데이터 접근 기술을 사용할 때는 @Repository를 반드시 붙이는 것이 좋다.
+
+**리포지토리 인터페이스는 비즈니스 로직을 포함하면 안 된다.** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;리포지토리는 데이터 접근과 관련된 역할만 수행해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;비즈니스 로직은 서비스 계층에서 처리해야 하며,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;리포지토리는 단순히 데이터를 저장하고 불러오는 역할을 맡아야 한다.
+
+**트랜잭션과 함께 사용할 때 주의해야 한다.** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Transactional을 서비스 계층에서 설정하는 것이 일반적이며,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;리포지토리 계층에서 직접 트랜잭션을 관리하지 않는 것이 좋다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터의 일관성을 유지하려면 서비스 계층에서 트랜잭션을 관리하고,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;리포지토리는 데이터 접근만 담당하도록 설계하는 것이 권장된다.
+
+------------------
+## 의존성 주입의 개념
+Spring Boot는 의존성 주입(Dependency Injection, DI) 개념을 활용하여<br>
+객체 간의 의존 관계를 효율적으로 관리할 수 있도록 한다.<br>
+의존성 주입이란 클래스 내부에서 직접 객체를 생성하지 않고, 외부에서 필요한 객체를 주입받아 사용하는 방식을 의미한다.
+
+----------------
