@@ -760,3 +760,172 @@ Spring Boot는 의존성 주입(Dependency Injection, DI) 개념을 활용하여
 의존성 주입이란 클래스 내부에서 직접 객체를 생성하지 않고, 외부에서 필요한 객체를 주입받아 사용하는 방식을 의미한다.
 
 ----------------
+### 의존성 주입이 필요한 이유
+객체를 직접 생성하는 방식과 의존성 주입을 사용하는 방식의 차이를 이해하기 위해,<br>
+다음과 같은 예제를 살펴보자.
+
+객체를 직접 생성하는 방식
+```java
+public class UserService {
+    private UserRepository userRepository = new UserRepository();
+
+    public String getUserInfo(Long id) {
+        return userRepository.findUserById(id);
+    }
+}
+```
+위 코드에서 ```UserService```는 ```UserRepository```를 직접 생성하고 있다.<br>
+이 방식에는 다음과 같은 문제점이 있다.
+
+**유연성이 떨어진다**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UserRepository가 변경되면, 이를 사용하는 모든 클래스에서 변경해야 한다.
+
+**테스트가 어렵다**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UserRepository를 직접 생성하므로, 테스트 시 가짜 객체(Mock 객체)를 주입할 수 없다.
+
+**확장성이 부족하다**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, UserRepository의 구현체를 JpaUserRepository에서 JdbcUserRepository로 변경하려면,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;모든 코드에서 직접 변경이 필요하다.
+
+--------------
+### 의존성 주입을 사용하는 방식
+위 문제를 해결하려면 의존성을 직접 생성하는 것이 아니라, 외부에서 주입받는 방식으로 변경해야 한다.
+```java
+public class UserService {
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public String getUserInfo(Long id) {
+        return userRepository.findUserById(id);
+    }
+}
+```
+이제 UserRepository는 외부에서 생성되어 주입된다.<br>
+이를 통해 구현체를 변경할 때 UserService를 수정하지 않아도 된다.<br>
+또한, 테스트 시 Mock 객체를 주입하여 독립적으로 테스트할 수도 있다.
+
+Spring Boot에서는 이러한 의존성 주입을 자동으로 수행하며,<br>
+이를 위해 다양한 의존성 주입 방식을 제공한다.
+
+------------
+### Spring Boot에서의 의존성 주입 방식
+Spring Boot에서 지원하는 대표적인 의존성 주입 방식은 다음과 같다.
+
++ **생성자 주입 (Constructor Injection)**
++ **필드 주입 (Field Injection)**
++ **메서드 주입 (Setter Injection)**
+
+----------------
+### 생성자 주입 (Constructor Injection)
+생성자 주입은 생성자를 이용하여 의존성을 주입하는 방식이다.
+```java
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public String getUserInfo(Long id) {
+        return userRepository.findUserById(id);
+    }
+}
+```
+**특징**<br>
+final 키워드를 사용할 수 있어 불변성을 유지할 수 있다.<br>
+UserService 객체가 생성될 때 의존성이 반드시 주입되어야 하므로, NPE(NullPointerException) 발생 가능성을 줄일 수 있다.<br>
+Spring Boot 4.3 이후 버전에서는 @Autowired를 명시하지 않아도 자동으로 의존성을 주입한다.
+
+**장점**<br>
+객체가 생성될 때 의존성이 명확하게 주입되므로, 안정성이 높다.<br>
+테스트 시에도 Mock 객체를 쉽게 주입할 수 있다.<br>
+필수적인 의존성이 없으면 컴파일 오류가 발생하므로, 런타임 오류를 방지할 수 있다.
+
+**단점**<br>
+의존성이 많아질 경우 생성자가 길어질 수 있다.<br>
+순환 의존성이 발생하면 해결하기 어려울 수 있다.<br>
+(순환 의존성이란, A → B → A 같은 구조로 서로가 서로를 참조하는 상황을 의미한다.)
+
+---------------
+### 필드 주입 (Field Injection)
+필드 주입은 클래스의 필드에 직접 @Autowired를 선언하여 의존성을 주입하는 방식이다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public String getUserInfo(Long id) {
+        return userRepository.findUserById(id);
+    }
+}
+```
+**특징**<br>
+필드에 @Autowired를 추가하면, Spring이 자동으로 의존성을 주입한다.<br>
+가장 간단한 방법이며, 코드가 짧고 직관적이다.<br>
+
+**장점**<br>
+코드가 간결하며, 유지보수가 쉽다.<br>
+Spring이 자동으로 의존성을 주입해주므로 설정이 간단하다.
+
+**단점**<br>
+final 키워드를 사용할 수 없으므로, 불변성을 유지할 수 없다.<br>
+테스트 시 Mock 객체를 주입하려면 Reflection을 사용해야 하므로, 테스트 코드가 복잡해진다.<br>
+순환 의존성 문제가 발생할 가능성이 높다.
+
+-----------------------------
+### 메서드 주입 (Setter Injection)
+메서드 주입은 Setter 메서드를 통해 의존성을 주입하는 방식이다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    private UserRepository userRepository;
+
+    @Autowired
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public String getUserInfo(Long id) {
+        return userRepository.findUserById(id);
+    }
+}
+```
+**특징**<br>
+@Autowired를 Setter 메서드에 선언하여 주입한다.<br>
+선택적인 의존성 주입이 가능하므로, 특정 경우에만 의존성을 주입할 수도 있다.
+
+**장점**<br>
+런타임 중에 의존성을 변경할 수 있어 유연성이 높다.<br>
+순환 의존성이 발생할 경우, 해결이 비교적 쉽다.
+
+**단점**
+필수 의존성을 보장할 수 없다.<br>
+(의존성이 주입되지 않은 상태에서 메서드가 호출될 가능성이 있다.)<br>
+객체 생성 이후에 Setter가 호출되므로, 객체의 일관성을 유지하기 어렵다.
+
+-------------------
+## 주요 의존성 주입 애노테이션
+Spring Boot에서는 객체 간의 의존 관계를 관리하기 위해 다양한 애노테이션을 제공한다.<br>
+이러한 애노테이션들은 개발자가 직접 객체를 생성하고 관리하는 부담을 줄이고,<br>
+Spring 컨테이너가 자동으로 객체를 주입하도록 돕는다.
+
+이번 섹션에서는 Spring Boot에서 의존성 주입을 위해 사용되는 주요 애노테이션을 살펴본다.
+
+-------------
+
