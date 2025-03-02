@@ -928,4 +928,599 @@ Spring 컨테이너가 자동으로 객체를 주입하도록 돕는다.
 이번 섹션에서는 Spring Boot에서 의존성 주입을 위해 사용되는 주요 애노테이션을 살펴본다.
 
 -------------
+### @Autowired – 자동으로 빈(Bean) 주입
+@Autowired 애노테이션은 가장 많이 사용되는 의존성 주입 애노테이션 중 하나다.<br>
+이 애노테이션을 사용하면 Spring이 자동으로 적절한 빈을 찾아서 주입해준다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public String getUserInfo(Long id) {
+        return userRepository.findUserById(id);
+    }
+}
+```
+**특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Autowired는 Spring이 자동으로 적절한 빈을 찾아서 주입해준다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;생성자, 필드, Setter 메서드에서 사용할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring Boot 4.3 이후 버전에서는 생성자가 하나만 존재할 경우 @Autowired를 생략해도 자동으로 주입된다.
+
+**어떤 방식이 가장 좋은가?** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;생성자 주입을 권장: Spring에서는 생성자 주입을 가장 권장하며, 이를 사용하면 불변성을 유지할 수 있고 NullPointerException을 방지할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;필드 주입은 피하는 것이 좋음: 필드 주입을 사용하면 테스트가 어렵고, 클래스의 의존성이 명확하지 않다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Setter 주입은 선택적으로 사용: 특정 상황에서만 Setter 주입을 사용할 수 있지만, 필수 의존성의 경우에는 사용하지 않는 것이 좋다.
+
+-------------
+### @Qualifier – 동일한 타입의 여러 빈 중 특정 빈을 선택
+```@Autowired```는 기본적으로 타입을 기준으로 빈을 찾아서 주입하지만,<br>
+동일한 타입의 빈이 여러 개 존재할 경우 어떤 빈을 주입할지 명확하지 않다.<br>
+이럴 때 ```@Qualifier``` 를 사용하여 특정 빈을 명시적으로 선택할 수 있다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserService(@Qualifier("jpaUserRepository") UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public String getUserInfo(Long id) {
+        return userRepository.findUserById(id);
+    }
+}
+```
+그리고 같은 타입의 두 개 이상의 빈이 존재하는 경우,
+각 빈에 ```@Component``` 또는 ```@Repository```를 사용하면서 ```@Qualifier```에 사용할 이름을 지정해야 한다.
+```java
+import org.springframework.stereotype.Repository;
+
+@Repository("jpaUserRepository")
+public class JpaUserRepository implements UserRepository {
+    // 구현부
+}
+
+@Repository("jdbcUserRepository")
+public class JdbcUserRepository implements UserRepository {
+    // 구현부
+}
+```
+**특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;동일한 타입의 여러 빈 중 특정한 빈을 선택해야 할 때 사용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Qualifier로 특정한 이름을 명시적으로 지정해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring Boot 3.4부터 ```@Qualifier```를 사용하지 않고도 @Primary를 활용하는 방법도 있다.
+
+--------------
+### @Primary – 기본적으로 선택될 빈을 지정
+```@Primary```는 같은 타입의 여러 빈이 있을 때 우선적으로 선택될 빈을 지정하는 애노테이션이다.<br>
+이렇게 하면 ```@Qualifier```를 사용하지 않더라도 기본적으로 어떤 빈을 주입할지 지정할 수 있다.
+```java
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
+
+@Primary
+@Repository
+public class JpaUserRepository implements UserRepository {
+    // 기본적으로 선택될 리포지토리 구현체
+}
+```
+이제 UserRepository 타입의 빈이 여러 개 있더라도,<br>
+```@Primary```가 붙은 ```JpaUserRepository```가 기본적으로 주입된다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+}
+```
+**특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;같은 타입의 여러 빈 중 기본적으로 선택될 빈을 설정할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Qualifier보다 더 우선적으로 적용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;어떤 빈이 기본적으로 사용될지를 지정하고 싶을 때 유용하다.
+
+**@Primary vs @Qualifier**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Primary는 기본적으로 사용할 빈을 지정하는 방법이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Qualifier는 특정한 빈을 선택해야 할 때 사용하는 방법이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일반적으로 @Primary를 먼저 사용하고, 특정한 빈을 선택해야 할 때 @Qualifier를 함께 사용하는 것이 좋다.
+
+---------------
+### @Component와 @ComponentScan – 빈을 자동으로 검색하고 등록
+Spring Boot에서는 클래스에 ```@Component``` 애노테이션을 붙이면<br>
+자동으로 Spring 컨테이너에 빈으로 등록된다.
+```java
+import org.springframework.stereotype.Component;
+
+@Component
+public class EmailService {
+    public void sendEmail(String message) {
+        System.out.println("이메일 전송: " + message);
+    }
+}
+```
+이렇게 등록된 빈은 ```@Autowired```를 사용하여 주입받을 수 있다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class NotificationService {
+
+    private final EmailService emailService;
+
+    @Autowired
+    public NotificationService(EmailService emailService) {
+        this.emailService = emailService;
+    }
+
+    public void notifyUser() {
+        emailService.sendEmail("회원가입이 완료되었습니다.");
+    }
+}
+```
+@Component가 포함된 애노테이션 Spring Boot에서는 @Component를 포함한 여러 애노테이션이 있다.
+|애노테이션|설명|
+|:---|:---|
+|```@Component```|기본적인 빈으로 등록하는 애노테이션|
+|```@Service```|서비스 계층을 위한 @Component|
+|```@Repository```|데이터 접근 계층을 위한 @Component|
+|```Controller```|MVC 패턴의 컨트롤러를 위한 @Component|
+
+이처럼 ```@Service, @Repository, @Controller```는 모두 내부적으로 ```@Component```를 포함하고 있으며,<br.
+Spring이 자동으로 빈을 등록할 수 있도록 도와준다.
+
+--------------------
+### @ComponentScan – 특정 패키지를 스캔하여 빈을 자동 등록
+Spring Boot는 기본적으로 ```@SpringBootApplication```이 있는 패키지를 기준으로 하위 패키지를 자동으로 스캔한다.<br>
+하지만 특정 패키지만 스캔하려면 ```@ComponentScan```을 사용할 수 있다.
+```java
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan(basePackages = "com.example.service")
+public class AppConfig {
+}
+```
+이렇게 하면 com.example.service 패키지 내부의 모든 @Component가 자동으로 스캔된다.
+
+----------------
+## 설정 관련 애노테이션
+Spring Boot에서 설정은 애플리케이션의 동작을 정의하는 중요한 요소다.<br>
+Spring은 개발자가 직접 설정 파일을 작성할 수도 있지만,<br>
+애노테이션을 통해 더욱 간편하게 설정을 정의할 수 있도록 지원한다.
+
+이번 섹션에서는 Spring Boot에서 사용되는 설정 관련 주요 애노테이션을 다룬다.
+
+-----------------
+### @Configuration – 설정 클래스를 정의하는 애노테이션
+Spring Boot에서는 애플리케이션의 설정을 자바 코드 기반으로 구성할 수 있으며,<br>
+이를 위한 대표적인 애노테이션이 ```@Configuration```이다.
+
+이 애노테이션을 클래스에 추가하면 해당 클래스가 설정 클래스임을 Spring이 인식하고,<br>
+해당 클래스 내에서 정의된 ```@Bean``` 메서드들을 관리한다.
+```java
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class AppConfig {
+
+    @Bean(name = "exampleMessage")
+    public String exampleBean() {
+        return "Hello, Spring Boot!";
+    }
+}
+```
+이렇게 설정된 exampleBean은 Spring 컨테이너에 의해 관리되는 빈(Bean) 이 된다.<br>
+이제 ```@Autowired```를 통해 다른 클래스에서 주입받을 수 있다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ExampleService {
+
+    private final String exampleMessage;
+
+    @Autowired
+    public ExampleService(String exampleMessage) {
+        this.exampleMessage = exampleMessage;
+    }
+
+    public void printMessage() {
+        System.out.println(exampleMessage);
+    }
+}
+```
+**특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@Configuration```은 해당 클래스가 설정 클래스임을 명시하는 역할을 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;내부에 ```@Bean```을 사용하여 객체를 등록할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XML 기반의 설정을 대신하여 자바 코드 기반의 설정을 가능하게 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring Boot에서는 자동 설정이 강력하게 동작하므로, 필요할 때만 명시적으로 사용하는 것이 좋다.
+
+--------------
+### @Bean – 수동으로 빈을 생성하고 등록
+Spring Boot는 일반적으로 자동 설정(Auto Configuration)과 컴포넌트 스캔(Component Scan)을 활용하여 빈을 자동으로 등록한다.<br>
+그러나, 특정 객체를 수동으로 빈으로 등록해야 할 때는 ```@Bean``` 애노테이션을 사용한다.
+```java
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class MyConfig {
+
+    @Bean
+    public EmailService emailService() {
+        return new EmailService("smtp.example.com");
+    }
+}
+```
+위 코드에서 ```emailService()``` 메서드는 Spring 컨테이너에 의해 관리되는 빈으로 등록된다.
+이제 해당 빈을 ```@Autowired```를 통해 주입받을 수 있다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class NotificationService {
+
+    private final EmailService emailService;
+
+    @Autowired
+    public NotificationService(EmailService emailService) {
+        this.emailService = emailService;
+    }
+
+    public void sendNotification(String message) {
+        emailService.sendEmail(message);
+    }
+}
+```
+**특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Bean은 Spring 컨테이너에서 직접 관리할 객체를 수동으로 등록할 때 사용한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XML 설정 방식의 <bean> 태그를 대체하는 역할을 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Component나 @Service와 같은 애노테이션을 붙일 수 없는 외부 라이브러리 클래스도 빈으로 등록할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring이 자동으로 관리하지 않는 객체를 명시적으로 설정할 때 유용하다.
+
+-------------------
+### @ComponentScan – 특정 패키지를 스캔하여 빈을 자동 등록
+Spring Boot는 기본적으로 ```@SpringBootApplication```이 선언된 클래스가 위치한 패키지를 기준으로<br>
+하위 패키지 내의 ```@Component, @Service, @Repository``` 등을 자동으로 스캔한다.
+
+하지만, 특정 패키지만 스캔하고 싶을 경우 @ComponentScan을 사용하여 명시적으로 설정할 수 있다.
+```java
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan(basePackages = "com.example.service")
+public class AppConfig {
+}
+```
+이렇게 설정하면 ```com.example.service``` 패키지 내부의 모든 ```@Component```가 자동으로 스캔된다.<br>
+기본적으로 ```@SpringBootApplication``` 내부에 ```@ComponentScan```이 포함되어 있기 때문에,<br>
+추가적으로 설정할 필요가 없지만 특정 패키지만 스캔하고 싶을 경우 유용하다.
+
+**특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@ComponentScan을 사용하면 특정 패키지 내의 빈을 자동으로 검색하여 등록할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@SpringBootApplication 내부에 기본적으로 포함되어 있으므로 대부분의 경우 별도로 사용하지 않아도 된다.<br>
+
+여러 개의 패키지를 지정할 수도 있다.<br>
+```@ComponentScan(basePackages = {"com.example.service", "com.example.repository"})```<br>
+특정 클래스를 기준으로 스캔을 수행할 수도 있다.<br>
+```@ComponentScan(basePackageClasses = MyService.class)```
+
+---------------------
+## 환경 설정 관련 애노테이션
+Spring Boot에서는 애플리케이션의 설정을 다양한 방식으로 관리할 수 있다.<br>
+이를 위해 ```application.properties``` 또는 ```application.yml```과 같은 설정 파일을 사용하며,<br>
+이러한 설정을 코드에서 쉽게 활용할 수 있도록 여러 환경 설정 관련 애노테이션을 제공한다.
+
+이번 섹션에서는 Spring Boot에서 환경 설정과 관련된 주요 애노테이션을 다룬다.
+
+-----------------
+### @PropertySource – 외부 설정 파일을 로드하는 애노테이션
+Spring Boot에서는 ```application.properties``` 또는 ```application.yml```을 기본 설정 파일로 사용한다.<br>
+그러나, 추가적으로 다른 외부 설정 파일을 불러와야 하는 경우 ```@PropertySource```를 사용할 수 있다.
+
+이 애노테이션을 사용하면 특정 프로퍼티 파일을 명시적으로 로드하여<br>
+Spring의 환경 설정 값(Environment)에서 접근할 수 있도록 한다.
+```java
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.beans.factory.annotation.Value;
+
+@Configuration
+@PropertySource("classpath:custom-config.properties")
+public class AppConfig {
+
+    @Value("${custom.property}")
+    private String customProperty;
+
+    public String getCustomProperty() {
+        return customProperty;
+    }
+}
+```
+위 코드에서 ```@PropertySource("classpath:custom-config.properties")```는
+```src/main/resources/custom-config.properties``` 파일을 로드하는 역할을 한다.
+
+예를 들어, ```custom-config.properties``` 파일의 내용이 다음과 같다면<br>
+```custom.property=Hello, PropertySource!```
+해당 값을 ```@Value``` 애노테이션을 사용하여 필드에 주입할 수 있다.
+
+**특징**<br>
+```@PropertySource```는 외부 설정 파일을 추가로 불러올 때 유용하다.
+
+파일 경로를 지정해야 하며, classpath, file, URL을 지원한다.
+```
+@PropertySource("file:/config/custom-config.properties")
+```
+@PropertySource를 통해 불러온 설정 값은 Environment 객체를 통해 조회할 수도 있다.
+```java
+@Autowired
+private Environment env;
+
+public void printProperty() {
+    System.out.println(env.getProperty("custom.property"));
+}
+```
+
+------------------
+### @Value – 프로퍼티 값을 주입하는 애노테이션
+Spring Boot에서는 ```@Value``` 애노테이션을 사용하여<br>
+설정 파일(application.properties, application.yml)에 정의된 값을 필드에 직접 주입할 수 있다.
+```java
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
+public class AppConfig {
+
+    @Value("${app.name}")
+    private String appName;
+
+    @Value("${app.version:1.0.0}") // 기본값 설정 가능
+    private String appVersion;
+
+    public void printConfig() {
+        System.out.println("Application Name: " + appName);
+        System.out.println("Application Version: " + appVersion);
+    }
+}
+```
+application.properties에 다음과 같은 설정이 존재할 경우:<br>
+```
+app.name=My Spring Boot App
+```
+
+Spring Boot는 ```@Value("${app.name}")```을 통해 해당 값을 자동으로 주입한다.<br>
+또한, 설정 파일에 ```app.version```이 정의되지 않은 경우,<br>
+```@Value("${app.version:1.0.0}")```에 의해 ```기본값 1.0.0```이 설정된다.
+
+**특징**<br>
+```@Value```를 사용하면 Spring 설정 값을 직접 주입받을 수 있다.<br>
+기본값을 지정할 수 있어, 설정이 존재하지 않을 경우에도 안전하게 사용할 수 있다.<br>
+단순한 값뿐만 아니라 배열이나 리스트에도 주입 가능하다.<br>
+```java
+@Value("${app.supported-languages:en,fr,de}")
+private List<String> supportedLanguages;
+```
+SpEL(Spring Expression Language)을 사용할 수도 있다.
+```java
+@Value("#{systemProperties['java.version']}")
+private String javaVersion;
+```
+-----------------
+### @EnableConfigurationProperties – 프로퍼티 설정을 객체로 매핑
+Spring Boot에서는 ```@EnableConfigurationProperties``` 애노테이션을 사용하여<br>
+설정 파일(application.properties, application.yml)의 값을 객체에 매핑할 수 있다.
+
+이 방식은 ```@Value```보다 더 구조적인 방식으로 설정 값을 관리할 수 있도록 한다.
+```java
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix = "app")
+public class AppConfig {
+
+    private String name;
+    private String version;
+
+    // Getter 및 Setter
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+}
+```
+이제 application.yml에서 설정 값을 다음과 같이 정의할 수 있다.
+```
+app:
+  name: My Spring Boot App
+  version: 2.0.0
+```
+그리고 @Autowired를 통해 해당 객체를 주입받아 사용할 수 있다.
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AppService {
+
+    private final AppConfig appConfig;
+
+    @Autowired
+    public AppService(AppConfig appConfig) {
+        this.appConfig = appConfig;
+    }
+
+    public void printAppInfo() {
+        System.out.println("Application Name: " + appConfig.getName());
+        System.out.println("Application Version: " + appConfig.getVersion());
+    }
+}
+```
+**특징**<br>
+@EnableConfigurationProperties와 @ConfigurationProperties를 사용하면<br>
+설정 값을 하나의 객체로 묶어서 관리할 수 있다.
+
+객체 내의 필드 이름과 설정 파일의 키(prefix 포함)가 일치해야 한다.
+
+기본적으로 ```@ConfigurationProperties```는 Setter 기반 바인딩을 사용하지만,<br>
+```@ConstructorBinding```을 사용하면 생성자 기반 바인딩도 가능하다.
+```java
+@ConfigurationProperties(prefix = "app")
+@ConstructorBinding
+public class AppConfig {
+    private final String name;
+    private final String version;
+
+    public AppConfig(String name, String version) {
+        this.name = name;
+        this.version = version;
+    }
+}
+```
+-----------------
+## 트랜잭션 관리 애노테이션
+Spring Boot에서 트랜잭션(Transaction)은 데이터의 일관성과 무결성을 보장하는 중요한 개념이다.<br>
+특히, 데이터베이스를 다루는 애플리케이션에서는 트랜잭션을 적절히 활용하지 않으면<br>
+데이터가 불완전하게 저장되거나 예상치 못한 오류가 발생할 수 있다.
+
+Spring은 이러한 트랜잭션을 효과적으로 관리할 수 있도록<br>
+```@Transactional``` 애노테이션을 제공하며, 이를 통해 데이터베이스 작업을 안정적으로 수행할 수 있다.
+
+이 섹션에서는 Spring Boot에서 트랜잭션을 관리하는 ```@Transactional``` 애노테이션의 개념과 사용법을 상세히 다룬다.
+
+------------
+### @Transactional – 트랜잭션을 관리하는 핵심 애노테이션
+Spring Boot에서 트랜잭션을 적용할 때 가장 기본적으로 사용하는 것이 @Transactional 애노테이션이다.<br>
+이 애노테이션을 활용하면 특정 메서드 또는 클래스의 데이터 변경 작업을 하나의 트랜잭션 단위로 묶을 수 있다.
+
+즉, 해당 메서드에서 예외가 발생하면 자동으로 롤백(Rollback) 되어 데이터의 무결성을 유지할 수 있다.
+```java
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Transactional
+    public void registerUser(User user) {
+        userRepository.save(user);
+        sendWelcomeEmail(user); // 이 메서드에서 예외 발생 시 전체 롤백
+    }
+
+    private void sendWelcomeEmail(User user) {
+        throw new RuntimeException("이메일 전송 실패"); // 예외 발생
+    }
+}
+```
+위 코드에서 ```registerUser``` 메서드에 ```@Transactional```이 적용되어 있기 때문에,
+```sendWelcomeEmail``` 메서드에서 예외가 발생하면 이전의 ```userRepository.save(user)```도 롤백된다.
+즉, 데이터베이스에는 아무런 변경 사항이 반영되지 않는다.
+
+**@Transactional의 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@Transactional이 적용된 메서드에서 예외가 발생하면 자동으로 롤백된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;읽기 전용(read-only) 트랜잭션을 설정할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;트랜잭션 전파 옵션(Propagation)과 격리 수준(Isolation Level)을 설정할 수 있다.
+
+-------------
+### 트랜잭션의 기본 동작 방식
+Spring Boot에서 @Transactional이 적용된 메서드는<br>
+다음과 같은 방식으로 트랜잭션이 시작되고 종료된다.
+
+메서드 실행 전: 트랜잭션이 시작됨<br>
+메서드 실행 중:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;정상적으로 실행되면, 트랜잭션이 커밋(Commit)됨<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예외가 발생하면, 트랜잭션이 롤백(Rollback)됨<br>
+메서드 실행 후: 트랜잭션 종료
+
+Spring Boot에서 ```@Transactional```은 기본적으로 "런타임 예외(RuntimeException)"가 발생해야만 롤백된다.<br>
+즉,``` NullPointerException, IllegalArgumentException``` 같은 예외가 발생하면 롤백이 되지만,<br>
+```Checked Exception(예: IOException, SQLException)```은 기본적으로 롤백되지 않는다.
+
+```java
+@Transactional
+public void updateUser(User user) throws IOException {
+    userRepository.save(user);
+    throw new IOException("파일 저장 실패"); // Checked Exception → 롤백되지 않음
+}
+```
+위 코드에서 IOException은 Checked Exception이므로, 기본적으로 롤백되지 않는다.
+
+**Checked Exception도 롤백되게 하려면?** <br>
+만약 Checked Exception도 롤백되도록 설정하려면 ```rollbackFor``` 옵션을 추가해야 한다.
+```java
+@Transactional(rollbackFor = IOException.class)
+public void updateUser(User user) throws IOException {
+    userRepository.save(user);
+    throw new IOException("파일 저장 실패"); // 롤백됨
+}
+```
+### @Transactional의 주요 옵션
+@Transactional은 다양한 옵션을 지원하여 트랜잭션의 동작을 세밀하게 조정할 수 있다.<br>
+가장 중요한 옵션들은 다음과 같다.
+
+|옵션|설명|
+|:---|:---|
+|propagation|트랜잭션 전파 방식을 설정|
+|isolation|트랜잭션의 격리 수준을 설정|
+|readOnly|읽기 전용 트랜잭션 여부 설정|
+|rollbackFor|롤백할 예외 타입 지정|
+|noRollbackFor|롤백하지 않을 예외 타입 지정|
+
+---------------
+
+
+
+
+
+
+
+
+
+
 
