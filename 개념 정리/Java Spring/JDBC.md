@@ -591,7 +591,7 @@ public class JdbcTest {
 }
 ```
 
-### JDBC 드라이버 설징 시 주의할 점
+### JDBC 드라이버 설정 시 주의할 점
 **JDBC URL의 올바른 설정**<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MySQL:```jdbc:mysql://localhost:3306/sampledb```<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PostgreSQL```: jdbc:postgresql://localhost:5432/sampledb```
