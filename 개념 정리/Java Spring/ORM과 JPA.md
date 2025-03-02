@@ -129,7 +129,7 @@ emf.close();
 -----------
 ## ORM을 사용할 때 고려할 점
 **데이터 조회 성능**<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 대량 데이터를 조회할 때는 ```Lazy Loading(지연 로딩), ```Fetch join```등의 기법을 활용하여 성능 최적화를 해야 한다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 대량 데이터를 조회할 때는 ```Lazy Loading(지연 로딩)```,```Fetch join```등의 기법을 활용하여 성능 최적화를 해야 한다.
 
 **트랜잭션 관리**<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ORM은 내부적으로 트랜잭션을 관리하기 때문에, 개발자는 이를 잘 이해하고 ```@Transactional```등을 적절히 활용해야 한다.
