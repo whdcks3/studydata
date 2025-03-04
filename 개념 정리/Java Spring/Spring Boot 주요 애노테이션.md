@@ -1513,14 +1513,121 @@ public void updateUser(User user) throws IOException {
 |noRollbackFor|롤백하지 않을 예외 타입 지정|
 
 ---------------
+### @Transactional의 주요 사용 예제
+다양한 옵션을 조합하여 트랜잭션을 설정할 수 있다.
 
-    
+(1) 읽기 전용 트랜잭션 (readOnly = true) 읽기 전용 트랜잭션을 설정하면 데이터를 변경하는 작업이 방지되며,<br>
+성능 최적화가 가능하다.
+```java
+@Transactional(readOnly = true)
+public User getUser(Long id) {
+    return userRepository.findById(id).orElse(null);
+}
+```
+위 코드에서는 데이터를 조회하는 메서드에 @Transactional(readOnly = true) 를 설정하여<br>
+불필요한 트랜잭션 오버헤드를 줄일 수 있다.
 
+(2) 특정 예외 발생 시 롤백 (rollbackFor) 기본적으로 Checked Exception은 롤백되지 않지만, rollbackFor을 사용하여 롤백 가능하다.
+```java
+@Transactional(rollbackFor = Exception.class)
+public void processOrder(Order order) throws Exception {
+    orderRepository.save(order);
+    throw new Exception("주문 처리 실패"); // 롤백됨
+}
+```
+(3) 특정 예외 발생 시 롤백 방지 (noRollbackFor) 반대로, 특정 예외가 발생하더라도 롤백되지 않도록 설정할 수도 있다.
+```java
+@Transactional(noRollbackFor = IllegalArgumentException.class)
+public void updateUserProfile(User user) {
+    userRepository.save(user);
+    throw new IllegalArgumentException("잘못된 사용자 정보");
+}
+```
+위 코드에서는 IllegalArgumentException이 발생해도 트랜잭션이 커밋(Commit)됨<br>
+즉, userRepository.save(user)는 유지된다.
 
+------------
+## @Async – 비동기 작업을 수행하는 애노테이션
+일반적으로 **Spring Boot의 메서드는 동기(Synchronous)적** 으로 실행된다.<br>
+즉, 한 메서드가 실행을 완료해야 다음 코드가 실행된다.
 
+그러나 네트워크 호출, 파일 입출력, 대용량 데이터 처리와 같은 시간이 오래 걸리는 작업을 동기적으로 실행하면 애플리케이션 성능이 저하될 수 있다.<br>
+이 문제를 해결하기 위해 Spring Boot에서는 @Async를 사용하여 비동기 처리를 할 수 있다.
 
+----------------
+### @Async의 기본 사용법
+Spring Boot에서 ```@Async```를 적용하면 해당 메서드는 별도의 스레드에서 실행된다.<br>
+즉, 호출한 메서드는 즉시 반환되며, 작업은 백그라운드에서 실행된다.
 
+1. 비동기 메서드 실행
+```java
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
+@Service
+public class AsyncService {
 
+    @Async
+    public void executeAsyncTask() {
+        System.out.println("비동기 작업 시작: " + Thread.currentThread().getName());
+        try {
+            Thread.sleep(3000); // 3초 동안 대기
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        System.out.println("비동기 작업 완료: " + Thread.currentThread().getName());
+    }
+}
+```
+위 코드를 실행하면 ```executeAsyncTask()```가 호출된 후 즉시 반환되며,<br>
+백그라운드에서 별도의 스레드가 할당되어 3초 동안 실행된다.
+
+2. 비동기 메서드 실행 예제
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class AsyncController {
+
+    @Autowired
+    private AsyncService asyncService;
+
+    @GetMapping("/async-task")
+    public String runAsyncTask() {
+        System.out.println("요청 처리 스레드: " + Thread.currentThread().getName());
+        asyncService.executeAsyncTask();
+        return "비동기 작업 실행됨!";
+    }
+}
+```
+이제 ```http://localhost:8080/async-task```로 요청하면,<br>
+컨트롤러는 즉시 응답을 반환하지만, 실제 작업은 백그라운드에서 실행된다.
+
+출력 예시:
+```
+요청 처리 스레드: http-nio-8080-exec-1
+비동기 작업 시작: taskExecutor-1
+비동기 작업 완료: taskExecutor-1
+```
+위 로그를 보면, 요청을 처리하는 스레드와 비동기 작업을 실행하는 스레드가 서로 다르다는 것을 알 수 있다.
+
+-------------
+### @Async 사용 시 주의사항
+@Async를 올바르게 사용하려면 몇 가지 중요한 사항을 이해해야 한다.
+
+① @EnableAsync를 반드시 설정해야 한다
+Spring Boot에서 @Async를 사용하려면 비동기 처리를 활성화해야 한다.
+이를 위해 @EnableAsync 애노테이션을 설정 클래스에 추가해야 한다.
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+
+@Configuration
+@EnableAsync
+public class AsyncConfig {
+}
+만약 @EnableAsync를 추가하지 않으면 @Async가 동작하지 않고 동기적으로 실행된다.
 
 
