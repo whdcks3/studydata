@@ -1617,10 +1617,10 @@ public class AsyncController {
 ### @Async 사용 시 주의사항
 @Async를 올바르게 사용하려면 몇 가지 중요한 사항을 이해해야 한다.
 
-① @EnableAsync를 반드시 설정해야 한다
-Spring Boot에서 @Async를 사용하려면 비동기 처리를 활성화해야 한다.
-이를 위해 @EnableAsync 애노테이션을 설정 클래스에 추가해야 한다.
-
+#### @EnableAsync를 반드시 설정해야 한다
+Spring Boot에서 ```@Async```를 사용하려면 비동기 처리를 활성화해야 한다.<br>
+이를 위해``` @EnableAsync``` 애노테이션을 설정 클래스에 추가해야 한다.
+```java
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -1628,6 +1628,153 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 public class AsyncConfig {
 }
-만약 @EnableAsync를 추가하지 않으면 @Async가 동작하지 않고 동기적으로 실행된다.
+```
+만약 ```@EnableAsync```를 추가하지 않으면 ```@Async```가 동작하지 않고 동기적으로 실행된다.
 
+--------------
+### @Async는 반드시 다른 클래스에서 호출해야 한다
+Spring Boot의 ```@Async```는 ```AOP(Aspect-Oriented Programming)``` 기반으로 동작한다.<br>
+즉, 같은 클래스 내부에서 ```@Async```가 선언된 메서드를 호출하면 비동기 처리가 적용되지 않는다.
+
+잘못된 예제: 같은 클래스 내부에서 호출
+```java
+@Service
+public class AsyncService {
+
+    @Async
+    public void asyncMethod() {
+        System.out.println("비동기 작업 실행 중...");
+    }
+
+    public void normalMethod() {
+        this.asyncMethod(); // 같은 클래스 내부에서 호출 → 비동기 처리되지 않음
+    }
+}
+```
+위와 같이 같은 클래스 내에서 ```this.asyncMethod();```를 호출하면<br>
+Spring이 프록시를 생성하지 않기 때문에 ```@Async```가 동작하지 않는다.<br>
+따라서 비동기 메서드는 반드시 다른 클래스에서 호출해야 한다.
+
+올바른 예제: 다른 클래스에서 호출
+```java
+@RestController
+public class AsyncController {
+
+    @Autowired
+    private AsyncService asyncService;
+
+    @GetMapping("/execute-async")
+    public String executeAsync() {
+        asyncService.asyncMethod(); // 다른 클래스에서 호출 → 정상적으로 비동기 실행됨
+        return "비동기 실행 요청 완료!";
+    }
+}
+```
+---------
+### @Async와 반환값 처리
+기본적으로 ```@Async``` 메서드는 반환 타입이 ```void```일 때 즉시 실행된다.<br>
+그러나 반환값이 필요할 경우 ```CompletableFuture<T>```를 사용하여 결과를 비동기적으로 처리할 수 있다.
+
+예제 2: @Async와 반환값 (CompletableFuture)
+```java
+import java.util.concurrent.CompletableFuture;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AsyncService {
+
+    @Async
+    public CompletableFuture<String> fetchData() {
+        System.out.println("비동기 작업 실행 중...");
+        try {
+            Thread.sleep(3000); // 3초 대기
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return CompletableFuture.completedFuture("비동기 작업 완료");
+    }
+}
+```
+컨트롤러에서 결과를 기다렸다가 반환
+```java
+import java.util.concurrent.CompletableFuture;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class AsyncController {
+
+    @Autowired
+    private AsyncService asyncService;
+
+    @GetMapping("/fetch-data")
+    public CompletableFuture<String> fetchData() {
+        return asyncService.fetchData(); // 비동기 실행 후 결과 반환
+    }
+}
+```
+위 API를 호출하면 비동기적으로 실행되며, 3초 후에 결과가 반환된다.
+
+----------------
+### @Async와 커스텀 스레드 풀 사용
+기본적으로 ```@Async```는 Spring이 제공하는 기본 스레드 풀을 사용하지만,<br>
+대량의 비동기 작업이 필요할 경우 커스텀 스레드 풀을 정의하여 성능을 최적화할 수 있다.
+
+커스텀 스레드 풀 설정
+```java
+import java.util.concurrent.Executor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+@Configuration
+public class AsyncConfig {
+
+    @Bean
+    public Executor asyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5); // 기본적으로 유지되는 스레드 수
+        executor.setMaxPoolSize(10); // 최대 생성 가능한 스레드 수
+        executor.setQueueCapacity(50); // 작업 대기 큐 크기
+        executor.setThreadNamePrefix("Custom-Async-");
+        executor.initialize();
+        return executor;
+    }
+}
+```
+이제 ```@Async("asyncExecutor")```를 지정하면 커스텀 스레드 풀을 사용할 수 있다.
+
+------------------
+## AOP 개념과 필요성
+AOP(Aspect-Oriented Programming, 관점 지향 프로그래밍)는 공통적으로 반복되는 로직을 분리하여 코드의 모듈성을 향상시키는 기법이다.<br>
+Spring Boot는 AOP를 활용하여 로깅, 보안, 트랜잭션 관리, 성능 모니터링과 같은 횡단 관심사(Cross-Cutting Concern)를 쉽게 관리할 수 있도록 지원한다.
+
+------------
+### AOP의 개념
+Spring Boot에서 AOP는 비즈니스 로직과 공통 기능(예: 로깅, 보안 검사, 트랜잭션 관리)을 분리하여 코드의 유지보수성을 높이는 기법이다.<br>
+일반적인 객체 지향 프로그래밍(OOP)에서는 핵심 비즈니스 로직과 반복적인 공통 기능이 하나의 클래스 내에서 섞여서 구현되는 경우가 많다.
+
+예를 들어, 다음과 같은 요구사항이 있다고 가정하자.
+
+비즈니스 메서드 실행 전후에 로깅을 수행해야 한다.
+모든 서비스 메서드의 실행 시간을 측정하고 싶다.
+사용자 권한을 검사하는 보안 로직을 모든 서비스 메서드에 적용하고 싶다.
+이런 경우, 각 서비스 메서드에 동일한 코드가 반복적으로 들어가게 된다.
+
+public class OrderService {
+    public void createOrder() {
+        System.out.println("로깅: createOrder 메서드 실행 시작");
+        long startTime = System.currentTimeMillis();
+
+        // 핵심 비즈니스 로직 수행
+        System.out.println("주문 생성 로직 실행");
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("로깅: createOrder 메서드 실행 완료, 실행 시간: " + (endTime - startTime) + "ms");
+    }
+}
+위 코드에서 핵심 비즈니스 로직(주문 생성)과 함께 로깅 및 실행 시간 측정 코드가 함께 포함되어 있다.
+이러한 방식은 유지보수성을 떨어뜨리고, 코드의 가독성을 저하시킨다.
 
