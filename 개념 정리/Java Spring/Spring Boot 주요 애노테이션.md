@@ -2120,3 +2120,40 @@ OrderService.createOrder() 실행 중 예외 발생.<br>
 #### 출력 결과
 ```예외 발생: 주문 처리 중 오류가 발생했습니다.```<br>
 @AfterThrowing은 예외가 발생한 경우 로깅을 추가하거나, 특정 예외에 대해 별도의 처리를 할 때 유용하다.
+
+---------------------------
+## RESTful API 설계 관련 애노테이션
+Spring Boot에서 RESTful API를 개발할 때 애노테이션을 활용하면<br>
+클라이언트 요청을 쉽게 처리하고, HTTP 메서드와 엔드포인트를 명확하게 정의할 수 있다.
+
+이번 섹션에서는 RESTful API를 설계하는 데 사용되는 주요 애노테이션을 상세히 다룬다.
+
+--------------------
+### @RestController – RESTful API 컨트롤러를 정의
+Spring Boot에서 RESTful API를 개발할 때 기본적으로 사용하는 애노테이션이 ```@RestController``` 이다.
+이 애노테이션은 ```@Controller```와 ```@ResponseBody```가 결합된 형태로,
+컨트롤러에서 반환하는 데이터가 JSON 또는 XML 형식으로 자동 변환되도록 한다.
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    @GetMapping("/user")
+    public String getUser() {
+        return "Spring Boot REST API";
+    }
+}
+```
+```@RestController```의 특징<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클래스 레벨에서 사용하며, 해당 클래스가 RESTful API 컨트롤러임을 명시한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자동으로 @ResponseBody가 적용되어, 문자열, 객체 등을 JSON 또는 XML 형태로 반환한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;뷰(View)를 반환하지 않으며, 주로 API 응답을 JSON 형식으로 처리할 때 사용한다.
+
+예제 실행 결과
+위 UserController의 /api/user 엔드포인트에 GET 요청을 보내면 다음과 같은 응답을 받을 수 있다.
+
+"Spring Boot REST API"
