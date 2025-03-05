@@ -2151,9 +2151,143 @@ public class UserController {
 ```@RestController```의 특징<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클래스 레벨에서 사용하며, 해당 클래스가 RESTful API 컨트롤러임을 명시한다.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자동으로 @ResponseBody가 적용되어, 문자열, 객체 등을 JSON 또는 XML 형태로 반환한다.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;뷰(View)를 반환하지 않으며, 주로 API 응답을 JSON 형식으로 처리할 때 사용한다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**뷰(View)를 반환하지 않으며**, 주로 API 응답을 JSON 형식으로 처리할 때 사용한다.
 
-예제 실행 결과
+#### 예제 실행 결과
 위 UserController의 /api/user 엔드포인트에 GET 요청을 보내면 다음과 같은 응답을 받을 수 있다.
+```"Spring Boot REST API"```
 
-"Spring Boot REST API"
+-------------------
+### @RequestMapping – 요청 URL을 특정 메서드 또는 클래스에 매핑
+```@RequestMapping``` 애노테이션은 클래스 또는 메서드 레벨에서 사용하여<br>
+특정 URL과 해당 요청을 처리할 메서드를 매핑할 때 사용된다.
+```java
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class ProductController {
+
+    @RequestMapping(value = "/products", method = RequestMethod.GET)
+    public String getProducts() {
+        return "상품 목록 조회";
+    }
+}
+```
+#### @RequestMapping의 특징
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클래스 레벨에서 설정할 경우, 공통된 URL을 지정할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;메서드 레벨에서 HTTP 메서드(GET, POST, PUT, DELETE 등)를 지정할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@GetMapping, @PostMapping 등의 세부적인 HTTP 메서드 매핑 애노테이션과 함께 사용할 수도 있다.
+
+#### 예제 실행 결과
+위 ProductController의 /api/products 엔드포인트에 GET 요청을 보내면 다음과 같은 응답을 받을 수 있다.
+```"상품 목록 조회"```
+
+----------------
+### @GetMapping, @PostMapping, @PutMapping, @DeleteMapping – HTTP 메서드 매핑
+Spring Boot에서는 @RequestMapping의 method 속성을 사용하는 대신,<br>
+각 HTTP 메서드(GET, POST, PUT, DELETE 등)를 더 직관적으로 매핑할 수 있는 전용 애노테이션을 제공한다.
+
+### (1) @GetMapping – GET 요청을 처리
+GET 요청은 서버에서 데이터를 조회할 때 사용된다.
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class OrderController {
+
+    @GetMapping("/orders")
+    public String getOrders() {
+        return "주문 목록 조회";
+    }
+}
+```
+#### 예제 실행 결과
+GET /api/orders 요청을 보내면 다음과 같은 응답을 받는다.
+```"주문 목록 조회"```
+
+----------------
+### (2) @PostMapping – POST 요청을 처리
+POST 요청은 새로운 데이터를 생성할 때 사용된다.
+```java
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class CustomerController {
+
+    @PostMapping("/customers")
+    public String createCustomer(@RequestBody String customer) {
+        return "새로운 고객 생성: " + customer;
+    }
+}
+```
+#### 예제 실행 결과
+POST /api/customers 요청을 보내면서 "John Doe"를 전송하면 다음과 같은 응답을 받는다.
+```"새로운 고객 생성: John Doe"```
+
+-------------
+### (3) @PutMapping – PUT 요청을 처리
+PUT 요청은 기존 데이터를 수정할 때 사용된다.
+```java
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class EmployeeController {
+
+    @PutMapping("/employees")
+    public String updateEmployee(@RequestBody String employee) {
+        return "직원 정보 업데이트: " + employee;
+    }
+}
+```
+#### 예제 실행 결과
+PUT /api/employees 요청을 보내면서 "Employee A"를 전송하면 다음과 같은 응답을 받는다.
+```"직원 정보 업데이트: Employee A"```
+
+----------
+### (4) @DeleteMapping – DELETE 요청을 처리
+DELETE 요청은 기존 데이터를 삭제할 때 사용된다.
+```java
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class ProductController {
+
+    @DeleteMapping("/products")
+    public String deleteProduct() {
+        return "상품 삭제 완료";
+    }
+}
+```
+#### 예제 실행 결과
+DELETE /api/products 요청을 보내면 다음과 같은 응답을 받는다.
+```"상품 삭제 완료"```
+
+-------------
+## 요청 및 응답 처리 애노테이션
+Spring Boot에서 RESTful API를 개발할 때, 클라이언트의 요청을 정확하게 처리하고<br>
+응답을 반환하는 것은 필수적인 과정이다.
+
+Spring Boot는 이를 간편하게 구현할 수 있도록 다양한 애노테이션을 제공하며,<br>
+요청 데이터를 쉽게 다룰 수 있도록 ```@PathVariable, @RequestParam, @RequestBody, @ResponseBody```<br>
+와 같은 애노테이션이 존재한다.
+
+이번 섹션에서는 각 애노테이션의 역할과 활용법을 상세히 다룬다.
+
+-------
