@@ -1779,3 +1779,85 @@ public class OrderService {
 위 코드에서 핵심 비즈니스 로직(주문 생성)과 함께 로깅 및 실행 시간 측정 코드가 함께 포함되어 있다.<br>
 이러한 방식은 유지보수성을 떨어뜨리고, 코드의 가독성을 저하시킨다.
 
+--------------
+### AOP의 필요성
+AOP를 활용하면 공통 기능을 별도로 정의하고, 핵심 비즈니스 로직과 분리하여 재사용할 수 있다.<br>
+즉, 로깅, 트랜잭션 관리, 보안 검사와 같은 기능을 한 곳에서 관리하고, 필요할 때 자동으로 적용할 수 있다.
+
+AOP를 적용하면 다음과 같은 이점이 있다.
++ 코드 중복 제거: 모든 서비스 메서드에서 동일한 로깅, 보안 코드 등을 반복할 필요가 없다.
++ 비즈니스 로직과 공통 기능의 분리: 핵심 로직을 더 직관적으로 유지할 수 있다.
++ 유지보수성 향상: 공통 기능을 한 곳에서 수정하면 모든 적용된 곳에 자동으로 반영된다.
+
+예를 들어, AOP를 사용하여 서비스 메서드 실행 시간을 측정하는 로직을 분리할 수 있다.
+```java
+@Aspect
+@Component
+public class ExecutionTimeAspect {
+
+    @Around("execution(* com.example.service.*.*(..))")
+    public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = System.currentTimeMillis();
+
+        Object result = joinPoint.proceed(); // 원래 메서드 실행
+
+        long endTime = System.currentTimeMillis();
+        System.out.println(joinPoint.getSignature() + " 실행 시간: " + (endTime - startTime) + "ms");
+
+        return result;
+    }
+}
+```
+위 코드에서 ```logExecutionTime()``` 메서드는 모든 서비스 클래스의 메서드 실행 시간을 측정하는 공통 기능을 담당한다.<br>
+이제 서비스 클래스에는 핵심 비즈니스 로직만 포함하면 되며, 실행 시간 측정 로직은 AOP에서 자동으로 적용된다.
+
+---------------
+### AOP의 주요 개념
+Spring Boot에서 AOP는 다음과 같은 개념을 기반으로 동작한다.
+
+**1. Aspect (관점)** <br>
+공통 기능을 정의하는 클래스를 의미한다.<br>
+예: 로깅, 보안 검사, 실행 시간 측정 등
+
+**2. Advice (어드바이스)** <br>
+공통 기능이 적용될 실행 지점(Join Point)에서 수행할 동작을 정의한다.<br>
+대표적인 종류:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@Before``` : 메서드 실행 전에 실행<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@After``` : 메서드 실행 후에 실행<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@Around``` : 메서드 실행 전후에 실행 (가장 강력한 기능)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@AfterReturning``` : 정상적으로 종료된 경우 실행<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@AfterThrowing``` : 예외 발생 시 실행
+
+** 3. Join Point (조인 포인트)** <br>
+Advice가 적용될 수 있는 실행 지점을 의미한다.<br>
+Spring Boot에서는 일반적으로 메서드 실행이 Join Point가 된다.<br>
+
+** 4. Pointcut (포인트컷) ** <br>
+Advice가 적용될 대상(메서드 또는 클래스)을 지정하는 표현식이다.<br>
+예: ```execution(* com.example.service.*.*(..))```<br>
+```com.example.service``` 패키지의 모든 클래스에서 모든 메서드에 적용
+
+**5. Target (대상) **<br>
+Advice가 적용되는 실제 객체(메서드) 를 의미한다.<br>
+예: OrderService.createOrder() 메서드
+
+**6. Weaving (위빙)** <br>
+Advice를 Target 객체의 Join Point에 적용하는 과정을 의미한다.<br>
+Spring Boot에서는 런타임 위빙(Run-Time Weaving) 방식이 사용된다.
+
+--------------------
+4. AOP 적용 흐름
+AOP가 적용되는 과정을 이해하면 더 쉽게 활용할 수 있다.
+
+클라이언트가 ```OrderService.createOrder()```를 호출<br>
+Spring AOP 프록시가 해당 메서드를 가로챔<br>
+Advice가 설정된 경우, 먼저 실행<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@Before``` 어드바이스가 있다면 먼저 실행
+
+핵심 비즈니스 로직 실행<br>
+메서드 실행 후 ```@After```, ```@AfterReturning```, ```@AfterThrowing``` 등의 Advice 실행<br>
+클라이언트에게 결과 반환
+
+즉, AOP는 메서드 실행을 가로채서 원하는 동작을 추가할 수 있도록 도와준다.
+
+----------------
