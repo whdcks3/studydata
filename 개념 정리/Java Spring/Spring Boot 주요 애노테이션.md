@@ -1846,18 +1846,277 @@ Advice를 Target 객체의 Join Point에 적용하는 과정을 의미한다.<br
 Spring Boot에서는 런타임 위빙(Run-Time Weaving) 방식이 사용된다.
 
 --------------------
-4. AOP 적용 흐름
+**4. AOP 적용 흐름** <br>
 AOP가 적용되는 과정을 이해하면 더 쉽게 활용할 수 있다.
 
-클라이언트가 ```OrderService.createOrder()```를 호출<br>
-Spring AOP 프록시가 해당 메서드를 가로챔<br>
-Advice가 설정된 경우, 먼저 실행<br>
+**클라이언트가 ```OrderService.createOrder()```를 호출** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring AOP 프록시가 해당 메서드를 가로챔<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Advice가 설정된 경우, 먼저 실행<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@Before``` 어드바이스가 있다면 먼저 실행
 
-핵심 비즈니스 로직 실행<br>
-메서드 실행 후 ```@After```, ```@AfterReturning```, ```@AfterThrowing``` 등의 Advice 실행<br>
-클라이언트에게 결과 반환
+**핵심 비즈니스 로직 실행**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;메서드 실행 후 ```@After```, ```@AfterReturning```, ```@AfterThrowing``` 등의 Advice 실행<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트에게 결과 반환
 
 즉, AOP는 메서드 실행을 가로채서 원하는 동작을 추가할 수 있도록 도와준다.
 
 ----------------
+**5. AOP의 예제 코드** <br>
+이제 AOP를 활용하여 로깅 기능을 공통 로직으로 분리하는 예제를 살펴보자.
+
+AOP 설정 (Aspect 클래스)
+```java
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @Before("execution(* com.example.service.*.*(..))")
+    public void logBeforeMethod(JoinPoint joinPoint) {
+        System.out.println("메서드 실행 전: " + joinPoint.getSignature().getName());
+    }
+}
+```
+```@Before("execution(* com.example.service.*.*(..))")```<br>
+```com.example.service``` 패키지 내 모든 클래스의 모든 메서드 실행 전에 실행된다.
+
+서비스 클래스
+```java
+import org.springframework.stereotype.Service;
+
+@Service
+public class OrderService {
+
+    public void createOrder() {
+        System.out.println("주문 생성 로직 실행");
+    }
+}
+```
+
+컨트롤러
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class OrderController {
+
+    @Autowired
+    private OrderService orderService;
+
+    @GetMapping("/create-order")
+    public String createOrder() {
+        orderService.createOrder();
+        return "주문이 생성되었습니다.";
+    }
+}
+```
+실행 결과<br>
+```http://localhost:8080/create-order``` 호출 시 콘솔 출력:
+```java
+메서드 실행 전: createOrder
+주문 생성 로직 실행
+```
+AOP를 활용하여 로깅 로직을 서비스 메서드에서 완전히 분리했다.<br>
+OrderService.createOrder()를 변경하지 않고도 모든 서비스 메서드 실행 전에 로깅을 추가할 수 있다.
+
+--------------------
+## 주요 AOP 애노테이션
+Spring Boot에서 ***AOP(Aspect-Oriented Programming)** 를 적용하기 위해 다양한 애노테이션을 제공한다.<br>
+이 애노테이션들은 **공통 기능(로깅, 트랜잭션 관리, 보안 검사 등)을 별도의 모듈로 분리하여 코드 중복을 줄이고 유지보수성을 향상**시키는 데 활용된다.
+
+이번 섹션에서는 AOP에서 자주 사용되는 주요 애노테이션을 상세히 다룬다.
+
+---------------------
+### @Aspect – AOP 기능을 정의하는 클래스 지정
+Spring Boot에서 AOP를 적용하는 클래스는 반드시 @Aspect 애노테이션을 사용하여 선언해야 한다.<br>
+이 애노테이션은 해당 클래스가 횡단 관심사를 담당하는 Aspect(관점) 클래스임을 명시한다.
+```java
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class LoggingAspect {
+    // AOP 기능이 적용될 클래스
+}
+```
+```@Aspect```는 AOP 기능을 포함하는 클래스를 정의할 때 반드시 필요하다.
+```@Component```와 함께 사용하면 Spring이 이 클래스를 빈으로 등록할 수 있다.
+
+-----------------
+### @Before – 대상 메서드 실행 전에 실행
+```@Before``` 애노테이션은 특정 메서드가 실행되기 전에 실행할 공통 기능을 정의할 때 사용된다.
+
+예제:
+```java
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @Before("execution(* com.example.service.*.*(..))")
+    public void logBeforeMethod(JoinPoint joinPoint) {
+        System.out.println("메서드 실행 전: " + joinPoint.getSignature().getName());
+    }
+}
+```
+```"execution(* com.example.service.*.*(..))"```:<br>
+com.example.service 패키지 내 모든 클래스의 모든 메서드 실행 전에 이 로직을 실행한다.
+
+```joinPoint.getSignature().getName()```<br>
+현재 실행되는 메서드의 이름을 출력한다.
+
+#### 실행 흐름
+클라이언트가 OrderService.createOrder()를 호출.<br>
+@Before 애노테이션이 적용된 logBeforeMethod() 실행.<br>
+OrderService.createOrder()의 본래 비즈니스 로직 실행.
+
+#### 출력 결과
+```메서드 실행 전: createOrder```
+
+-------------------
+### @After – 대상 메서드 실행 후 실행
+@After 애노테이션은 특정 메서드가 실행된 후에 수행할 공통 기능을 정의할 때 사용된다.
+
+예제:
+```java
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.After;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @After("execution(* com.example.service.*.*(..))")
+    public void logAfterMethod(JoinPoint joinPoint) {
+        System.out.println("메서드 실행 후: " + joinPoint.getSignature().getName());
+    }
+}
+```
+
+#### 실행 흐름
+OrderService.createOrder() 메서드 실행.<br>
+@After 애노테이션이 적용된 logAfterMethod() 실행.
+
+#### 출력 결과
+```메서드 실행 후: createOrder```<br>
+```@After```는 정상 실행이든 예외가 발생하든 상관없이 항상 실행된다.
+
+---------------------
+### @Around – 대상 메서드 실행 전후에 실행
+```@Around``` 애노테이션은 메서드 실행 전과 후 모두에서 실행될 코드 블록을 정의할 때 사용된다.
+
+예제:
+```java
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Around;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class ExecutionTimeAspect {
+
+    @Around("execution(* com.example.service.*.*(..))")
+    public Object measureExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = System.currentTimeMillis();
+
+        Object result = joinPoint.proceed(); // 실제 대상 메서드 실행
+
+        long endTime = System.currentTimeMillis();
+        System.out.println(joinPoint.getSignature() + " 실행 시간: " + (endTime - startTime) + "ms");
+
+        return result;
+    }
+}
+```
+#### 실행 흐름
+클라이언트가 OrderService.createOrder()를 호출.<br>
+@Around 애노테이션이 적용된 measureExecutionTime()의 실행 전 부분이 먼저 실행됨.<br>
+joinPoint.proceed()를 호출하여 원래의 메서드 실행.<br>
+원래 메서드 실행이 끝난 후 실행 후 부분이 실행됨.
+
+#### 출력 결과
+```createOrder 실행 시간: 5ms```<br>
+```@Around```는 메서드 실행 시간을 측정하는 경우 유용하다.<br>
+```joinPoint.proceed()```를 호출하지 않으면 원래 메서드가 실행되지 않는다.
+
+-----------------
+### @AfterReturning – 정상 실행 후 실행
+```@AfterReturning``` 애노테이션은 대상 메서드가 정상적으로 실행된 후 실행되는 공통 기능을 정의할 때 사용된다.
+
+예제:
+```java
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @AfterReturning(pointcut = "execution(* com.example.service.*.*(..))", returning = "result")
+    public void logAfterReturning(Object result) {
+        System.out.println("메서드 실행 완료, 반환값: " + result);
+    }
+}
+```
+"execution(* com.example.service.*.*(..))":<br>
+com.example.service 패키지 내 모든 메서드에 적용.
+
+returning = "result"<br>
+대상 메서드의 반환 값을 가져와서 출력.
+
+#### 실행 흐름
+OrderService.createOrder() 실행.<br>
+반환값이 존재하면 @AfterReturning 애노테이션이 적용된 메서드 실행.
+
+#### 출력 결과
+```메서드 실행 완료, 반환값: Order 생성 완료```<br>
+@AfterReturning은 반환값을 조작하지 않고 단순히 로깅할 때 유용하다.
+
+---------------------
+6. @AfterThrowing – 예외 발생 시 실행
+@AfterThrowing 애노테이션은 메서드 실행 중 예외가 발생했을 때 실행되는 공통 기능을 정의할 때 사용된다.
+
+예제:
+```java
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class ExceptionLoggingAspect {
+
+    @AfterThrowing(pointcut = "execution(* com.example.service.*.*(..))", throwing = "exception")
+    public void logAfterThrowing(Exception exception) {
+        System.out.println("예외 발생: " + exception.getMessage());
+    }
+}
+```
+"execution(* com.example.service.*.*(..))":<br>
+com.example.service 패키지 내 모든 메서드에 적용.
+
+throwing = "exception"<br>
+예외가 발생했을 때 예외 객체를 전달받아 출력.
+
+#### 실행 흐름
+OrderService.createOrder() 실행 중 예외 발생.<br>
+@AfterThrowing 애노테이션이 적용된 메서드 실행.
+
+#### 출력 결과
+```예외 발생: 주문 처리 중 오류가 발생했습니다.```<br>
+@AfterThrowing은 예외가 발생한 경우 로깅을 추가하거나, 특정 예외에 대해 별도의 처리를 할 때 유용하다.
