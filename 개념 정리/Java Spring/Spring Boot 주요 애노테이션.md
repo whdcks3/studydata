@@ -2291,6 +2291,184 @@ Spring Boot는 이를 간편하게 구현할 수 있도록 다양한 애노테�
 이번 섹션에서는 각 애노테이션의 역할과 활용법을 상세히 다룬다.
 
 -------
+### @PathVariable – URL 경로 변수를 처리하는 애노테이션
+RESTful API를 설계할 때 URL 경로에 변수 값을 포함하여 요청을 처리하는 경우가 많다.<br>
+이때 사용하는 애노테이션이 ```@PathVariable``` 이다.
+
+예를 들어, 사용자의 id 값을 URL 경로에 포함하여 특정 사용자의 정보를 조회한다고 가정하자.
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @GetMapping("/{id}")
+    public String getUserById(@PathVariable("id") Long userId) {
+        return "조회된 사용자 ID: " + userId;
+    }
+}
+```
+위 코드에서 ```@PathVariable("id")```를 사용하여 ```id``` 값을 가져오고 있다.<br>
+따라서, 다음과 같이 요청하면:<br>
+```GET /api/users/10```
+
+예제 실행 결과<br>
+```"조회된 사용자 ID: 10"```
+
+#### @PathVariable의 특징
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL 경로에 포함된 변수를 메서드의 매개변수로 매핑할 때 사용한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;중괄호 {}를 이용하여 URL에서 변수명을 정의하고, 해당 값을 추출하여 사용할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;데이터 타입 변환이 자동으로 이루어진다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어 id가 Long 타입이면, URL에서 전달된 id 값을 Long으로 변환하여 주입한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;여러 개의 경로 변수를 사용할 수도 있다.
 
 
+#### 여러 개의 @PathVariable 사용 예제
+만약 사용자의 ID뿐만 아니라, 특정 주문 ID도 함께 받아야 한다면 다음과 같이 구현할 수 있다.
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
+@RequestMapping("/api")
+public class OrderController {
+
+    @GetMapping("/users/{userId}/orders/{orderId}")
+    public String getOrderByUser(@PathVariable("userId") Long userId,
+                                 @PathVariable("orderId") Long orderId) {
+        return "사용자 ID: " + userId + ", 주문 ID: " + orderId;
+    }
+}
+```
+예제 실행 결과<br>
+```
+GET /api/users/5/orders/100
+"사용자 ID: 5, 주문 ID: 100"
+```
+
+#### 선택적 @PathVariable (Optional)
+일부 요청에서 ```@PathVariable``` 값을 생략할 수도 있다.<br>
+Spring Boot에서는 이를 ```required = false```로 설정할 수 있다.
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class ProductController {
+
+    @GetMapping("/products/{productId}/{categoryId}")
+    public String getProduct(@PathVariable("productId") Long productId,
+                             @PathVariable(value = "categoryId", required = false) Long categoryId) {
+        if (categoryId == null) {
+            return "상품 ID: " + productId;
+        }
+        return "상품 ID: " + productId + ", 카테고리 ID: " + categoryId;
+    }
+}
+```
+이렇게 하면 categoryId가 없어도 요청을 보낼 수 있다.
+
+```
+GET /api/products/20
+"상품 ID: 20"
+GET /api/products/20/3
+"상품 ID: 20, 카테고리 ID: 3"
+```
+
+------------------------
+2. @RequestParam – 쿼리 파라미터를 처리하는 애노테이션
+REST API에서는 쿼리 파라미터(Query Parameter)를 이용하여 데이터를 필터링하거나 특정 기준을 설정하는 경우가 많다.<br>
+이때 사용하는 것이 ```@RequestParam``` 애노테이션이다.
+
+예를 들어, 사용자의 이름을 쿼리 파라미터로 전달받아 검색한다고 가정해보자.
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class SearchController {
+
+    @GetMapping("/search")
+    public String searchUser(@RequestParam("name") String name) {
+        return "검색된 사용자: " + name;
+    }
+}
+```
+
+예제 실행 결과<br>
+```
+GET /api/search?name=John
+"검색된 사용자: John"
+```
+
+#### @RequestParam의 특징
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;쿼리 파라미터 값을 컨트롤러 메서드의 매개변수로 바인딩할 때 사용한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;요청 URL의 ? 뒤에 오는 키-값 형태의 파라미터 값을 매핑한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;여러 개의 @RequestParam을 사용할 수도 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;기본값을 설정할 수도 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;쿼리 파라미터의 필수 여부를 지정할 수도 있다.
+
+#### 여러 개의 @RequestParam 사용 예제
+```java
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class ProductController {
+
+    @GetMapping("/products")
+    public String getProducts(@RequestParam("category") String category,
+                              @RequestParam("sort") String sortBy) {
+        return "카테고리: " + category + ", 정렬 기준: " + sortBy;
+    }
+}
+```
+
+예제 실행 결과<br>
+```
+GET /api/products?category=electronics&sort=price
+"카테고리: electronics, 정렬 기준: price"
+```
+
+#### 기본값 설정
+쿼리 파라미터가 없는 경우 기본값을 설정할 수도 있다.
+```java
+@GetMapping("/products")
+public String getProducts(@RequestParam(value = "category", defaultValue = "all") String category) {
+    return "카테고리: " + category;
+}
+GET /api/products
+"카테고리: all"
+```
+#### 선택적 @RequestParam
+```java
+쿼리 파라미터가 필수가 아닐 경우 required = false 옵션을 추가할 수 있다.
+
+@GetMapping("/products")
+public String getProducts(@RequestParam(value = "category", required = false) String category) {
+    if (category == null) {
+        return "카테고리가 지정되지 않음";
+    }
+    return "카테고리: " + category;
+}
+GET /api/products
+"카테고리가 지정되지 않음"
+```
+
+---------------
+## 요청 및 응답 처리 애노테이션 – @RequestBody, @ResponseBody
