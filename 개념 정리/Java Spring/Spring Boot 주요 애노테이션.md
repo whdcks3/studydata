@@ -2385,7 +2385,7 @@ GET /api/products/20/3
 ```
 
 ------------------------
-2. @RequestParam – 쿼리 파라미터를 처리하는 애노테이션
+#### @RequestParam – 쿼리 파라미터를 처리하는 애노테이션
 REST API에서는 쿼리 파라미터(Query Parameter)를 이용하여 데이터를 필터링하거나 특정 기준을 설정하는 경우가 많다.<br>
 이때 사용하는 것이 ```@RequestParam``` 애노테이션이다.
 
@@ -2472,3 +2472,350 @@ GET /api/products
 
 ---------------
 ## 요청 및 응답 처리 애노테이션 – @RequestBody, @ResponseBody
+Spring Boot에서 RESTful API를 개발할 때, 클라이언트가 요청하는 데이터와 서버가 응답하는 데이터의 형식을 올바르게 처리하는 것은 매우 중요하다.<br>
+특히, JSON 데이터를 객체로 변환하거나, 객체를 JSON 형식으로 응답하는 과정은 REST API에서 필수적인 요소이다.
+
+Spring Boot는 이러한 과정을 쉽게 처리할 수 있도록 ```@RequestBody```와 ```@ResponseBody``` 애노테이션을 제공한다.<br>
+이번 섹션에서는 이 두 애노테이션의 개념, 동작 방식, 사용법 및 주의할 점을 상세히 다룬다.
+
+---------------
+### @RequestBody – 요청 본문을 객체로 변환하는 애노테이션
+클라이언트가 API 요청을 보낼 때, 요청 데이터는 보통 JSON 형식으로 전달된다.<br>
+Spring Boot에서는 ```@RequestBody``` 애노테이션을 사용하여 JSON 데이터를 Java 객체로 변환하여 컨트롤러 메서드의 매개변수로 받을 수 있다.
+
+이 과정에서 Spring의 ```HttpMessageConverter```가 JSON을 자동으로 Java 객체로 변환한다.<br>
+즉, JSON 데이터를 파싱하여 해당하는 Java 객체의 필드에 자동으로 매핑해준다.
+
+#### 기본 사용법
+다음은 사용자 정보를 JSON으로 받아 User 객체로 변환하는 예제이다.
+```java
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @PostMapping("/create")
+    public String createUser(@RequestBody User user) {
+        return "사용자 생성됨: " + user.getName() + ", 나이: " + user.getAge();
+    }
+}
+```
+#### 클라이언트 요청(JSON)
+```java
+{
+  "name": "홍길동",
+  "age": 25
+}
+```
+
+#### Java 객체 (User 클래스)
+```java
+public class User {
+    private String name;
+    private int age;
+
+    // 기본 생성자
+    public User() {}
+
+    // Getter & Setter
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+```
+#### 예제 실행 결과
+```"사용자 생성됨: 홍길동, 나이: 25"```
+
+-------------------
+### @RequestBody 동작 방식
+-> ```@RequestBody```는 요청의 HTTP 본문(body) 을 읽어 해당 데이터를 Java 객체로 변환한다.<br>
+-> Spring Boot는 내부적으로 Jackson 라이브러리(ObjectMapper)를 이용해 JSON ↔ Java 객체 변환을 자동으로 처리한다.<br>
+-> ```@RequestBody```는 JSON 외에도 XML 형식의 데이터 변환도 지원한다.<br>
+-> 기본적으로 객체의 필드 이름과 JSON 데이터의 키가 일치해야 정상적으로 매핑된다.
+
+-----------------
+### @RequestBody 사용 시 주의할 점
+1) 필수 필드가 누락될 경우 예외 발생<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JSON 데이터에서 User 객체의 필수 필드가 누락되면 400 Bad Request가 발생한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, name 필드 없이 요청을 보내면, Spring Boot는 자동으로 예외를 발생시킨다.
+
+2) null 또는 잘못된 데이터 타입 처리<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JSON에서 age 필드에 문자열 값을 입력하면 HttpMessageNotReadableException 예외가 발생한다.
+```java
+{
+  "name": "홍길동",
+  "age": "스물다섯"
+}
+org.springframework.http.converter.HttpMessageNotReadableException:
+JSON parse error: Cannot deserialize value of type `int` from String "스물다섯"
+```
+**해결 방법**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DTO(Data Transfer Object) 클래스를 사용하여,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@JsonProperty``` 또는 ```@JsonInclude``` 애노테이션을 활용하면 데이터 누락이나 잘못된 타입을 방지할 수 있다.
+```java
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL) // null 값은 JSON 변환 시 포함되지 않음
+public class User {
+    private String name;
+    private Integer age;
+
+    // Getter, Setter
+}
+```
+------------------
+### @ResponseBody – 메서드 반환값을 JSON으로 변환하는 애노테이션
+Spring Boot에서 컨트롤러의 반환값을 JSON 형식의 응답으로 변환하려면 ```@ResponseBody```를 사용한다.<br>
+```@RestController```를 사용하면 모든 메서드에 자동으로 ```@ResponseBody```가 적용되므로 별도로 선언하지 않아도 된다.<br>
+하지만, ```@Controller```를 사용할 경우 ```@ResponseBody```를 명시해야 한다.
+
+#### 기본 사용법
+다음은 ```@ResponseBody```를 사용하여 객체를 JSON 응답으로 변환하는 예제이다.
+```java
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @GetMapping("/{id}")
+    @ResponseBody
+    public User getUser(@PathVariable("id") Long id) {
+        return new User("김철수", 30);
+    }
+}
+```
+#### 예제 실행 결과
+```java
+GET /api/users/1
+{
+  "name": "김철수",
+  "age": 30
+}
+```
+--------------
+### @ResponseBody 동작 방식
+-> ```@ResponseBody```는 컨트롤러에서 반환된 객체를 JSON 또는 XML로 변환하여 클라이언트에게 응답한다.<br>
+-> Spring Boot는 기본적으로 Jackson 라이브러리를 사용해 Java 객체를 JSON 형식으로 변환한다.<br>
+-> 만약 XML 형식으로 변환하려면 spring-boot-starter-xml 의존성을 추가해야 한다.
+
+------------
+### @ResponseBody 사용 시 주의할 점
+1) ```@RestController``` 사용 시 ```@ResponseBody```가 자동 적용됨<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@RestController```는 기본적으로 모든 메서드에 ```@ResponseBody```를 적용하므로 따로 선언할 필요가 없다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;만약 일반 ```@Controller```를 사용하면 ```@ResponseBody```를 명시해야 한다.
+```java
+@Controller
+@RequestMapping("/api")
+public class TestController {
+
+    @GetMapping("/message")
+    @ResponseBody // 반드시 필요
+    public String getMessage() {
+        return "Hello, Spring Boot!";
+    }
+}
+```
+3) 데이터 필드가 null이면 JSON 응답에서 생략됨<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@JsonInclude(JsonInclude.Include.NON_NULL)을 사용하면 null 값이 JSON 응답에서 제외된다.
+```java
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class User {
+    private String name;
+    private Integer age;
+
+    // Getter, Setter
+}
+```
+------------------------
+## 예외 처리 및 보안 관련 애노테이션 – @ExceptionHandler, @ControllerAdvice
+Spring Boot에서 예외 처리는 RESTful API 개발에서 중요한 부분이다.<br>
+서버에서 발생하는 예외를 클라이언트가 이해할 수 있는 적절한 응답 형태로 변환해줘야 한다.
+
+Spring Boot에서는 이를 보다 쉽게 관리할 수 있도록 ```@ExceptionHandler```와 ```@ControllerAdvice``` 애노테이션을 제공한다.<br>
+이번 섹션에서는 이 두 애노테이션이 무엇이며, 각각 어떻게 동작하는지를 상세히 설명한다.
+
+-----------------
+### @ExceptionHandler – 특정 예외를 처리하는 애노테이션
+Spring Boot에서 ```@ExceptionHandler``` 애노테이션을 사용하면 특정 예외가 발생했을 때 해당 예외를 처리하는 메서드를 정의할 수 있다.<br>
+즉, 컨트롤러 내에서 발생한 특정 예외를 감지하고 적절한 응답을 반환할 수 있도록 도와주는 기능을 한다.
+
+이 애노테이션은 컨트롤러 클래스 내부에서만 동작한다.<br>
+즉, 해당 컨트롤러에서 발생한 예외만 처리할 수 있다.
+
+#### 기본 사용법
+다음은 @ExceptionHandler를 사용하여 특정 예외를 처리하는 예제이다.
+```java
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    @GetMapping("/user/{id}")
+    public String getUser(@PathVariable("id") int id) {
+        if (id < 1) {
+            throw new IllegalArgumentException("ID는 1 이상이어야 합니다.");
+        }
+        return "User ID: " + id;
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleIllegalArgumentException(IllegalArgumentException ex) {
+        return "잘못된 요청: " + ex.getMessage();
+    }
+}
+```
+#### 클라이언트 요청
+```GET /api/user/0```
+
+#### 예제 실행 결과
+```"잘못된 요청: ID는 1 이상이어야 합니다."```
+
+---------------
+### @ExceptionHandler 동작 방식
+-> ```@ExceptionHandler```는 컨트롤러 내부에서만 동작하며,<br>
+-> 해당 컨트롤러에서 발생한 특정 예외를 감지하여 직접 처리할 수 있다.<br>
+-> 예외 발생 시 ```@ExceptionHandler```가 선언된 메서드가 실행되며,<br>
+-> 해당 메서드에서 적절한 응답을 클라이언트에게 반환한다.<br>
+```@ResponseStatus(HttpStatus.BAD_REQUEST)```를 추가하면 HTTP 상태 코드도 설정할 수 있다.
+
+### @ExceptionHandler 사용 시 주의할 점
+1) 여러 개의 예외 처리 가능<br>
+한 개의 @ExceptionHandler 메서드에서 여러 예외를 처리할 수도 있다.
+```java
+@ExceptionHandler({IllegalArgumentException.class, NullPointerException.class})
+public String handleMultipleExceptions(Exception ex) {
+    return "예외 발생: " + ex.getMessage();
+}
+```
+
+2) ```@ExceptionHandler```는 해당 컨트롤러에만 적용됨<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@ExceptionHandler```는 현재 컨트롤러에서 발생한 예외만 처리한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;만약 모든 컨트롤러에서 공통으로 예외를 처리하고 싶다면 @ControllerAdvice를 사용해야 한다.
+
+---------
+### @ControllerAdvice – 전역 예외 처리를 위한 애노테이션
+```@ControllerAdvice```는 Spring MVC의 모든 컨트롤러에서 발생하는 예외를 전역적으로 처리할 수 있도록 도와주는 애노테이션이다.<br>
+즉, 여러 컨트롤러에서 동일한 예외 처리 로직을 반복해서 작성할 필요 없이 한 곳에서 공통으로 처리할 수 있다.
+
+#### 기본 사용법
+다음은 ```@ControllerAdvice```를 활용하여 전역 예외 처리를 구현하는 예제이다.
+```java
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleIllegalArgumentException(IllegalArgumentException ex) {
+        return "잘못된 요청: " + ex.getMessage();
+    }
+}
+```
+#### 컨트롤러 코드 (예외 발생)
+```java
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    @GetMapping("/user/{id}")
+    public String getUser(@PathVariable("id") int id) {
+        if (id < 1) {
+            throw new IllegalArgumentException("ID는 1 이상이어야 합니다.");
+        }
+        return "User ID: " + id;
+    }
+}
+```
+#### 클라이언트 요청
+```GET /api/user/0```
+
+#### 예제 실행 결과
+```"잘못된 요청: ID는 1 이상이어야 합니다."```
+
+----------
+### @ControllerAdvice 동작 방식
+-> ```@ControllerAdvice```는 모든 컨트롤러에서 발생하는 예외를 전역적으로 처리한다.<br>
+-> ```@ExceptionHandler```와 다르게 특정 컨트롤러에 국한되지 않으며, 전역적으로 예외 처리를 적용할 수 있다.<br>
+-> 컨트롤러 내부에서 발생하는 예외가 있으면 가장 가까운 ```@ExceptionHandler```를 먼저 찾고,
+-> 없으면 ```@ControllerAdvice```에서 정의한 예외 처리 로직이 실행된다.
+
+----------
+### @ControllerAdvice 사용 시 주의할 점
+1) 특정 패키지 또는 클래스에만 적용 가능<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@ControllerAdvice는 모든 컨트롤러에 적용되지만,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;특정 패키지 또는 특정 클래스에만 적용하고 싶다면 ```basePackages``` 또는 ```assignableTypes``` 속성을 사용할 수 있다.
+```java
+@ControllerAdvice(basePackages = "com.example.api")
+public class ApiExceptionHandler {
+}
+@ControllerAdvice(assignableTypes = {UserController.class, OrderController.class})
+public class SpecificExceptionHandler {
+}
+```
+3) @ResponseBody와 함께 사용하여 JSON 응답 반환<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```@ResponseBody```를 함께 사용하면 JSON 형식으로 예외 응답을 반환할 수 있다.
+```java
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException ex) {
+        return new ErrorResponse("400", ex.getMessage());
+    }
+
+    static class ErrorResponse {
+        private String code;
+        private String message;
+
+        public ErrorResponse(String code, String message) {
+            this.code = code;
+            this.message = message;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+}
+```
+#### 클라이언트 요청
+```GET /api/user/0```
+
+#### 예제 실행 결과 (JSON 응답)
+```java
+{
+  "code": "400",
+  "message": "ID는 1 이상이어야 합니다."
+}
+```
+------------
