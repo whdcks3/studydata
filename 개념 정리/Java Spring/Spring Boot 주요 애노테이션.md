@@ -696,6 +696,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 |```deleteById(ID id)```|ID로 엔티티 삭제|
 
 즉, ```ProductRepository```는 별도의 구현 없이도 위와 같은 CRUD 기능을 사용할 수 있다.
+
 ------------------
 ### 커스텀 쿼리 메서드 작성
 Spring Data JPA는 기본적인 CRUD 메서드뿐만 아니라,<br>
