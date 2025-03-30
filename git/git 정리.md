@@ -71,3 +71,11 @@
 
 ```git pull```<br>
 원격 저장소의 변경 내용이 현재 디렉토리에 가져와지고(fetch) 병합(merge)됨
+
+----------
+## .gitignore
+### 프로젝트 중간에 .gitignore 작성한 경우
+$ git rm -r --cached .
+$ git add .
+$ git commit -m "git ignore add"
+$ git push
