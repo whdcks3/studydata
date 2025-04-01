@@ -9,6 +9,9 @@
 ```git remote -v```<br>
 현재 디렉토리와 연결된 원격 저장소 확인
 
+```git init```<br>
+git 등록
+
 ```git remote add (저장소 이름) (URL)```<br>
 원격 저장소 연결
 
