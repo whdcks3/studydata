@@ -1,0 +1,4012 @@
+
+인증과 권한
+학습 목표
+Spring Security를 활용한 인증(Authentication)과 권한(Authorization)의 개념을 이해한다.
+Spring Security의 주요 구성 요소를 학습하고 설정 방법을 익힌다.
+사용자 역할(Role)과 권한(Permission)에 따른 접근 제어를 구현한다.
+보안 필터와 설정을 활용하여 안전한 애플리케이션을 개발한다.
+1. Spring Security 개요
+1.1. Spring Security의 개념
+Spring Security란 무엇인가?
+현대 웹 애플리케이션에서 보안은 필수적인 요소이다. 사용자의 로그인 정보를 안전하게 보호하고, 특정 사용자에게만 리소스를 허용하며, 다양한 인증 및 권한 관리를 수행하는 것은 모든 애플리케이션이 가져야 할 기본적인 보안 정책이다.
+
+Spring Security는 이러한 보안 요구 사항을 충족하기 위해 Spring 프레임워크 기반의 보안 관리 시스템으로 설계된 프레임워크이다. 즉, 인증(Authentication)과 권한(Authorization) 관리를 중앙화하여 보안 기능을 표준화하고, 확장성과 유지보수성을 높이기 위한 도구라고 할 수 있다.
+
+Spring Security는 웹 애플리케이션의 HTTP 요청 보안, 세션 관리, XSS 및 CSRF 공격 방지, 다양한 인증 방식(OAuth2, JWT, LDAP 등) 지원 등의 기능을 제공하여 보안 취약점을 예방하고 개발자의 부담을 줄여준다.
+
+Spring Security의 필요성
+웹 애플리케이션의 보안을 직접 구현하는 것은 상당한 비용과 노력이 필요하다. 만약 개발자가 직접 보안 로직을 설계해야 한다면, 다음과 같은 문제점이 발생할 수 있다.
+
+보안 취약점 발생 가능성
+
+로그인 과정에서 비밀번호를 평문으로 저장하는 실수
+세션 관리 부재로 인한 세션 하이재킹 위험
+CSRF, XSS, SQL Injection 등의 보안 공격에 취약
+코드 중복 및 유지보수 어려움
+
+애플리케이션마다 인증 및 권한을 따로 구현해야 하므로 코드가 중복됨
+새로운 보안 요구사항이 추가될 때마다 모든 프로젝트의 코드를 변경해야 하는 부담
+확장성과 유연성 부족
+
+전통적인 ID/PW 기반 인증 외에도 OAuth2, JWT, SAML과 같은 다양한 인증 방식이 필요하지만 이를 직접 구현하려면 많은 리소스가 필요함
+역할(Role) 및 권한(Permission) 관리가 복잡해지면 코드가 방대해지고 유지보수가 어려워짐
+Spring Security는 이러한 문제를 해결하기 위해 보안 기능을 모듈화하고, Spring 기반의 웹 애플리케이션과 쉽게 통합할 수 있도록 설계되었다. 즉, 보안 정책을 하나의 중앙화된 설정으로 관리하고, 개발자가 직접 보안 로직을 구현하지 않도록 하여 유지보수를 용이하게 만든다.
+
+Spring Security가 제공하는 기능
+Spring Security는 다양한 보안 기능을 기본적으로 제공하며, 이를 설정만으로 적용할 수 있다.
+
+인증(Authentication)
+
+사용자의 신원을 확인하는 과정
+ID/PW 기반 인증, OAuth2, JWT, LDAP 등 다양한 방식 지원
+권한(Authorization)
+
+특정 사용자나 역할(Role)에 따라 리소스 접근을 제한
+URL 기반 및 메서드 기반의 접근 제어 가능
+세션 및 상태 관리
+
+로그인한 사용자의 세션 유지 및 세션 하이재킹 방지
+Stateless 방식(JWT 기반) 지원
+CSRF(Cross-Site Request Forgery) 보호
+
+CSRF 공격을 방지하기 위한 기본 설정 제공
+CORS(Cross-Origin Resource Sharing) 설정
+
+API 보안을 위해 특정 도메인에서만 요청 허용 가능
+보안 필터(Security Filters)
+
+다양한 필터 체인을 활용하여 보안 로직을 처리
+UsernamePasswordAuthenticationFilter, BasicAuthenticationFilter 등의 필터 활용
+패스워드 암호화
+
+BCryptPasswordEncoder 등의 암호화 기법을 활용하여 보안 강화
+Spring Security는 이러한 기능을 모듈화하여 제공하며, 설정 파일을 통해 간단하게 적용할 수 있도록 설계되었다.
+
+Spring Security의 기본 개념
+Spring Security는 웹 요청이 서버로 전달되기 전에 필터 체인을 통해 보안 검사를 수행하는 구조를 가지고 있다. 이를 이해하기 위해 다음과 같은 핵심 개념을 살펴보자.
+
+Authentication (인증)
+
+사용자의 신원을 확인하는 과정
+일반적으로 ID/PW를 이용하여 사용자가 누구인지 확인
+Authorization (권한 부여)
+
+특정 리소스에 대한 접근 권한을 확인하는 과정
+관리자(Admin)와 일반 사용자(User) 간의 접근 차별화
+SecurityContext
+
+현재 인증된 사용자의 정보를 저장하는 공간
+로그인 성공 시 SecurityContextHolder에 인증 정보가 저장됨
+FilterChain (보안 필터 체인)
+
+HTTP 요청이 애플리케이션 내부로 들어가기 전에 여러 개의 필터를 거치면서 보안 로직을 실행
+예: 로그인 요청을 UsernamePasswordAuthenticationFilter가 처리
+UserDetails & UserDetailsService
+
+사용자의 정보를 저장하는 인터페이스 및 이를 조회하는 서비스
+DB에서 사용자 정보를 불러오고 검증하는 역할
+PasswordEncoder
+
+사용자의 비밀번호를 안전하게 저장하기 위한 암호화 도구
+Spring Security에서는 BCryptPasswordEncoder를 기본으로 제공
+이러한 개념들은 Spring Security를 사용할 때 반드시 이해해야 하는 요소들이며, 이후에 상세하게 다룰 예정이다.
+
+Spring Security의 적용 방식
+Spring Security는 두 가지 방식으로 적용할 수 있다.
+
+XML 기반 설정 (과거 방식)
+
+spring-security.xml을 이용하여 보안 정책을 설정
+유지보수 및 가독성이 떨어지므로 현재는 거의 사용되지 않음
+Java Config 기반 설정 (현대적인 방식)
+
+@Configuration과 @EnableWebSecurity 애노테이션을 사용하여 보안 설정을 구성
+가독성이 높고 유지보수가 용이하여 대부분의 프로젝트에서 사용됨
+다음은 Spring Security의 Java Config 설정 예제이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN") // 관리자만 접근 가능
+                .requestMatchers("/user/**").authenticated()   // 로그인한 사용자만 접근 가능
+                .anyRequest().permitAll()                     // 그 외의 요청은 모두 허용
+            )
+            .formLogin(withDefaults()) // 기본 로그인 폼 사용
+            .logout(withDefaults());   // 기본 로그아웃 기능 사용
+        
+        return http.build();
+    }
+}
+이 코드에서는 SecurityFilterChain을 설정하여 각 URL에 대한 접근 제어를 설정하고 있다.
+
+/admin/** 경로는 ADMIN 역할을 가진 사용자만 접근 가능
+/user/** 경로는 로그인한 사용자만 접근 가능
+그 외의 모든 요청은 인증 없이 허용
+이처럼 Spring Security를 사용하면 보안 로직을 손쉽게 설정할 수 있으며, 유지보수도 간편하게 관리할 수 있다.
+
+Spring Security의 아키텍처와 주요 컴포넌트
+Spring Security는 기본적으로 필터(Filter) 기반의 보안 프레임워크이다. 즉, 사용자의 요청이 웹 애플리케이션으로 전달되기 전에 여러 개의 필터를 거쳐 보안 검사를 수행한 후, 요청이 허용되거나 차단되는 구조를 가진다.
+
+이러한 보안 검사는 Spring Security의 핵심 컴포넌트들을 통해 이루어진다. 주요 컴포넌트는 다음과 같다.
+
+SecurityContext
+
+인증된 사용자의 정보를 저장하는 객체
+로그인 후 인증된 사용자의 정보를 SecurityContextHolder에 저장
+SecurityContextHolder
+
+애플리케이션 전반에서 SecurityContext에 접근할 수 있도록 관리하는 클래스
+기본적으로 ThreadLocal을 사용하여 각 요청별로 별도의 보안 컨텍스트를 유지
+Authentication
+
+인증된 사용자 정보를 담고 있는 객체
+AuthenticationManager를 통해 생성되며, SecurityContext에 저장됨
+AuthenticationManager
+
+인증(Authentication)을 담당하는 핵심 인터페이스
+AuthenticationProvider를 활용하여 인증 수행
+AuthenticationProvider
+
+다양한 인증 방식을 지원하기 위한 인터페이스
+여러 개의 AuthenticationProvider를 등록하여 인증 로직을 확장 가능
+UserDetails & UserDetailsService
+
+UserDetails: 사용자 정보를 담는 인터페이스
+UserDetailsService: UserDetails를 반환하는 서비스 인터페이스 (DB 연동 시 활용)
+PasswordEncoder
+
+비밀번호를 안전하게 저장하기 위한 암호화 도구
+Spring Security는 기본적으로 BCryptPasswordEncoder를 제공
+GrantedAuthority
+
+인증된 사용자가 가진 권한을 나타내는 객체
+역할(Role) 기반의 접근 제어를 수행할 때 활용
+FilterChainProxy
+
+여러 개의 보안 필터(Security Filters)를 관리하는 객체
+SecurityFilterChain을 통해 개별 요청에 대해 적절한 필터를 적용
+Spring Security의 내부 동작 방식
+Spring Security는 필터 기반으로 동작하며, 사용자의 요청이 서버에 도달하기 전에 인증(Authentication)과 권한(Authorization) 처리를 수행하는 구조를 갖는다.
+
+사용자의 요청(Request) 발생
+
+사용자가 로그인 또는 특정 리소스에 접근하려는 요청을 보냄
+필터 체인(Filter Chain) 적용
+
+FilterChainProxy가 요청을 가로채서 적절한 보안 필터를 실행
+로그인 요청일 경우, UsernamePasswordAuthenticationFilter가 작동하여 인증 수행
+AuthenticationManager를 통한 인증 수행
+
+AuthenticationProvider를 이용하여 사용자의 신원을 확인
+UserDetailsService에서 사용자 정보를 조회한 후 비밀번호를 검증
+인증 성공 시 SecurityContext에 저장
+
+인증이 성공하면 Authentication 객체가 SecurityContextHolder에 저장됨
+이후 요청에서도 인증된 사용자 정보를 활용 가능
+요청 처리 및 권한 검사 수행
+
+인증된 사용자가 특정 리소스에 접근할 경우, 권한(Authorization) 검사 수행
+GrantedAuthority를 통해 사용자의 권한을 확인하고, 접근 가능 여부 결정
+응답(Response) 반환
+
+모든 인증 및 권한 검사가 완료되면, 요청을 정상적으로 처리하여 응답 반환
+아래는 Spring Security의 기본적인 요청 처리 흐름을 정리한 것이다.
+
+1. 사용자가 로그인 요청 (ID/PW 입력)
+2. Security Filter Chain에서 UsernamePasswordAuthenticationFilter 동작
+3. AuthenticationManager가 AuthenticationProvider를 호출하여 인증 수행
+4. UserDetailsService에서 사용자 정보를 조회하고 PasswordEncoder를 이용하여 비밀번호 검증
+5. 인증 성공 시 Authentication 객체를 SecurityContext에 저장
+6. 사용자가 보호된 리소스에 접근할 경우 권한 검사 수행
+7. 권한 검사가 통과되면 요청을 정상적으로 처리, 결과 반환
+Spring Security의 확장성과 활용 방법
+Spring Security는 기본 제공 기능 외에도 다양한 확장성을 제공한다.
+
+커스텀 필터(Custom Filter) 추가
+
+기본 제공되는 필터 외에도, 애플리케이션의 요구 사항에 맞는 필터를 직접 정의하여 적용 가능
+예를 들어, JWT 기반 인증을 적용하기 위해 OncePerRequestFilter를 상속받아 커스텀 필터를 구현할 수 있음
+OAuth2 및 JWT 인증 방식 지원
+
+Spring Security는 OAuth2 및 JWT 기반의 인증을 쉽게 설정할 수 있도록 지원
+OAuth2LoginConfigurer 또는 BearerTokenAuthenticationFilter를 활용하여 인증 구현 가능
+메서드 기반 보안 설정
+
+@PreAuthorize, @PostAuthorize 등의 애노테이션을 활용하여 특정 메서드에 대한 접근 제어 가능
+@Secured를 이용하여 특정 역할(Role)에 따른 접근 제한 가능
+비밀번호 암호화 및 보안 강화
+
+BCryptPasswordEncoder를 활용하여 비밀번호를 안전하게 저장
+Pbkdf2PasswordEncoder 또는 Argon2PasswordEncoder와 같은 다른 암호화 방식도 사용 가능
+REST API 보안 설정
+
+CORS(Cross-Origin Resource Sharing) 정책을 설정하여 보안 강화
+Stateless 방식으로 JWT를 활용하여 세션 없이 인증 관리 가능
+Spring Security 설정 예제 (최소 설정)
+아래는 가장 기본적인 Spring Security 설정 코드이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN") // 관리자만 접근 가능
+                .requestMatchers("/user/**").authenticated()   // 로그인한 사용자만 접근 가능
+                .anyRequest().permitAll()                     // 그 외의 요청은 모두 허용
+            )
+            .formLogin(withDefaults()) // 기본 로그인 폼 사용
+            .logout(withDefaults());   // 기본 로그아웃 기능 사용
+        
+        return http.build();
+    }
+}
+이 설정을 적용하면,
+
+/admin/** 경로는 ADMIN 역할을 가진 사용자만 접근 가능
+/user/** 경로는 로그인한 사용자만 접근 가능
+그 외의 모든 요청은 인증 없이 허용
+이와 같은 기본 설정을 바탕으로 이후의 강의에서 Spring Security의 세부적인 기능을 하나씩 살펴볼 것이다.
+
+학습자의 사고를 돕기 위한 질문
+Spring Security는 어떤 방식으로 애플리케이션을 보호하는가?
+
+필터 기반 인증과 권한 부여 방식을 고려해보라.
+Spring Security가 기존의 보안 메커니즘과 비교하여 제공하는 주요 이점은 무엇인가?
+
+보안 설정의 확장성과 유지보수성을 중심으로 생각해보라.
+1.2. 인증과 권한의 차이
+인증(Authentication)이란?
+인증(Authentication) 은 사용자가 본인이 주장하는 신원과 일치하는지를 확인하는 과정이다. 즉, 사용자가 제공한 정보(아이디, 비밀번호, 인증 토큰 등)가 실제로 해당 사용자에게 속하는지 검증하는 절차를 의미한다.
+
+Spring Security에서 인증은 사용자 신원 확인을 담당하며, 일반적으로 다음과 같은 방식으로 이루어진다.
+
+사용자가 아이디와 비밀번호를 입력하여 로그인 요청을 보낸다.
+AuthenticationManager가 요청을 받는다.
+AuthenticationProvider가 사용자의 정보를 검증한다.
+인증에 성공하면 SecurityContext에 사용자 정보를 저장한다.
+이후 사용자는 인증된 상태에서 애플리케이션을 이용할 수 있다.
+다음은 Spring Security에서 기본적으로 제공하는 인증 흐름이다.
+
+1. 사용자가 로그인 요청 (아이디, 비밀번호 입력)
+2. Security Filter Chain에서 UsernamePasswordAuthenticationFilter 동작
+3. AuthenticationManager가 AuthenticationProvider를 호출하여 인증 수행
+4. UserDetailsService에서 사용자 정보를 조회하고 PasswordEncoder를 이용하여 비밀번호 검증
+5. 인증 성공 시 Authentication 객체를 SecurityContext에 저장
+6. 인증된 사용자가 애플리케이션을 이용
+Spring Security는 다양한 인증 방식을 지원하며, 기본적인 폼 로그인(Form Login) 방식 외에도 OAuth2, JWT, LDAP 등을 활용한 인증이 가능하다.
+
+권한(Authorization)이란?
+권한(Authorization) 은 인증된 사용자가 특정 리소스에 접근할 수 있는지를 결정하는 과정이다.
+
+Spring Security에서 권한은 사용자가 특정 기능을 수행할 수 있는지 여부를 확인하는 역할을 한다. 일반적으로 사용자는 인증을 먼저 거친 후, 각 요청마다 권한 검사가 이루어진다.
+
+권한 부여는 다음과 같은 방식으로 이루어진다.
+
+사용자가 보호된 리소스(예: /admin/dashboard)에 접근을 시도한다.
+Spring Security는 현재 사용자의 GrantedAuthority(부여된 권한) 를 확인한다.
+요청된 리소스에 접근 권한이 있는 경우 요청을 허용한다.
+권한이 없는 경우 접근을 거부하고 AccessDeniedException을 발생시킨다.
+Spring Security에서 권한 부여는 크게 다음과 같이 수행된다.
+
+URL 기반 접근 제어: 특정 URL 경로에 대해 역할(Role) 기반의 권한을 설정하는 방식
+메서드 수준 권한 제어: 특정 메서드에 접근할 수 있는 권한을 애노테이션을 통해 설정하는 방식
+인증과 권한의 차이점과 연관성
+인증(Authentication)과 권한(Authorization)은 밀접하게 연결되어 있지만, 엄연히 다른 개념이다.
+
+구분	인증(Authentication)	권한(Authorization)
+목적	사용자가 본인인지 확인하는 과정	인증된 사용자가 특정 리소스에 접근할 수 있는지 확인
+주요 역할	아이디, 비밀번호 확인, OAuth 인증, JWT 인증 등 수행	역할(Role), 권한(Authority) 부여 및 검증
+처리 방식	AuthenticationManager, UserDetailsService 이용	GrantedAuthority, AccessDecisionManager 활용
+실패 시	로그인 실패 (사용자가 잘못된 정보를 입력)	AccessDeniedException 발생 (권한 부족)
+Spring Security에서는 먼저 인증(Authentication) 을 수행한 후, 인증된 사용자의 권한(Authorization) 을 검증하는 구조를 따른다. 즉, 인증이 없으면 권한 검사는 수행되지 않는다.
+
+Spring Security에서 인증과 권한 처리 방식
+Spring Security에서는 인증과 권한을 다음과 같은 방식으로 처리한다.
+
+사용자가 로그인 요청을 보낸다.
+AuthenticationManager가 사용자의 정보를 검증하여 인증을 수행한다.
+인증된 사용자의 정보는 SecurityContextHolder에 저장된다.
+사용자가 특정 리소스에 접근하려 하면 권한 검사가 수행된다.
+사용자의 권한이 허용된 경우 요청을 정상적으로 처리한다.
+사용자의 권한이 부족한 경우 요청이 차단되며, 403 Forbidden 응답을 반환한다.
+Spring Security 설정 예제 (인증과 권한 처리)
+아래는 Spring Security에서 인증과 권한을 설정하는 기본적인 코드이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN") // 관리자만 접근 가능
+                .requestMatchers("/user/**").authenticated()   // 로그인한 사용자만 접근 가능
+                .anyRequest().permitAll()                     // 그 외의 요청은 모두 허용
+            )
+            .formLogin(withDefaults()) // 기본 로그인 폼 사용
+            .logout(withDefaults());   // 기본 로그아웃 기능 사용
+        
+        return http.build();
+    }
+}
+이 설정에서 중요한 부분은 다음과 같다.
+
+/admin/** → "ADMIN" 역할을 가진 사용자만 접근 가능
+/user/** → 로그인한 사용자만 접근 가능
+그 외의 모든 요청은 모든 사용자(익명 사용자 포함)에게 허용
+Spring Security는 이러한 기본 설정을 제공하며, 커스텀 필터, JWT, OAuth2 인증 등 다양한 방식으로 확장할 수 있다.
+
+학습자의 사고를 돕기 위한 질문
+인증과 권한의 차이를 실제 서비스(예: 은행 웹사이트)에서 예를 들어 설명할 수 있는가?
+
+로그인 과정과 특정 기능(이체, 계좌 조회 등) 사용 권한을 구분하여 설명해보라.
+사용자가 로그인했음에도 불구하고 특정 페이지에 접근할 수 없는 이유는 무엇인가?
+
+인증과 권한이 어떻게 분리되어 있는지를 고려하여 답하라.
+1.3. Spring Security의 주요 기능
+Spring Security의 기본 기능 개요
+Spring Security는 Java 기반의 애플리케이션에서 인증(Authentication)과 권한(Authorization)을 관리하는 강력한 보안 프레임워크이다. Spring Security를 사용하면 다양한 보안 기능을 손쉽게 설정하고 적용할 수 있으며, 필요한 경우 확장도 가능하다.
+
+Spring Security가 제공하는 기본 기능은 다음과 같다.
+
+사용자 인증(Authentication) 및 권한 부여(Authorization)
+HTTP 요청 보안 설정
+세션 관리 및 상태 저장 방식(Stateless 및 Stateful 지원)
+비밀번호 암호화 및 보안 처리
+CSRF(Cross-Site Request Forgery) 보호
+CORS(Cross-Origin Resource Sharing) 정책 관리
+OAuth2 및 OpenID Connect를 통한 소셜 로그인 지원
+JWT(Json Web Token) 기반 인증 지원
+로그인 및 로그아웃 처리
+보안 필터 체인(Security Filter Chain) 관리
+Spring Security는 기본적으로 위와 같은 기능을 제공하지만, 필요에 따라 설정을 변경하거나 커스텀 필터를 추가하여 확장할 수 있다.
+
+HTTP 요청 보안 설정
+Spring Security에서는 HttpSecurity 객체를 이용하여 HTTP 요청에 대한 보안 정책을 설정할 수 있다.
+
+특정 경로에 대한 접근을 제한할 수 있다.
+로그인 및 로그아웃 처리 방식을 설정할 수 있다.
+CORS 및 CSRF 보호 기능을 활성화하거나 비활성화할 수 있다.
+다음은 HttpSecurity를 활용한 기본적인 보안 설정 예제이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN") // ADMIN 역할을 가진 사용자만 접근 가능
+                .requestMatchers("/user/**").authenticated()   // 인증된 사용자만 접근 가능
+                .anyRequest().permitAll()                     // 그 외의 요청은 모두 허용
+            )
+            .formLogin(form -> form
+                .loginPage("/login")  // 커스텀 로그인 페이지 설정
+                .defaultSuccessUrl("/home") // 로그인 성공 후 이동할 페이지
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout") // 로그아웃 URL 지정
+                .logoutSuccessUrl("/login?logout") // 로그아웃 성공 시 이동할 페이지
+                .invalidateHttpSession(true) // 세션 무효화
+                .deleteCookies("JSESSIONID") // 쿠키 삭제
+            );
+
+        return http.build();
+    }
+}
+이 설정에서 중요한 부분은 다음과 같다.
+
+/admin/** 경로는 "ADMIN" 역할을 가진 사용자만 접근 가능하다.
+/user/** 경로는 로그인한 사용자만 접근할 수 있다.
+/login 페이지를 커스텀 로그인 페이지로 지정하고, 로그인 성공 시 /home으로 이동하도록 설정한다.
+/logout 요청이 들어오면 세션을 무효화하고 JSESSIONID 쿠키를 삭제한 후 /login?logout 페이지로 이동한다.
+세션 관리 및 Stateless 인증 지원
+Spring Security는 세션 기반 인증(Stateful)과 JWT 기반 인증(Stateless) 방식을 모두 지원한다.
+
+Stateful 방식(세션 기반)
+
+사용자가 로그인하면 서버가 세션을 생성하여 사용자 정보를 유지한다.
+일반적인 웹 애플리케이션에서 사용된다.
+Stateless 방식(JWT 기반)
+
+사용자의 정보를 세션에 저장하지 않고, JWT(Json Web Token) 등의 토큰을 이용하여 클라이언트가 매 요청마다 인증 정보를 전송한다.
+REST API 및 마이크로서비스 환경에서 주로 사용된다.
+다음은 JWT 기반의 Stateless 인증 방식을 설정하는 방법이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable()) // Stateless 환경에서는 CSRF 비활성화
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션을 사용하지 않음
+            )
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/user/**").authenticated()
+                .anyRequest().permitAll()
+            )
+            .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}
+이 설정에서는 SessionCreationPolicy.STATELESS를 지정하여 세션을 생성하지 않도록 설정했다. JWT 인증 필터(JwtAuthenticationFilter)를 추가하여 요청마다 인증을 수행하도록 설정하였다.
+
+비밀번호 암호화 및 보안 처리
+Spring Security는 비밀번호를 안전하게 저장하기 위해 PasswordEncoder 인터페이스를 제공하며, 가장 널리 사용되는 구현체는 BCryptPasswordEncoder이다.
+
+비밀번호를 암호화하는 방법은 다음과 같다.
+
+@Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+}
+사용자의 비밀번호를 안전하게 암호화한 후 저장할 때는 다음과 같이 사용한다.
+
+String rawPassword = "myPassword";
+String encodedPassword = passwordEncoder().encode(rawPassword);
+
+System.out.println("암호화된 비밀번호: " + encodedPassword);
+로그인 시, 사용자가 입력한 비밀번호와 저장된 암호화된 비밀번호를 비교하여 검증할 수 있다.
+
+boolean isMatch = passwordEncoder().matches("myPassword", encodedPassword);
+System.out.println("비밀번호 일치 여부: " + isMatch);
+CSRF 보호 기능
+Spring Security는 기본적으로 CSRF(Cross-Site Request Forgery, 사이트 간 요청 위조) 보호 기능을 제공한다.
+
+CSRF 공격이란?
+
+공격자가 사용자의 인증 정보를 악용하여 원치 않는 요청을 실행하게 하는 공격 방식이다.
+예를 들어, 사용자가 로그인된 상태에서 공격자가 조작한 URL을 클릭하면, 사용자의 계정으로 특정 요청이 전송될 수 있다.
+CSRF 보호 활성화 방법
+
+Spring Security는 기본적으로 CSRF 보호를 활성화한다.
+하지만 REST API 또는 JWT 기반 인증에서는 불필요한 경우가 많아 비활성화할 수 있다.
+다음은 CSRF 보호 기능을 비활성화하는 설정 예제이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().authenticated()
+            );
+
+        return http.build();
+    }
+}
+반대로, CSRF 보호를 활성화하려면 다음과 같이 설정할 수 있다.
+
+http
+    .csrf(csrf -> csrf.enable()) // CSRF 보호 활성화
+    .authorizeHttpRequests(auth -> auth
+        .anyRequest().authenticated()
+    );
+CSRF 보호를 활성화한 경우, 클라이언트는 요청 시 CSRF 토큰을 함께 전송해야 한다.
+
+CORS(Cross-Origin Resource Sharing) 정책 관리
+Spring Security에서는 CORS 정책을 설정하여 외부 도메인에서의 요청을 제어할 수 있다.
+
+기본적인 CORS 설정 예제는 다음과 같다.
+
+@Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(List.of("https://example.com")); // 허용할 도메인 지정
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+}
+학습자의 사고를 돕기 위한 질문
+Spring Security의 핵심 기능 중 하나인 CSRF 보호는 어떤 보안 위협을 방지하는가?
+
+사용자의 세션을 악용한 공격 방식을 고려하여 답하라.
+Spring Security를 활용하여 특정 URL에 대한 접근을 제한하려면 어떤 설정이 필요한가?
+
+HttpSecurity의 구성 요소를 활용하는 방안을 고려해보라.
+2. Spring Security의 인증(Authentication) 처리
+2.1. 인증의 개념과 흐름
+인증(Authentication)이란?
+인증(Authentication)은 애플리케이션에서 사용자의 신원을 확인하는 과정이다.
+즉, 사용자가 자신이 누구인지 증명하는 절차이며, 이 과정이 성공적으로 수행되면 해당 사용자는 애플리케이션 내에서 권한을 부여받을 수 있다.
+
+Spring Security는 다양한 인증 방식을 제공하며, 기본적으로 세션 기반 인증과 JWT(토큰) 기반 인증을 지원한다.
+
+Spring Security의 인증 흐름
+Spring Security에서 인증이 이루어지는 기본적인 흐름은 다음과 같다.
+
+사용자가 로그인 요청을 보낸다.
+
+사용자는 아이디와 비밀번호를 입력하여 로그인 요청을 보낸다.
+요청은 Spring Security의 인증 필터를 거쳐 처리된다.
+AuthenticationManager가 인증 요청을 위임한다.
+
+AuthenticationManager는 AuthenticationProvider에게 인증 요청을 위임한다.
+AuthenticationProvider는 사용자 정보를 확인하고 인증 여부를 결정한다.
+사용자 정보가 데이터베이스에서 조회된다.
+
+UserDetailsService가 사용자의 정보를 데이터베이스에서 조회한다.
+조회된 정보는 UserDetails 객체로 변환된다.
+비밀번호 검증이 이루어진다.
+
+사용자가 입력한 비밀번호와 저장된 비밀번호를 PasswordEncoder를 통해 비교한다.
+인증 성공 시 SecurityContext에 사용자 정보가 저장된다.
+
+인증이 성공하면 Authentication 객체가 생성되고 SecurityContext에 저장된다.
+이후 애플리케이션은 SecurityContext에서 인증된 사용자의 정보를 가져와 사용한다.
+Spring Security 인증 과정의 주요 컴포넌트
+Spring Security에서 인증 과정은 여러 핵심 컴포넌트들이 협력하여 이루어진다.
+각 컴포넌트의 역할을 이해하는 것이 중요하다.
+
+AuthenticationManager
+
+인증을 총괄하는 인터페이스이며, 여러 AuthenticationProvider들에게 인증을 위임할 수 있다.
+애플리케이션에서 인증을 처리할 때 가장 중요한 역할을 담당한다.
+AuthenticationProvider
+
+실제 인증을 수행하는 객체이며, AuthenticationManager로부터 인증 요청을 위임받아 처리한다.
+여러 개의 AuthenticationProvider를 등록하여 다양한 인증 방식을 지원할 수 있다.
+UserDetailsService
+
+데이터베이스에서 사용자 정보를 조회하는 역할을 한다.
+loadUserByUsername() 메서드를 통해 사용자 정보를 로드한다.
+UserDetails
+
+UserDetailsService에서 반환하는 객체로, 사용자의 정보를 담고 있다.
+비밀번호, 계정 상태(잠금 여부, 활성화 여부 등) 정보를 포함한다.
+PasswordEncoder
+
+사용자의 비밀번호를 안전하게 암호화하고, 입력된 비밀번호와 저장된 비밀번호를 비교하는 역할을 한다.
+BCryptPasswordEncoder가 가장 많이 사용된다.
+Spring Security의 인증 흐름 코드 예제
+다음은 AuthenticationManager와 AuthenticationProvider를 활용하여 인증을 수행하는 코드 예제이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").authenticated()
+                .anyRequest().permitAll()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/home")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+            );
+
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, 
+                                                       PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(authProvider);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+위 코드에서 중요한 부분을 살펴보면 다음과 같다.
+
+SecurityFilterChain을 정의하여 인증과 인가(Authorization)를 설정하였다.
+AuthenticationManager를 직접 정의하여 UserDetailsService와 PasswordEncoder를 활용하도록 하였다.
+BCryptPasswordEncoder를 사용하여 비밀번호를 암호화하였다.
+SecurityContext와 인증 정보 저장 방식
+Spring Security에서는 SecurityContext를 통해 인증된 사용자의 정보를 관리한다.
+
+SecurityContextHolder를 이용하면 현재 로그인한 사용자의 정보를 가져올 수 있다.
+기본적으로 Spring Security는 세션을 이용하여 SecurityContext를 관리한다.
+예를 들어, 현재 로그인한 사용자의 정보를 가져오는 방법은 다음과 같다.
+
+Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+String username = authentication.getName(); // 현재 로그인한 사용자의 아이디
+System.out.println("현재 로그인한 사용자: " + username);
+이 방식은 Spring Security 내부적으로 SecurityContext를 이용하여 사용자 정보를 저장하고 가져온다.
+
+JWT 기반 인증에서의 SecurityContext 관리
+세션이 아닌 JWT를 활용하는 경우, SecurityContext는 요청마다 갱신되어야 한다.
+
+JWT 기반 인증에서는 요청 헤더에 포함된 토큰을 해석하여 SecurityContext에 저장하는 방식으로 인증이 이루어진다.
+
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        
+        String token = resolveToken(request);
+
+        if (token != null && validateToken(token)) {
+            Authentication authentication = getAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+        
+        chain.doFilter(request, response);
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        return request.getHeader("Authorization");
+    }
+
+    private Authentication getAuthentication(String token) {
+        // JWT를 기반으로 사용자 인증 객체를 생성
+        UserDetails userDetails = userDetailsService.loadUserByUsername(getUsernameFromToken(token));
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    }
+}
+resolveToken() 메서드는 요청 헤더에서 JWT를 추출한다.
+getAuthentication() 메서드는 JWT를 기반으로 사용자 인증 객체를 생성한다.
+SecurityContextHolder.getContext().setAuthentication(authentication)을 통해 인증 정보를 SecurityContext에 저장한다.
+이러한 방식으로 JWT 기반의 Stateless 인증이 구현된다.
+
+학습자의 사고를 돕기 위한 질문
+사용자가 로그인할 때 입력한 정보는 Spring Security 내부에서 어떻게 처리되는가?
+
+인증 과정에서 AuthenticationManager와 SecurityContext의 역할을 고려해보라.
+Stateless 방식의 인증(JWT 활용)과 세션 기반 인증의 차이점은 무엇인가?
+
+각각의 인증 방식에서 사용자 정보가 어떻게 유지되는지를 비교해보라.
+2.2. AuthenticationManager와 AuthenticationProvider
+AuthenticationManager란?
+Spring Security에서 인증(Authentication) 과정을 총괄하는 핵심 컴포넌트가 AuthenticationManager이다.
+이 인터페이스는 authenticate(Authentication authentication) 메서드를 통해 사용자의 인증을 수행한다.
+
+AuthenticationManager는 다양한 인증 방법을 지원할 수 있도록 설계되어 있으며,
+내부적으로 여러 개의 AuthenticationProvider에게 인증 처리를 위임한다.
+즉, 직접 인증을 수행하기보다는 AuthenticationProvider를 활용하여 인증 프로세스를 수행하는 "조정자" 역할을 한다.
+AuthenticationProvider를 여러 개 등록할 수 있으며, 특정 인증 요청을 적절한 AuthenticationProvider로 전달하는 역할을 한다.
+AuthenticationProvider란?
+AuthenticationProvider는 실제 인증을 담당하는 인터페이스이다.
+이 인터페이스는 authenticate(Authentication authentication) 메서드를 제공하며,
+사용자가 입력한 정보를 검증한 후 인증이 성공하면 인증 객체(Authentication)를 반환한다.
+
+AuthenticationProvider를 직접 구현하여 커스텀 인증 방식을 적용할 수도 있다.
+기본적으로 Spring Security는 DaoAuthenticationProvider를 제공하며,
+이 구현체는 데이터베이스에서 사용자 정보를 조회하고 비밀번호를 검증하는 역할을 한다.
+AuthenticationManager와 AuthenticationProvider의 관계
+Spring Security에서 인증 흐름은 다음과 같은 순서로 이루어진다.
+
+사용자가 로그인 요청을 보낸다.
+요청을 받은 AuthenticationManager는 AuthenticationProvider에게 인증을 위임한다.
+AuthenticationProvider는 UserDetailsService를 통해 사용자의 정보를 조회한다.
+조회된 사용자 정보와 입력된 비밀번호를 비교하여 인증 여부를 결정한다.
+인증이 성공하면 Authentication 객체가 생성되고, SecurityContextHolder에 저장된다.
+인증된 사용자는 이후 보안이 적용된 리소스에 접근할 수 있다.
+AuthenticationManager를 직접 구성하는 방법
+Spring Security 5.x 이후부터 AuthenticationManager는 SecurityFilterChain을 통해 직접 설정할 수 있다.
+다음은 AuthenticationManager와 AuthenticationProvider를 수동으로 설정하는 코드 예제이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").authenticated()
+                .anyRequest().permitAll()
+            )
+            .authenticationManager(authenticationManager) // 수동으로 AuthenticationManager 지정
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/home")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+            );
+
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(authProvider);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+코드 설명:
+
+SecurityFilterChain에서 authenticationManager(authenticationManager)를 지정하여
+수동으로 AuthenticationManager를 등록하였다.
+DaoAuthenticationProvider를 이용하여 사용자 정보를 로드하고 비밀번호를 검증하도록 설정하였다.
+BCryptPasswordEncoder를 이용하여 안전한 방식으로 비밀번호를 암호화하였다.
+여러 개의 AuthenticationProvider 사용하기
+AuthenticationProvider는 여러 개를 등록할 수 있으며,
+이를 통해 다양한 인증 방식을 혼합하여 사용할 수 있다.
+예를 들어, 데이터베이스 기반 인증과 소셜 로그인 인증을 함께 사용할 수 있다.
+
+다음은 두 개의 AuthenticationProvider를 등록하는 예제이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").authenticated()
+                .anyRequest().permitAll()
+            )
+            .authenticationManager(authenticationManager)
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/home")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+            );
+
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
+                                                       PasswordEncoder passwordEncoder,
+                                                       CustomAuthenticationProvider customAuthProvider) {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(authProvider, customAuthProvider);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+위 코드에서 CustomAuthenticationProvider는 별도로 정의된 커스텀 인증 로직을 수행하는 AuthenticationProvider이다.
+예를 들어, API 키 기반 인증을 추가하고 싶다면 아래와 같이 AuthenticationProvider를 직접 구현할 수 있다.
+
+@Component
+public class CustomAuthenticationProvider implements AuthenticationProvider {
+
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        String apiKey = authentication.getPrincipal().toString();
+
+        if (!"VALID_API_KEY".equals(apiKey)) {
+            throw new BadCredentialsException("Invalid API Key");
+        }
+
+        return new UsernamePasswordAuthenticationToken(apiKey, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+    }
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+    }
+}
+코드 설명:
+
+CustomAuthenticationProvider는 API 키 기반 인증을 수행한다.
+supports() 메서드는 이 AuthenticationProvider가 지원하는 인증 타입을 명시한다.
+API 키가 유효하면 UsernamePasswordAuthenticationToken을 반환하여 인증을 성공시킨다.
+authenticationManager에 DaoAuthenticationProvider와 CustomAuthenticationProvider를 함께 등록하여
+두 가지 인증 방식을 사용할 수 있도록 구성하였다.
+학습자의 사고를 돕기 위한 질문
+AuthenticationManager가 직접 인증을 처리하지 않고 AuthenticationProvider를 사용하는 이유는 무엇인가?
+
+확장성과 인증 방식의 다양성을 고려하여 답하라.
+커스텀 AuthenticationProvider를 구현하면 어떤 이점이 있는가?
+
+데이터베이스 기반 인증뿐만 아니라, 소셜 로그인 등의 인증 방식 추가를 고려해보라.
+실습 문제
+문제 1: 사용자 인증을 처리하는 AuthenticationProvider 구현하기
+아래 요구사항을 만족하는 CustomAuthenticationProvider 클래스를 작성하시오.
+
+사용자의 아이디(ID)와 비밀번호를 검증한다.
+사용자가 admin일 경우 관리자 권한을 부여하고, 일반 사용자일 경우 기본 권한을 부여한다.
+인증 성공 시 Authentication 객체를 반환한다.
+문제 2: AuthenticationManager를 활용한 인증 처리
+아래 요구사항을 만족하는 인증 처리 로직을 작성하시오.
+
+AuthenticationManager를 사용하여 CustomAuthenticationProvider를 등록한다.
+사용자가 로그인 요청을 보낼 경우 인증을 수행하고, 성공하면 SecurityContext에 저장한다.
+2.3. UserDetails와 UserDetailsService
+UserDetails란?
+Spring Security에서 인증(Authentication) 과정은 단순히 사용자 이름과 비밀번호를 확인하는 것만으로 끝나지 않는다.
+사용자의 계정 상태(잠김, 만료, 활성화 여부)와 역할(Role) 등의 정보도 함께 관리되어야 한다.
+이러한 정보를 담고 있는 객체가 UserDetails 인터페이스이다.
+
+UserDetails는 Spring Security에서 사용자 정보를 표현하는 표준 인터페이스이다.
+인증 과정에서 AuthenticationProvider가 UserDetailsService를 이용해 UserDetails 객체를 로드하고 이를 검증한다.
+UserDetails 객체에는 사용자 이름(username), 비밀번호(password), 계정 상태(enabled, expired 등), 권한 목록(granted authorities) 등의 정보가 포함된다.
+Spring Security는 UserDetails 인터페이스를 구현한 객체를 활용하여 인증 및 권한 검사를 수행한다.
+즉, 사용자의 정보는 UserDetails를 통해 전달되며, 이 객체는 보안 설정에서 필수적인 역할을 담당한다.
+
+UserDetails 인터페이스의 주요 메서드
+UserDetails 인터페이스는 다음과 같은 메서드들을 제공한다.
+
+public interface UserDetails extends Serializable {
+    Collection<? extends GrantedAuthority> getAuthorities(); // 사용자의 권한 목록 반환
+    String getPassword(); // 사용자의 암호화된 비밀번호 반환
+    String getUsername(); // 사용자의 고유한 ID 반환 (일반적으로 이메일 또는 사용자명)
+    boolean isAccountNonExpired(); // 계정 만료 여부 확인 (true: 만료되지 않음)
+    boolean isAccountNonLocked(); // 계정 잠김 여부 확인 (true: 잠겨있지 않음)
+    boolean isCredentialsNonExpired(); // 비밀번호 만료 여부 확인 (true: 만료되지 않음)
+    boolean isEnabled(); // 계정 활성화 여부 확인 (true: 활성화됨)
+}
+각 메서드는 사용자의 상태를 확인하는데 활용되며, 인증 과정에서 Spring Security가 이 메서드들을 호출하여
+사용자가 정상적인 상태인지 검증한다.
+
+UserDetails 구현 클래스 작성하기
+사용자 정보를 데이터베이스에서 로드하여 인증을 수행하려면 UserDetails 인터페이스를 직접 구현해야 한다.
+다음은 UserDetails 인터페이스를 구현한 CustomUserDetails 클래스의 예제이다.
+
+public class CustomUserDetails implements UserDetails {
+
+    private final User user;
+
+    public CustomUserDetails(User user) {
+        this.user = user;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getUsername();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // 계정 만료 관리 로직이 필요하면 변경 가능
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return !user.isLocked(); // 계정 잠김 상태를 DB에서 관리하는 경우 사용
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // 비밀번호 만료 관리가 필요하면 수정
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return user.isEnabled(); // 사용자의 활성화 여부 반환
+    }
+}
+코드 설명:
+
+User 엔티티를 기반으로 CustomUserDetails 객체를 생성한다.
+getAuthorities() 메서드는 사용자의 역할(Role)을 GrantedAuthority 객체로 변환하여 반환한다.
+isAccountNonLocked(), isEnabled() 등의 메서드는 사용자의 계정 상태를 관리하는데 활용된다.
+UserDetailsService란?
+UserDetailsService는 Spring Security에서 사용자의 정보를 로드하는 역할을 담당하는 인터페이스이다.
+주로 데이터베이스에서 사용자 정보를 조회하는 데 사용된다.
+
+UserDetailsService는 loadUserByUsername(String username) 메서드를 제공한다.
+AuthenticationProvider는 이 메서드를 호출하여 사용자의 정보를 조회한 후,
+이를 UserDetails 객체로 변환하여 인증을 수행한다.
+UserDetailsService를 구현하여 Spring Security의 인증 과정을 직접 정의할 수 있다.
+UserDetailsService 인터페이스 구현하기
+다음은 UserDetailsService 인터페이스를 구현한 CustomUserDetailsService 클래스의 예제이다.
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        return new CustomUserDetails(user);
+    }
+}
+코드 설명:
+
+UserRepository를 사용하여 데이터베이스에서 사용자 정보를 조회한다.
+findByUsername(username)을 통해 사용자를 검색하고, 존재하지 않으면 예외(UsernameNotFoundException)를 발생시킨다.
+조회된 User 객체를 CustomUserDetails 객체로 변환하여 반환한다.
+SecurityConfig에서 UserDetailsService 적용하기
+UserDetailsService를 구현한 후, Spring Security 설정에서 이를 등록해야 한다.
+아래는 UserDetailsService를 적용한 SecurityConfig 클래스의 예제이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    private final CustomUserDetailsService userDetailsService;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").authenticated()
+                .anyRequest().permitAll()
+            )
+            .authenticationManager(authenticationManager)
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/home")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+            );
+
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(authProvider);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+코드 설명:
+
+CustomUserDetailsService를 SecurityConfig에 주입하여 사용한다.
+DaoAuthenticationProvider를 사용하여 UserDetailsService와 PasswordEncoder를 등록한다.
+SecurityFilterChain에서 로그인과 로그아웃 설정을 구성한다.
+학습자의 사고를 돕기 위한 질문
+Spring Security가 사용자 정보를 관리할 때 UserDetails 인터페이스를 사용하는 이유는 무엇인가?
+
+보안 측면에서 사용자 정보를 다룰 때의 표준화된 접근 방식을 고려해보라.
+UserDetailsService를 커스텀 구현하면 어떤 상황에서 유용한가?
+
+데이터베이스에서 사용자 정보를 조회하는 방식과 관련하여 생각해보라.
+실습 문제
+문제 1: 커스텀 UserDetailsService 구현하기
+아래 요구사항을 만족하는 CustomUserDetailsService 클래스를 작성하시오.
+
+사용자 정보를 데이터베이스에서 조회한다.
+사용자의 역할(Role) 정보를 함께 로드한다.
+UserDetails 인터페이스를 구현하는 CustomUserDetails 클래스를 작성한다.
+문제 2: Spring Security에서 UserDetailsService 등록하기
+아래 요구사항을 만족하는 보안 설정을 작성하시오.
+
+CustomUserDetailsService를 AuthenticationManager에 등록한다.
+인증 요청 시 사용자 정보를 UserDetailsService에서 불러와 인증을 수행하도록 설정한다.
+2.4. 비밀번호 인코딩과 PasswordEncoder
+비밀번호 평문 저장의 보안 문제
+사용자의 비밀번호를 평문(Plain Text)으로 저장하는 것은 보안적으로 매우 위험하다.
+만약 데이터베이스가 공격자에게 노출될 경우, 사용자 계정이 쉽게 탈취될 수 있다.
+따라서 비밀번호는 해시(Hash) 함수를 사용하여 암호화한 후 저장해야 한다.
+
+비밀번호를 암호화하는 주요 목적은 다음과 같다.
+
+데이터 유출 방지: 데이터베이스가 해킹당하더라도 비밀번호를 직접 볼 수 없음.
+리버스 엔지니어링 방지: 해시된 비밀번호는 복호화할 수 없으므로, 원래 값을 알 수 없음.
+사용자 계정 보호: 비밀번호 해시를 통해 공격자가 쉽게 접근하지 못하도록 보안 강화.
+Spring Security는 비밀번호를 안전하게 관리하기 위해 PasswordEncoder 인터페이스를 제공한다.
+
+PasswordEncoder 인터페이스와 구현 클래스
+Spring Security에서 제공하는 PasswordEncoder 인터페이스는 비밀번호를 해싱하고 검증하는 역할을 한다.
+이 인터페이스를 구현한 여러 개의 클래스가 존재하며, 그중에서 BCryptPasswordEncoder가 가장 많이 사용된다.
+
+public interface PasswordEncoder {
+    String encode(CharSequence rawPassword); // 비밀번호 해싱
+    boolean matches(CharSequence rawPassword, String encodedPassword); // 비밀번호 검증
+}
+주요 메서드 설명
+
+encode(CharSequence rawPassword):
+사용자의 입력 비밀번호를 암호화(해싱)하여 반환한다.
+matches(CharSequence rawPassword, String encodedPassword):
+입력된 비밀번호가 저장된 해시 값과 일치하는지 검증한다.
+BCryptPasswordEncoder를 활용한 비밀번호 암호화
+Spring Security에서 가장 많이 사용되는 비밀번호 인코더는 BCryptPasswordEncoder이다.
+이 인코더는 Blowfish 기반의 해시 함수를 사용하여 비밀번호를 암호화한다.
+BCrypt는 랜덤 솔트(Salt)를 자동으로 생성하여 비밀번호를 더욱 안전하게 보호한다.
+
+다음은 BCryptPasswordEncoder를 사용하여 비밀번호를 암호화하는 예제이다.
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+public class PasswordEncoderExample {
+    public static void main(String[] args) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        
+        String rawPassword = "mySecurePassword";
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        System.out.println("원본 비밀번호: " + rawPassword);
+        System.out.println("암호화된 비밀번호: " + encodedPassword);
+    }
+}
+출력 예시
+
+원본 비밀번호: mySecurePassword
+암호화된 비밀번호: $2a$10$z1xY5PqYZh9cvjxZTDAeF.WtXjRZRCYwSz8ihnp6eTeCz2zPtPh.e
+BCrypt 해싱의 특징
+
+솔트(Salt)를 자동 생성:
+같은 비밀번호라도 다른 해시 값이 생성됨.
+해커가 미리 계산된 값을 이용한 공격(레인보우 테이블 공격)을 방지할 수 있음.
+해싱 반복 횟수(Strength) 조절 가능:
+반복 횟수가 많을수록 연산 비용이 증가하지만, 보안성이 향상됨.
+기본적으로 10번 반복하며, 값이 클수록 암호화 시간이 길어짐.
+BCryptPasswordEncoder의 생성자는 기본적으로 10번 반복하도록 설정되어 있다.
+반복 횟수를 조정하려면 다음과 같이 설정할 수 있다.
+
+PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12); // 12번 반복
+주의할 점
+
+해싱된 비밀번호는 복호화할 수 없다.
+비밀번호를 비교할 때는 matches() 메서드를 사용해야 한다.
+비밀번호 검증 과정과 matches() 메서드 활용
+비밀번호를 비교할 때는 matches() 메서드를 사용해야 한다.
+이 메서드는 사용자가 입력한 원본 비밀번호를 암호화하여 저장된 해시 값과 비교한다.
+
+public class PasswordVerificationExample {
+    public static void main(String[] args) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        
+        String rawPassword = "mySecurePassword";
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        boolean isMatched = passwordEncoder.matches(rawPassword, encodedPassword);
+
+        System.out.println("비밀번호 일치 여부: " + isMatched);
+    }
+}
+출력 예시
+
+비밀번호 일치 여부: true
+비밀번호 검증 과정은 다음과 같다.
+
+사용자가 입력한 원본 비밀번호(rawPassword)를 가져온다.
+matches() 메서드를 호출하여 원본 비밀번호를 암호화한 값과 저장된 해시 값을 비교한다.
+값이 일치하면 true, 일치하지 않으면 false를 반환한다.
+Spring Security에서 비밀번호 인코딩을 적용하는 방법
+Spring Security를 활용하여 애플리케이션에서 BCryptPasswordEncoder를 사용하는 방법을 살펴보자.
+
+1. SecurityConfig에서 PasswordEncoder 빈 등록
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+@Bean을 사용하여 PasswordEncoder를 스프링 빈으로 등록한다.
+이 설정을 통해 애플리케이션 전반에서 비밀번호 암호화를 적용할 수 있다.
+2. 회원가입 시 비밀번호 암호화 적용
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public void registerUser(UserDto userDto) {
+        String encodedPassword = passwordEncoder.encode(userDto.getPassword());
+        User user = new User(userDto.getUsername(), encodedPassword);
+        userRepository.save(user);
+    }
+}
+사용자의 입력 비밀번호를 passwordEncoder.encode()를 사용하여 암호화한다.
+암호화된 비밀번호를 데이터베이스에 저장한다.
+3. 로그인 시 비밀번호 검증 적용
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public CustomUserDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                new ArrayList<>()
+        );
+    }
+}
+데이터베이스에서 User 정보를 로드하여 인증 과정에서 활용한다.
+저장된 비밀번호는 이미 BCrypt로 해시된 상태이므로, matches()를 이용해 비교한다.
+학습자의 사고를 돕기 위한 질문
+비밀번호를 평문으로 저장하는 것이 보안상 위험한 이유는 무엇인가?
+
+데이터베이스 유출 시 발생할 수 있는 보안 위협을 고려해보라.
+Spring Security에서 PasswordEncoder 인터페이스를 활용하는 이유는 무엇인가?
+
+다양한 암호화 알고리즘 적용과 보안성을 유지하는 방법을 생각해보라.
+실습 문제
+문제 1: 비밀번호 암호화 및 검증
+아래 요구사항을 만족하는 PasswordEncoder 구현을 작성하시오.
+
+BCryptPasswordEncoder를 사용하여 비밀번호를 암호화한다.
+사용자가 입력한 비밀번호와 저장된 암호화된 비밀번호를 비교하여 검증한다.
+문제 2: 사용자 등록 시 비밀번호 암호화 적용
+아래 요구사항을 만족하는 사용자 등록 기능을 작성하시오.
+
+UserDetailsService에서 새로운 사용자를 등록할 때 비밀번호를 암호화하여 저장한다.
+로그인 시 입력된 비밀번호와 암호화된 비밀번호를 비교하여 인증한다.
+3. Spring Security의 권한(Authorization) 처리
+3.1. 권한의 개념과 흐름
+권한(Authorization)의 개념
+Spring Security에서 권한(Authorization) 은 사용자가 특정 리소스에 접근할 수 있는 권한을 부여하는 과정을 의미한다.
+즉, 사용자가 로그인했다고 해서 모든 기능을 사용할 수 있는 것이 아니라, 각 사용자의 역할(Role)에 따라 허용된 기능만 사용할 수 있도록 제한하는 것이 권한 부여의 핵심이다.
+
+Spring Security는 기본적으로 역할(Role)과 권한(Permission)을 기반으로 접근을 제어한다.
+이를 위해 사용자의 인증 정보와 함께 부여된 권한을 SecurityContext에 저장하고, 요청이 들어올 때마다 이를 검증하여 접근 여부를 결정한다.
+
+Spring Security의 권한 관리 흐름
+권한 관리는 인증 이후 수행되며, 기본적인 동작 흐름은 다음과 같다.
+
+사용자가 로그인하면, AuthenticationManager가 인증을 수행하고, 인증된 사용자의 정보를 SecurityContext에 저장한다.
+사용자가 특정 리소스에 접근하려고 하면, Spring Security의 AccessDecisionManager가 해당 사용자의 GrantedAuthority(권한)를 검사한다.
+권한이 충분하면 접근을 허용하고, 부족하면 403 Forbidden(접근 거부) 응답을 반환한다.
+이 과정에서 핵심적으로 활용되는 개념들을 살펴보자.
+
+SecurityContext와 SecurityContextHolder
+Spring Security에서는 인증된 사용자 정보를 SecurityContext에 저장하여 관리한다.
+이 SecurityContext는 SecurityContextHolder를 통해 접근할 수 있으며, 요청이 들어올 때마다 현재 사용자의 정보를 유지한다.
+
+SecurityContext context = SecurityContextHolder.getContext();
+Authentication authentication = context.getAuthentication();
+위 코드에서
+
+SecurityContextHolder.getContext()를 통해 현재 보안 컨텍스트를 가져온다.
+getAuthentication()을 호출하면 현재 로그인한 사용자의 인증 정보를 가져올 수 있다.
+인증된 사용자의 권한(Role 또는 Permission) 정보는 getAuthorities() 메서드를 통해 확인할 수 있다.
+
+Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+for (GrantedAuthority authority : authorities) {
+    System.out.println("사용자 권한: " + authority.getAuthority());
+}
+이렇게 하면 현재 사용자의 부여된 권한 목록을 확인할 수 있다.
+
+GrantedAuthority를 활용한 권한 관리
+Spring Security에서 권한을 나타내는 기본적인 인터페이스는 GrantedAuthority이다.
+이 인터페이스는 역할(Role) 또는 세부적인 권한(Permission)을 나타내는 문자열 값을 저장하고 있다.
+
+public interface GrantedAuthority {
+    String getAuthority();
+}
+권한 정보는 보통 "ROLE_ADMIN", "ROLE_USER" 등의 형태로 저장된다.
+Spring Security는 Role 기반의 권한 관리를 기본으로 하지만, 세부적인 Permission 기반의 접근 제어도 가능하다.
+
+다음과 같이 UserDetails에 권한을 설정할 수 있다.
+
+@Override
+public Collection<? extends GrantedAuthority> getAuthorities() {
+    return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+}
+SimpleGrantedAuthority를 사용하면 문자열 형태로 역할 또는 권한을 저장할 수 있다.
+
+권한 검증 과정
+권한 검증은 요청이 들어올 때마다 AccessDecisionManager가 수행한다.
+기본적으로 Spring Security는 3가지 방식으로 접근을 제어할 수 있다.
+
+URL 기반 접근 제어
+HttpSecurity 설정을 통해 특정 URL에 대한 접근을 제한할 수 있다.
+메서드 기반 접근 제어
+@PreAuthorize, @Secured 등의 애노테이션을 활용하여 특정 메서드의 실행을 제한할 수 있다.
+커스텀 AccessDecisionManager
+직접 AccessDecisionManager를 구현하여 세부적인 권한 검사를 수행할 수 있다.
+각 방식에 대한 구체적인 설명은 다음 내용에서 다루도록 한다.
+
+학습자의 사고를 돕기 위한 질문
+Spring Security에서 권한(Authorization) 검사는 언제 수행되는가?
+
+사용자가 인증된 이후, 특정 리소스에 접근할 때 어떤 과정이 있는지 생각해보라.
+인증(Authentication)과 권한(Authorization)이 각각 담당하는 역할은 무엇인가?
+
+사용자의 신원 확인과 접근 제어를 각각 어떻게 처리하는지 비교해보라.
+3.2. 역할(Role)과 권한(Permission) 차이
+역할(Role)과 권한(Permission)의 개념
+Spring Security에서 역할(Role)과 권한(Permission)은 개념적으로 구분되지만, 역할이 권한을 포함하는 상위 개념으로 볼 수 있다.
+이러한 개념을 구분하는 이유는 보다 유연한 접근 제어를 가능하게 하기 위함이다.
+
+역할(Role)
+
+일반적으로 사용자의 직무 또는 그룹을 나타낸다.
+예를 들어, ROLE_USER, ROLE_ADMIN과 같은 형태로 정의된다.
+주로 Spring Security의 hasRole()을 사용하여 접근을 제어할 때 활용된다.
+역할은 여러 개의 권한(Permission)을 포함할 수 있다.
+권한(Permission)
+
+사용자가 특정 리소스에 대해 수행할 수 있는 구체적인 작업을 정의한다.
+예를 들어, READ_PRIVILEGE, WRITE_PRIVILEGE 등의 형태로 정의될 수 있다.
+주로 Spring Security의 hasAuthority()를 사용하여 접근을 제어할 때 활용된다.
+하나의 역할(Role) 내에 여러 개의 권한(Permission)이 포함될 수 있다.
+즉, 역할(Role)은 사용자 그룹을 정의하는 개념이며, 권한(Permission)은 특정 작업을 수행할 수 있는지를 결정하는 세부적인 개념이다.
+
+ROLE 기반 접근 제어와 Permission 기반 접근 제어의 차이
+Spring Security에서 접근 제어를 수행할 때,
+역할(Role)과 권한(Permission) 모두 사용할 수 있지만, 두 방식은 다음과 같은 차이가 있다.
+
+접근 제어 방식	개념	예제	사용법
+Role 기반 제어	사용자를 그룹 단위로 분류하여 접근 권한을 부여	ROLE_USER, ROLE_ADMIN	hasRole("USER")
+Permission 기반 제어	세부적인 기능 단위로 접근 권한을 부여	READ_PRIVILEGE, WRITE_PRIVILEGE	hasAuthority("READ_PRIVILEGE")
+Role 기반 접근 제어
+
+@PreAuthorize("hasRole('ADMIN')")
+public String adminAccess() {
+    return "관리자 전용 페이지";
+}
+위의 예제에서는 관리자(ROLE_ADMIN)만 접근 가능하다.
+Spring Security는 자동으로 "ROLE_" 접두어를 추가하기 때문에 hasRole("ADMIN")을 사용하면 내부적으로 "ROLE_ADMIN"과 비교하게 된다.
+
+Permission 기반 접근 제어
+
+@PreAuthorize("hasAuthority('WRITE_PRIVILEGE')")
+public String writeAccess() {
+    return "쓰기 권한이 있는 사용자만 접근 가능";
+}
+위의 예제에서는 WRITE_PRIVILEGE 권한이 있는 사용자만 접근 가능하다.
+Permission 방식은 보다 세부적인 접근 제어를 할 때 유용하다.
+
+Spring Security에서 역할(Role)과 권한(Permission)을 설정하는 방법
+Spring Security에서 UserDetails 객체를 생성할 때, 사용자의 역할(Role)과 권한(Permission)을 부여할 수 있다.
+
+다음과 같이 사용자에게 역할(Role)과 권한(Permission)을 설정할 수 있다.
+
+@Override
+public Collection<? extends GrantedAuthority> getAuthorities() {
+    return List.of(
+        new SimpleGrantedAuthority("ROLE_USER"),
+        new SimpleGrantedAuthority("READ_PRIVILEGE"),
+        new SimpleGrantedAuthority("WRITE_PRIVILEGE")
+    );
+}
+위 코드에서 사용자는
+
+ROLE_USER 역할을 가지며,
+READ_PRIVILEGE, WRITE_PRIVILEGE 권한도 가지고 있다.
+이제 이 정보를 활용하여 Spring Security에서 접근을 제어할 수 있다.
+
+1. Role 기반 접근 제어
+
+http.authorizeRequests()
+    .antMatchers("/admin/**").hasRole("ADMIN")
+    .antMatchers("/user/**").hasRole("USER")
+    .anyRequest().authenticated();
+/admin/** 경로는 관리자(ROLE_ADMIN)만 접근 가능하고,
+/user/** 경로는 일반 사용자(ROLE_USER)만 접근 가능하도록 설정하였다.
+
+2. Permission 기반 접근 제어
+
+http.authorizeRequests()
+    .antMatchers("/write").hasAuthority("WRITE_PRIVILEGE")
+    .antMatchers("/read").hasAuthority("READ_PRIVILEGE")
+    .anyRequest().authenticated();
+/write 경로는 WRITE_PRIVILEGE 권한이 있는 사용자만 접근 가능하고,
+/read 경로는 READ_PRIVILEGE 권한이 있는 사용자만 접근 가능하도록 설정하였다.
+
+Role과 Permission을 함께 활용하는 방법
+현실적인 서비스에서는 역할(Role)과 권한(Permission)을 조합하여 접근 제어를 수행하는 것이 일반적이다.
+예를 들어, 관리자는 관리자 역할(ROLE_ADMIN) 을 가질 뿐만 아니라, 관리 기능과 관련된 권한도 함께 가진다.
+
+@Override
+public Collection<? extends GrantedAuthority> getAuthorities() {
+    return List.of(
+        new SimpleGrantedAuthority("ROLE_ADMIN"),
+        new SimpleGrantedAuthority("MANAGE_USERS_PRIVILEGE"),
+        new SimpleGrantedAuthority("WRITE_PRIVILEGE")
+    );
+}
+위 코드에서 사용자는
+
+ROLE_ADMIN 역할을 가지며,
+MANAGE_USERS_PRIVILEGE, WRITE_PRIVILEGE 권한을 가진다.
+이제 관리자는 관리자 페이지뿐만 아니라 사용자 관리 기능도 수행할 수 있도록 권한을 부여할 수 있다.
+
+http.authorizeRequests()
+    .antMatchers("/admin/**").hasRole("ADMIN")
+    .antMatchers("/manage-users").hasAuthority("MANAGE_USERS_PRIVILEGE")
+    .anyRequest().authenticated();
+위 설정에서는
+
+/admin/** 경로는 ROLE_ADMIN을 가진 사용자만 접근 가능하고,
+/manage-users 경로는 MANAGE_USERS_PRIVILEGE를 가진 사용자만 접근 가능하다.
+이처럼 역할(Role)과 권한(Permission)을 적절히 조합하면 보다 세밀한 접근 제어가 가능해진다.
+
+학습자의 사고를 돕기 위한 질문
+역할(Role)과 권한(Permission)의 차이는 무엇이며, 각각 어떻게 사용되는가?
+
+역할은 사용자 그룹에 대한 개념이고, 권한은 특정 액션 수행 여부를 결정하는 개념임을 고려해보라.
+Spring Security에서 GrantedAuthority 인터페이스는 어떤 역할을 하는가?
+
+권한을 부여하고 확인하는 과정에서 GrantedAuthority가 담당하는 기능을 생각해보라.
+학습자의 사고를 돕기 위한 질문
+Spring Security에서 특정 URL에 대한 접근을 제한하려면 어떤 설정이 필요한가?
+
+HttpSecurity 설정을 활용하여 특정 역할(Role)만 접근 가능하도록 하는 방법을 떠올려보라.
+URL 기반 권한 제어와 메서드 수준 권한 제어의 차이점은 무엇인가?
+
+어느 방식이 더 세밀한 제어가 가능한지 생각해보라.
+실습 문제
+문제 1: 특정 URL에 대한 접근 제어 설정하기
+아래 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+/admin/** 경로는 ROLE_ADMIN만 접근할 수 있도록 설정한다.
+/user/** 경로는 ROLE_USER와 ROLE_ADMIN이 접근 가능하도록 설정한다.
+/public/** 경로는 인증 없이 누구나 접근할 수 있도록 설정한다.
+문제 2: URL 패턴에 따른 접근 제어 테스트하기
+아래 요구사항을 만족하는 테스트 코드를 작성하시오.
+
+ROLE_ADMIN 사용자가 /admin/home에 접근할 때 정상적으로 접근 가능한지 확인한다.
+ROLE_USER 사용자가 /admin/home에 접근할 때 접근이 차단되는지 확인한다.
+비로그인 사용자가 /public/home에 접근할 때 접근이 허용되는지 확인한다.
+3.3. URL 기반 접근 제어
+URL 기반 접근 제어란?
+Spring Security에서는 URL 패턴을 기반으로 특정 요청에 대한 접근 권한을 설정할 수 있다.
+즉, 특정 URL에 대한 접근을 허용하거나 제한하여 보안을 강화하는 것이다.
+
+이 방식은 웹 애플리케이션의 보안 계층을 보다 직관적으로 설정할 수 있도록 도와준다.
+예를 들어,
+
+/admin/** 경로는 관리자(ROLE_ADMIN)만 접근 가능
+/user/** 경로는 일반 사용자(ROLE_USER)만 접근 가능
+/public/** 경로는 모든 사용자가 접근 가능
+이처럼 경로별 접근 권한을 명확하게 구분하여 설정할 수 있다.
+
+HttpSecurity를 활용한 URL 기반 접근 제어
+Spring Security에서는 HttpSecurity 설정을 활용하여 URL별 접근 권한을 제어할 수 있다.
+이를 위해 authorizeRequests() 메서드를 활용한다.
+
+다음은 Spring Security에서 URL 기반 접근을 제어하는 대표적인 방법들이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")  // 관리자만 접근 가능
+                .antMatchers("/user/**").hasRole("USER")    // 일반 사용자만 접근 가능
+                .antMatchers("/public/**").permitAll()      // 모든 사용자 접근 가능
+                .anyRequest().authenticated()               // 나머지 요청은 인증된 사용자만 가능
+            .and()
+            .formLogin(); // 기본 로그인 폼 활성화
+
+        return http.build();
+    }
+}
+위 코드에서 authorizeRequests()를 사용하여 URL별 접근 제한을 설정하였다.
+
+/admin/** → ROLE_ADMIN을 가진 사용자만 접근 가능
+/user/** → ROLE_USER를 가진 사용자만 접근 가능
+/public/** → 모든 사용자가 접근 가능
+그 외의 모든 요청(anyRequest()) → 인증된 사용자만 접근 가능
+antMatchers()와 mvcMatchers()의 차이
+Spring Security에서 URL 패턴을 지정할 때 antMatchers()와 mvcMatchers() 두 가지 방법이 존재한다.
+두 방식의 차이점을 이해하고 상황에 따라 적절하게 사용해야 한다.
+
+설정 방식	특징	예제	동작 방식
+antMatchers()	Ant 스타일 패턴을 사용	antMatchers("/admin/**")	/admin/ 이하 모든 경로 허용
+mvcMatchers()	Spring MVC의 URL 패턴을 사용	mvcMatchers("/admin")	/admin 경로만 정확히 매칭
+antMatchers() 방식
+
+http.authorizeRequests()
+    .antMatchers("/admin/**").hasRole("ADMIN") // /admin 이하 모든 URL
+    .antMatchers("/user/**").hasRole("USER");
+/admin/ 경로 하위의 모든 요청을 ROLE_ADMIN만 접근 가능
+/user/ 경로 하위의 모든 요청을 ROLE_USER만 접근 가능
+mvcMatchers() 방식
+
+http.authorizeRequests()
+    .mvcMatchers("/admin").hasRole("ADMIN") // /admin 만 허용
+    .mvcMatchers("/user").hasRole("USER");
+/admin 경로 자체에만 ROLE_ADMIN 권한을 적용
+/user 경로 자체에만 ROLE_USER 권한을 적용
+즉, antMatchers()는 패턴 매칭 방식, mvcMatchers()는 정확한 URL 매칭 방식을 사용한다.
+대부분의 경우 보다 유연한 antMatchers() 방식이 많이 사용된다.
+
+permitAll(), authenticated(), fullyAuthenticated() 차이점
+Spring Security에서 특정 URL의 접근을 제어할 때, 다양한 옵션을 제공한다.
+각 옵션의 차이를 이해하고 필요에 따라 적절한 설정을 적용하는 것이 중요하다.
+
+접근 제어 옵션	설명	예제	동작 방식
+permitAll()	모든 사용자가 접근 가능	antMatchers("/public").permitAll()	인증 여부와 관계없이 접근 가능
+authenticated()	인증된 사용자만 접근 가능	antMatchers("/user").authenticated()	로그인한 사용자만 접근 가능
+fullyAuthenticated()	로그인한 사용자만 접근 가능 (기기 인증 제외)	antMatchers("/secure").fullyAuthenticated()	RememberMe 인증 사용자 접근 불가
+permitAll() 예제
+
+http.authorizeRequests()
+    .antMatchers("/public/**").permitAll(); // 모든 사용자 접근 가능
+로그인 여부와 관계없이 누구나 접근 가능한 URL
+authenticated() 예제
+
+http.authorizeRequests()
+    .antMatchers("/user/**").authenticated(); // 로그인한 사용자만 접근 가능
+로그인한 사용자만 접근 가능한 URL
+fullyAuthenticated() 예제
+
+http.authorizeRequests()
+    .antMatchers("/secure/**").fullyAuthenticated(); // RememberMe 사용자 제외
+로그인한 사용자만 접근 가능하며, RememberMe 인증은 허용하지 않음
+URL 기반 접근 제어에서 가장 많이 사용되는 조합
+실제 프로젝트에서 URL 기반 보안을 적용할 때 자주 사용되는 설정 방식을 정리하면 다음과 같다.
+
+http.authorizeRequests()
+    .antMatchers("/", "/home", "/public/**").permitAll() // 누구나 접근 가능
+    .antMatchers("/user/**").hasRole("USER")  // ROLE_USER만 접근 가능
+    .antMatchers("/admin/**").hasRole("ADMIN") // ROLE_ADMIN만 접근 가능
+    .anyRequest().authenticated(); // 나머지 요청은 인증된 사용자만 가능
+위 설정을 적용하면
+
+/와 /home, /public/** → 누구나 접근 가능
+/user/** → ROLE_USER를 가진 사용자만 접근 가능
+/admin/** → ROLE_ADMIN을 가진 사용자만 접근 가능
+나머지 모든 요청(anyRequest()) → 로그인한 사용자만 접근 가능
+이처럼 URL 패턴과 역할(Role)을 조합하여 보다 직관적인 보안 설정이 가능하다.
+
+3.4. 메서드 수준 권한 제어
+메서드 수준 권한 제어란?
+Spring Security에서는 특정 URL뿐만 아니라 메서드 단위로 접근을 제한할 수 있다.
+즉, 컨트롤러, 서비스 또는 리포지토리에서 개별 메서드마다 접근 권한을 설정할 수 있다.
+
+이 방식을 사용하면 보다 세밀한 접근 제어가 가능하며,
+특히 REST API나 서비스 로직에서 특정 역할(Role) 또는 권한(Permission)별로 접근을 제한할 때 유용하다.
+
+메서드 수준 권한을 설정하는 방법
+Spring Security에서 메서드 단위 권한을 설정하는 방법은 다음과 같다.
+
+애노테이션	설명	사용 대상	권장 방식
+@Secured	지정된 역할(Role)만 접근 가능	메서드	단순한 Role 기반 접근
+@PreAuthorize	메서드 실행 전에 권한 검사	메서드	권장됨 (유연한 권한 검사 가능)
+@PostAuthorize	메서드 실행 후에 권한 검사	메서드	응답 데이터를 기반으로 권한 검사 가능
+각 방식의 차이를 이해하고 상황에 따라 적절한 방식을 선택해야 한다.
+
+@Secured를 이용한 역할(Role) 기반 접근 제어
+@Secured 애노테이션을 사용하면 특정 역할(Role)을 가진 사용자만 메서드에 접근할 수 있도록 설정할 수 있다.
+이 방식은 단순한 Role 기반 접근 제한을 적용할 때 유용하다.
+
+다음은 관리자(ROLE_ADMIN)만 호출할 수 있는 메서드를 정의한 예제이다.
+
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AdminService {
+
+    @Secured("ROLE_ADMIN") // ROLE_ADMIN 권한을 가진 사용자만 접근 가능
+    public String adminOnlyFunction() {
+        return "관리자 전용 기능";
+    }
+}
+@Secured("ROLE_ADMIN")을 사용하여 해당 메서드는 ROLE_ADMIN을 가진 사용자만 호출 가능하도록 설정했다.
+@Secured 애노테이션은 단순한 권한(Role) 기반 제한을 설정하는데 적합하지만,
+보다 세밀한 접근 제어를 위해 @PreAuthorize와 @PostAuthorize를 더 많이 사용한다.
+@PreAuthorize를 이용한 사전 권한 검사
+@PreAuthorize는 메서드 실행 전에 권한을 검사하는 방식으로,
+보다 유연한 접근 제어를 적용할 수 있다.
+
+예제 코드:
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')") 
+    public String userOrAdminAccess() {
+        return "일반 사용자와 관리자 접근 가능";
+    }
+}
+@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+→ ROLE_USER 또는 ROLE_ADMIN을 가진 사용자만 해당 메서드 호출 가능
+@PreAuthorize는 EL(표현 언어, Expression Language)을 활용하여 보다 세밀한 권한 설정 가능
+(hasRole(), hasAuthority(), #username == authentication.name 등의 조건 사용 가능)
+@PostAuthorize를 이용한 응답 기반 권한 검사
+@PostAuthorize는 메서드 실행 후에 권한을 검사하는 방식이다.
+즉, 메서드가 실행된 후 반환된 결과를 기반으로 접근을 제어할 수 있다.
+
+예제 코드:
+
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AccountService {
+
+    @PostAuthorize("returnObject.owner == authentication.name") 
+    public Account getAccountDetails(String accountId) {
+        return findAccountById(accountId);
+    }
+}
+@PostAuthorize("returnObject.owner == authentication.name")
+→ 반환된 객체의 owner 값이 현재 로그인한 사용자(authentication.name)와 일치해야 접근 가능
+@PostAuthorize는 반환된 데이터의 권한을 동적으로 검사할 때 유용
+하지만, 성능 저하가 발생할 수 있으므로 자주 사용되지는 않음
+hasRole()과 hasAuthority()의 차이점
+Spring Security에서 권한(Role 또는 Permission)을 검사할 때 hasRole()과 hasAuthority()가 자주 사용된다.
+
+메서드	설명	예제	동작 방식
+hasRole('ROLE_USER')	특정 역할(Role) 검증	@PreAuthorize("hasRole('ROLE_USER')")	ROLE_USER 역할을 가진 사용자만 접근 가능
+hasAuthority('READ_PRIVILEGE')	특정 권한(Permission) 검증	@PreAuthorize("hasAuthority('READ_PRIVILEGE')")	READ_PRIVILEGE 권한을 가진 사용자만 접근 가능
+hasRole()과 hasAuthority()의 차이점
+
+Spring Security에서는 역할(Role)이 기본적으로 ROLE_ 접두사를 포함한다.
+따라서, hasRole('USER')은 내부적으로 hasAuthority('ROLE_USER')와 동일하게 동작한다.
+반면 권한(Permission)은 hasAuthority()를 사용하여 직접 지정할 수 있다.
+다음과 같은 코드가 있다면:
+
+@PreAuthorize("hasRole('ADMIN')")
+public void adminFunction() { }
+→ 내부적으로 hasAuthority('ROLE_ADMIN')으로 변환되어 동작한다.
+
+하지만, 다음처럼 작성할 경우:
+
+@PreAuthorize("hasAuthority('READ_PRIVILEGE')")
+public void readFunction() { }
+→ READ_PRIVILEGE는 명확한 권한(Permission) 개념이므로 hasAuthority()를 사용해야 한다.
+
+즉,
+
+단순한 역할(Role) 검증 → hasRole() 사용
+세부적인 권한(Permission) 검증 → hasAuthority() 사용
+메서드 수준 권한 제어 활성화 설정
+Spring Security에서 메서드 수준 권한 제어를 사용하려면 설정을 활성화해야 한다.
+이를 위해 @EnableGlobalMethodSecurity 또는 @EnableMethodSecurity 애노테이션을 사용한다.
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
+@Configuration
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
+public class SecurityMethodConfig {
+}
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
+→ 메서드 수준 권한 제어를 활성화
+prePostEnabled = true → @PreAuthorize, @PostAuthorize 사용 가능
+securedEnabled = true → @Secured 사용 가능
+학습자의 사고를 돕기 위한 질문
+메서드 수준에서 @PreAuthorize와 @Secured를 사용하면 어떤 이점이 있는가?
+
+서비스 로직에서 개별 메서드에 권한을 부여할 때의 장점을 생각해보라.
+Spring Security에서 @PostAuthorize는 언제 유용하게 사용될 수 있는가?
+
+실행 후 권한 검증이 필요한 시나리오를 떠올려보라.
+실습 문제
+문제 1: @PreAuthorize를 사용한 메서드 권한 설정
+아래 요구사항을 만족하는 서비스 클래스를 작성하시오.
+
+getAdminData() 메서드는 ROLE_ADMIN만 호출할 수 있도록 설정한다.
+getUserData() 메서드는 ROLE_USER와 ROLE_ADMIN이 호출 가능하도록 설정한다.
+문제 2: @Secured 애노테이션을 활용한 메서드 접근 제한
+아래 요구사항을 만족하는 설정을 추가하시오.
+
+@Secured("ROLE_ADMIN")을 사용하여 관리자 전용 메서드를 정의한다.
+@Secured({"ROLE_USER", "ROLE_ADMIN"})을 사용하여 일반 사용자와 관리자 모두 접근 가능한 메서드를 정의한다.
+4. Spring Security의 필터와 보안 설정
+4.1. Spring Security 필터 체인
+Spring Security 필터 체인이란?
+Spring Security는 필터 기반의 보안 프레임워크이다.
+즉, 클라이언트 요청이 서버에 도달하기 전에 여러 개의 보안 필터를 거쳐야 한다.
+
+이러한 필터들의 순서를 관리하는 구조를 Security Filter Chain(보안 필터 체인) 이라고 한다.
+Spring Security는 요청을 처리하는 과정에서 여러 개의 필터를 등록하고 실행하여 인증과 권한을 관리한다.
+
+보안 필터 체인의 주요 역할:
+
+클라이언트의 요청을 분석하고 적절한 보안 조치를 수행
+사용자 인증(Authentication)과 권한(Authorization) 검증
+CSRF 보호, 세션 관리, CORS 정책 적용 등
+요청이 보안 요구사항을 충족하지 못하면 필터 단계에서 차단
+Spring Security의 필터 체인 개념을 이해하는 것이 중요한 이유는
+필터를 커스텀하거나 기존 필터를 조정하여 보안 정책을 변경할 수 있기 때문이다.
+
+Spring Security의 필터 체인 동작 방식
+클라이언트가 웹 애플리케이션에 HTTP 요청을 보낸다.
+요청은 Spring Security의 필터 체인(Filter Chain)으로 전달된다.
+필터 체인은 요청을 분석하고 적절한 필터를 순차적으로 실행한다.
+각 필터는 인증, 권한 검증, 보안 조치 등을 수행한 후 다음 필터로 요청을 넘긴다.
+모든 필터를 통과하면 컨트롤러(Controller)로 요청이 전달된다.
+응답이 반환될 때도 필터 체인을 거쳐 클라이언트에게 전달된다.
+Spring Security는 기본적으로 DelegatingFilterProxy를 활용하여
+여러 개의 필터를 Spring Security 설정에 맞게 실행하도록 관리한다.
+
+Spring Security의 기본 필터 목록
+Spring Security는 다양한 보안 필터를 기본적으로 제공한다.
+이 필터들은 특정 보안 기능을 담당하며 특정한 순서대로 실행된다.
+
+필터 이름	역할	설명
+SecurityContextPersistenceFilter	SecurityContext 유지	인증 정보를 유지하고 공유
+UsernamePasswordAuthenticationFilter	로그인 인증 처리	기본적인 사용자 로그인 인증 필터
+BasicAuthenticationFilter	HTTP 기본 인증 처리	HTTP Basic 인증 지원
+BearerTokenAuthenticationFilter	JWT 토큰 인증	OAuth2 Bearer 토큰 처리
+CsrfFilter	CSRF 보호	CSRF 공격 방지
+LogoutFilter	로그아웃 처리	사용자 로그아웃을 처리
+SessionManagementFilter	세션 관리	세션을 활용한 보안 처리
+ExceptionTranslationFilter	보안 예외 처리	인증 및 권한 예외 발생 시 적절한 응답 반환
+FilterSecurityInterceptor	권한 확인	요청에 대한 권한 검증
+이 필터들은 Spring Security가 내부적으로 보안 정책을 관리하는 핵심 요소이다.
+커스텀 필터를 추가하거나 기존 필터를 조정하면 보안 정책을 변경할 수 있다.
+
+필터 체인에서 요청이 처리되는 과정
+SecurityContextPersistenceFilter:
+
+요청이 들어올 때 SecurityContext를 유지하고 설정한다.
+이전 요청에서 로그인한 사용자의 정보를 세션에서 가져온다.
+UsernamePasswordAuthenticationFilter:
+
+사용자가 로그인하면 아이디/비밀번호를 검사한다.
+로그인 성공 시 인증 정보를 SecurityContext에 저장한다.
+BasicAuthenticationFilter:
+
+HTTP 요청 헤더에서 Authorization: Basic ... 값을 읽어 인증한다.
+BearerTokenAuthenticationFilter (JWT 토큰 인증):
+
+요청 헤더에서 Bearer 토큰을 읽고 사용자 인증을 수행한다.
+CsrfFilter:
+
+CSRF 공격을 방지하기 위해 CSRF 토큰을 확인한다.
+LogoutFilter:
+
+사용자가 로그아웃하면 세션을 삭제하고 보안 컨텍스트를 초기화한다.
+SessionManagementFilter:
+
+세션을 관리하고 보안 설정에 따라 세션을 유지하거나 폐기한다.
+ExceptionTranslationFilter:
+
+인증 또는 권한 오류가 발생하면 적절한 에러 응답을 반환한다.
+FilterSecurityInterceptor:
+
+최종적으로 사용자가 요청한 리소스에 접근할 권한이 있는지 확인한다.
+Spring Security 필터 체인 등록 방법
+Spring Security에서 필터 체인을 구성하려면 SecurityFilterChain을 설정해야 한다.
+이전 버전에서는 WebSecurityConfigurerAdapter를 사용했지만,
+Spring Security 5.7부터는 SecurityFilterChain Bean을 직접 등록하는 방식이 권장된다.
+
+예제 코드:
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless 방식 사용
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN") // /admin/* 경로는 관리자만 접근 가능
+                .anyRequest().authenticated() // 그 외 요청은 인증 필요
+            )
+            .formLogin(login -> login.disable()) // 기본 로그인 폼 비활성화
+            .httpBasic(httpBasic -> httpBasic.disable()); // HTTP Basic 인증 비활성화
+
+        return http.build();
+    }
+}
+위 코드에서 중요한 점
+
+csrf().disable() → CSRF 보호를 비활성화(REST API 사용 시 필요)
+sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+→ 세션을 사용하지 않고 JWT 등의 인증 방식을 사용하도록 설정
+authorizeHttpRequests() → 특정 URL에 대한 접근 권한을 설정
+필터 체인에서 커스텀 필터 추가하기
+Spring Security는 기본 제공 필터 외에도 커스텀 필터를 추가할 수 있다.
+예를 들어, 사용자 정의 JWT 인증 필터를 추가하고 싶다면 다음과 같이 설정한다.
+
+커스텀 필터 구현 예제:
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
+import java.io.IOException;
+
+@Component
+public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
+    private final UserDetailsService userDetailsService;
+
+    public JwtAuthenticationFilter(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+
+        String token = request.getHeader("Authorization");
+
+        if (token != null && token.startsWith("Bearer ")) {
+            String username = extractUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            
+            // 사용자 인증 정보 설정
+            SecurityContextHolder.getContext().setAuthentication(null);
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    private String extractUsername(String token) {
+        return token.substring(7); // 단순 예제 (JWT 파싱 로직 추가 필요)
+    }
+}
+위 필터는
+
+Authorization 헤더에서 JWT 토큰을 추출
+사용자 이름을 가져와 인증 처리
+SecurityContextHolder에 사용자 정보를 저장
+이제 이 필터를 기존 필터 체인에 추가할 수 있다.
+
+학습자의 사고를 돕기 위한 질문
+Spring Security 필터 체인(Security Filter Chain)의 역할은 무엇인가?
+
+인증과 권한 검사를 위해 필터가 어떻게 작동하는지 생각해보라.
+Spring Security의 필터 체인이 실행되는 순서는 어떻게 결정되는가?
+
+Filter의 등록 순서와 필터 간의 관계를 떠올려보라.
+4.2. SecurityFilterChain을 활용한 보안 설정
+SecurityFilterChain이란?
+Spring Security는 요청이 들어올 때 필터 체인(Security Filter Chain) 을 통해 보안을 처리한다.
+기본적으로 여러 개의 필터가 동작하며, 사용자 인증, 권한 검사, 세션 관리, CSRF 보호 등의 작업을 수행한다.
+
+Spring Security 5.7 이후부터는 기존의 WebSecurityConfigurerAdapter를 사용하는 방식이 폐지되었으며,
+SecurityFilterChain을 직접 Bean으로 등록하는 방식이 권장된다.
+
+SecurityFilterChain을 활용하면 보안 정책을 보다 유연하게 구성할 수 있으며,
+각 요청별로 필터를 세밀하게 조정할 수 있다.
+
+SecurityFilterChain 설정 방법
+Spring Security의 SecurityFilterChain을 구성하려면
+@Bean을 사용하여 필터 체인을 명확히 정의해야 한다.
+
+기본적인 SecurityFilterChain 설정 예제:
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (REST API 사용 시 필요)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 미사용 (JWT 방식 적용)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN") // /admin/** 경로는 ADMIN 권한 필요
+                .requestMatchers("/user/**").hasRole("USER")   // /user/** 경로는 USER 권한 필요
+                .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+            )
+            .formLogin(login -> login.disable()) // 기본 로그인 폼 비활성화
+            .httpBasic(httpBasic -> httpBasic.disable()); // HTTP Basic 인증 비활성화
+
+        return http.build();
+    }
+}
+SecurityFilterChain 설정 요소 분석
+CSRF 보호 설정
+
+.csrf(csrf -> csrf.disable())
+REST API 기반의 서비스에서는 CSRF 보호가 필요하지 않기 때문에 비활성화
+하지만, 웹 애플리케이션에서 세션 기반 인증을 사용할 경우 CSRF 보호를 유지하는 것이 좋다.
+세션 관리 정책
+
+.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+STATELESS를 사용하면 Spring Security가 세션을 사용하지 않고,
+JWT 또는 OAuth2 같은 방식의 인증을 사용할 때 적합하다.
+권한 기반 접근 제어
+
+.requestMatchers("/admin/**").hasRole("ADMIN")
+requestMatchers()를 사용하여 특정 경로에 대한 접근을 제한
+/admin/** 경로는 ROLE_ADMIN을 가진 사용자만 접근 가능
+/user/** 경로는 ROLE_USER를 가진 사용자만 접근 가능
+기본 로그인 폼 비활성화
+
+.formLogin(login -> login.disable())
+Spring Security에서 제공하는 기본 로그인 페이지를 비활성화
+HTTP Basic 인증 비활성화
+
+.httpBasic(httpBasic -> httpBasic.disable())
+HTTP Basic 인증은 Authorization 헤더를 통해 ID/PW를 전송하는 방식으로,
+보안상 위험할 수 있어 사용하지 않는 것이 좋다.
+로그인 및 로그아웃 설정
+SecurityFilterChain에서 로그인 및 로그아웃 기능을 직접 설정할 수도 있다.
+Spring Security에서는 formLogin()과 logout()을 활용하여 로그인 및 로그아웃을 관리할 수 있다.
+
+로그인 및 로그아웃 기능을 포함한 SecurityFilterChain 예제:
+
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/user/**").hasRole("USER")
+            .anyRequest().authenticated()
+        )
+        .formLogin(login -> login
+            .loginPage("/login") // 사용자 정의 로그인 페이지
+            .defaultSuccessUrl("/home", true) // 로그인 성공 시 이동할 URL
+            .permitAll() // 로그인 페이지 접근 허용
+        )
+        .logout(logout -> logout
+            .logoutUrl("/logout") // 로그아웃 처리 URL
+            .logoutSuccessUrl("/login?logout") // 로그아웃 후 이동할 페이지
+            .invalidateHttpSession(true) // 세션 무효화
+            .deleteCookies("JSESSIONID") // JSESSIONID 쿠키 삭제
+        );
+
+    return http.build();
+}
+로그인 및 로그아웃 설정 요소 분석
+로그인 페이지 설정 (formLogin())
+
+.loginPage("/login") → 사용자가 로그인해야 할 경우 /login 페이지로 이동
+.defaultSuccessUrl("/home", true) → 로그인 성공 후 /home으로 이동
+.permitAll() → 로그인 페이지는 누구나 접근 가능
+로그아웃 설정 (logout())
+
+.logoutUrl("/logout") → /logout URL을 호출하면 로그아웃
+.logoutSuccessUrl("/login?logout") → 로그아웃 후 로그인 페이지로 이동
+.invalidateHttpSession(true) → 로그아웃 시 세션 무효화
+.deleteCookies("JSESSIONID") → JSESSIONID 쿠키 삭제
+권한 기반 접근 제어 예제
+SecurityFilterChain을 활용하면 역할(Role) 기반의 접근 제어를 세밀하게 설정할 수 있다.
+
+예를 들어, /admin/** 경로는 관리자만, /user/** 경로는 일반 사용자만 접근하도록 설정할 수 있다.
+
+권한 기반 접근 제어 예제:
+
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/user/**").hasRole("USER")
+            .anyRequest().authenticated()
+        )
+        .formLogin(login -> login.permitAll());
+
+    return http.build();
+}
+설명:
+
+/admin/** 경로는 ROLE_ADMIN을 가진 사용자만 접근 가능
+/user/** 경로는 ROLE_USER를 가진 사용자만 접근 가능
+그 외 요청(anyRequest())은 인증된 사용자만 접근 가능
+실제 프로젝트에서 활용하는 SecurityFilterChain
+Spring Security를 활용하는 실제 프로젝트에서는 보통 JWT 인증, OAuth2, LDAP 등을 적용하여
+보안성을 강화할 수 있다.
+
+아래 예제는 JWT를 활용하여 인증을 처리하는 SecurityFilterChain 설정 예제이다.
+
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/user/**").hasRole("USER")
+            .anyRequest().authenticated()
+        )
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
+
+    return http.build();
+}
+설명:
+
+.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+→ 세션을 사용하지 않고 JWT 방식으로 인증
+.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+→ JWT 인증 필터를 기존의 인증 필터보다 앞에 배치
+학습자의 사고를 돕기 위한 질문
+Spring Security에서 SecurityFilterChain을 직접 정의하는 이유는 무엇인가?
+
+보안 설정을 커스텀할 때 필요한 필터 조합의 역할을 떠올려보라.
+로그인 및 로그아웃 설정을 SecurityFilterChain에서 어떻게 관리할 수 있는가?
+
+formLogin(), logout() 등의 메서드가 보안 설정에서 어떻게 활용되는지 생각해보라.
+실습 문제
+문제 1: SecurityFilterChain을 활용한 인증 및 권한 설정
+아래 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+/admin/** 경로는 ROLE_ADMIN만 접근할 수 있도록 설정한다.
+/user/** 경로는 ROLE_USER와 ROLE_ADMIN이 접근 가능하도록 설정한다.
+/login은 모든 사용자에게 접근이 허용되어야 한다.
+로그아웃 요청(/logout)이 처리된 후 루트 경로(/)로 리다이렉트되도록 설정한다.
+문제 2: SecurityFilterChain의 필터 순서 테스트
+아래 요구사항을 만족하는 테스트 코드를 작성하시오.
+
+ROLE_ADMIN 사용자가 /admin/home에 접근할 때 정상적으로 접근 가능한지 확인한다.
+ROLE_USER 사용자가 /admin/home에 접근할 때 접근이 차단되는지 확인한다.
+로그아웃 요청을 수행한 후, / 경로로 이동하는지 확인한다.
+4.3. HTTP 보안 정책 적용
+HTTP 보안 정책이란?
+웹 애플리케이션을 개발할 때 보안 공격을 방어하기 위한 HTTP 보안 정책을 적용해야 한다.
+Spring Security는 이러한 보안 정책을 적용할 수 있도록 여러 가지 설정을 제공한다.
+
+주요 HTTP 보안 정책 요소:
+
+CORS (Cross-Origin Resource Sharing) 설정
+CSRF (Cross-Site Request Forgery) 보호 설정
+세션 관리 정책 (Stateful vs Stateless)
+CORS (Cross-Origin Resource Sharing) 설정
+CORS란?
+CORS(Cross-Origin Resource Sharing)는 다른 도메인(origin)에서 요청을 보낼 때 이를 허용할지 결정하는 정책이다.
+웹 브라우저는 기본적으로 같은 출처(Same-Origin)에서만 요청을 허용하지만,
+CORS 설정을 통해 다른 도메인의 요청도 허용할 수 있다.
+
+CORS 정책이 필요한 이유
+
+다른 도메인의 API를 호출해야 하는 경우
+
+예를 들어, https://frontend.com에서 https://backend.com/api 요청을 보내면
+브라우저는 보안상 요청을 차단한다.
+이를 허용하려면 백엔드에서 CORS 설정을 명시적으로 해줘야 한다.
+REST API에서 클라이언트가 직접 API를 호출하는 경우
+
+SPA(React, Vue, Angular)에서 백엔드 API를 직접 호출하면
+CORS 오류가 발생할 수 있다.
+서버가 특정 요청을 허용할 필요가 있는 경우
+
+특정 Origin(출처)에서 오는 요청만 허용하고 싶을 때
+특정 HTTP 메서드(GET, POST, PUT, DELETE)만 허용하고 싶을 때
+Spring Security에서 CORS 설정하기
+Spring Security에서는 HttpSecurity의 .cors() 메서드를 통해
+CORS 정책을 활성화할 수 있다.
+
+기본적인 CORS 설정 예제:
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.disable()) // CORS 정책 비활성화 (프론트엔드에서 설정할 경우)
+            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/public/**").permitAll() // 공용 엔드포인트는 인증 없이 접근 가능
+                .anyRequest().authenticated() // 나머지 요청은 인증 필요
+            );
+
+        return http.build();
+    }
+}
+위 코드에서는 .cors(cors -> cors.disable())을 사용하여 CORS를 비활성화했다.
+이는 Spring Security에서 CORS를 처리하지 않고, Spring Web MVC에서 CORS를 설정할 경우 사용한다.
+
+Spring MVC에서 CORS 설정하는 방법
+Spring Security에서 CORS를 설정하는 대신,
+Spring MVC에서 직접 CORS 설정을 관리할 수도 있다.
+
+이 경우 WebMvcConfigurer를 활용하여 CORS 정책을 설정할 수 있다.
+
+Spring MVC에서 CORS 설정 예제:
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**") // 특정 경로에 대해 CORS 허용
+            .allowedOrigins("https://frontend.com") // 특정 Origin 허용
+            .allowedMethods("GET", "POST", "PUT", "DELETE") // 허용할 HTTP 메서드 지정
+            .allowCredentials(true); // 쿠키 허용 여부
+    }
+}
+설명:
+
+addMapping("/api/**") → /api/** 경로의 요청에 대해 CORS 허용
+allowedOrigins("https://frontend.com") → https://frontend.com에서 오는 요청만 허용
+allowedMethods("GET", "POST", "PUT", "DELETE") → 특정 HTTP 메서드만 허용
+allowCredentials(true) → 쿠키 포함 요청 허용
+CSRF (Cross-Site Request Forgery) 보호 설정
+CSRF란?
+CSRF(Cross-Site Request Forgery)는 사용자의 인증 정보를 탈취하여 원치 않는 요청을 보내는 공격 기법이다.
+예를 들어, 사용자가 로그인된 상태에서 공격자가 의도적으로 요청을 보낼 경우,
+인증된 사용자로 위장하여 조작된 요청을 실행할 수 있다.
+
+CSRF 공격 방어 필요성
+CSRF 공격은 세션 기반 인증을 사용하는 애플리케이션에서 주로 발생한다.
+특히, 쿠키를 기반으로 인증을 수행하는 경우 CSRF 보호가 반드시 필요하다.
+반면, JWT 기반의 인증 시스템에서는 CSRF 보호가 필요하지 않다.
+
+Spring Security에서 CSRF 보호 설정하기
+Spring Security는 기본적으로 CSRF 보호를 활성화한다.
+하지만 REST API 기반의 애플리케이션에서는 CSRF 보호를 비활성화하는 것이 일반적이다.
+
+CSRF 비활성화 예제:
+
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/public/**").permitAll()
+            .anyRequest().authenticated()
+        );
+
+    return http.build();
+}
+CSRF 보호를 활성화하려면?
+CSRF 보호가 필요한 경우, CSRF 토큰을 사용하여 요청을 보호해야 한다.
+Spring Security는 이를 위해 CsrfToken을 제공한다.
+
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // 쿠키 기반 CSRF 토큰 사용
+        )
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
+        );
+
+    return http.build();
+}
+세션 관리 정책 (Stateful vs Stateless)
+Spring Security에서 세션을 관리하는 방식은 두 가지가 있다.
+
+Stateful (상태 유지 방식)
+
+서버가 사용자의 세션 정보를 유지한다.
+사용자가 로그인하면 세션 ID를 쿠키에 저장하고,
+이후 요청마다 이 세션 ID를 서버로 전송하여 인증을 처리한다.
+Stateless (무상태 방식)
+
+서버가 사용자의 상태를 유지하지 않는다.
+일반적으로 JWT 기반 인증 방식에서 사용된다.
+클라이언트가 요청할 때마다 JWT 토큰을 Authorization 헤더에 포함하여 전송한다.
+Stateless 방식의 설정 예제:
+
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless 설정
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
+        );
+
+    return http.build();
+}
+Stateful 방식의 설정 예제:
+
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // 세션 필요 시 생성
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
+        );
+
+    return http.build();
+}
+학습자의 사고를 돕기 위한 질문
+CORS(Cross-Origin Resource Sharing) 설정이 필요한 이유는 무엇인가?
+
+서로 다른 도메인 간의 요청이 제한되는 원리를 떠올려보라.
+CSRF(Cross-Site Request Forgery) 공격 방지를 위해 Spring Security는 어떤 보호 기능을 제공하는가?
+
+CSRF 공격이 어떤 방식으로 이루어지는지 생각해보고, Spring Security의 기본 방어 기능을 떠올려보라.
+실습 문제
+문제 1: CORS 설정 추가하기
+아래 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+모든 도메인에서 /public/** 경로에 대한 요청을 허용한다.
+GET, POST, PUT 요청만 허용하고, DELETE 요청은 차단한다.
+클라이언트가 Authorization 헤더를 포함할 수 있도록 설정한다.
+문제 2: CSRF 보호 활성화 및 비활성화 설정하기
+아래 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+/api/** 경로에 대해서는 CSRF 보호를 비활성화한다.
+그 외의 모든 요청에서는 CSRF 보호가 활성화되도록 설정한다.
+HttpSecurity 설정에서 csrf().disable()을 적용하는 경우와 적용하지 않는 경우를 비교한다.
+5. 실전 예제: 사용자 역할(Role) 기반 권한 관리
+5.1. 사용자 역할(Role)과 권한(Permission) 개념
+역할(Role)과 권한(Permission)의 차이점
+Spring Security에서는 역할(Role)과 권한(Permission)을 구분하여 접근 제어를 수행할 수 있다.
+하지만, 이 둘은 종종 혼용되어 사용되므로 개념을 명확히 이해하는 것이 중요하다.
+
+역할(Role)
+
+특정 사용자 그룹을 정의하는 개념이다.
+일반적으로 ROLE_USER, ROLE_ADMIN과 같은 접두어 ROLE_이 붙은 문자열로 관리된다.
+역할은 보다 상위 개념이며, 권한(Permission)을 포함할 수 있다.
+권한(Permission)
+
+사용자가 특정 리소스나 기능에 접근할 수 있는지를 결정하는 세부적인 권한을 의미한다.
+예를 들어 READ_PRIVILEGE, WRITE_PRIVILEGE 와 같이 정의할 수 있다.
+특정 역할(Role)이 여러 개의 권한(Permission)을 가질 수도 있다.
+역할(Role)과 권한(Permission)의 관계
+역할과 권한은 계층적으로 구성될 수 있다. 예를 들어 다음과 같은 관계를 정의할 수 있다.
+
+역할(Role)	권한(Permission)
+ROLE_USER	READ_PRIVILEGE
+ROLE_MANAGER	READ_PRIVILEGE, WRITE_PRIVILEGE
+ROLE_ADMIN	READ_PRIVILEGE, WRITE_PRIVILEGE, DELETE_PRIVILEGE
+즉, ROLE_ADMIN은 ROLE_USER와 ROLE_MANAGER의 모든 권한을 포함하는 구조가 될 수 있다.
+
+역할(Role)과 권한(Permission)의 차이 예제
+Spring Security에서는 역할을 지정할 때 hasRole()을 사용하고,
+권한을 지정할 때 hasAuthority()를 사용한다.
+
+예를 들어, 다음과 같이 두 가지 방식으로 접근을 제한할 수 있다.
+
+// 특정 URL에 대해 ROLE_ADMIN 역할을 가진 사용자만 접근 가능
+.antMatchers("/admin/**").hasRole("ADMIN")
+
+// 특정 URL에 대해 WRITE_PRIVILEGE 권한을 가진 사용자만 접근 가능
+.antMatchers("/edit/**").hasAuthority("WRITE_PRIVILEGE")
+위 코드에서 hasRole("ADMIN")을 사용하면 ROLE_ADMIN 역할을 가진 사용자만 접근 가능하지만,
+hasAuthority("WRITE_PRIVILEGE")는 해당 권한이 부여된 사용자만 접근 가능하도록 설정된다.
+
+역할(Role)과 권한(Permission) 기반 접근 제어 방식
+Spring Security에서는 역할과 권한을 기반으로 접근을 제어하는 방법이 여러 가지 있다.
+
+URL 기반 접근 제어
+
+HttpSecurity 설정을 통해 특정 URL에 대한 접근을 제어할 수 있다.
+예: antMatchers("/admin/**").hasRole("ADMIN")
+메서드 기반 접근 제어
+
+@PreAuthorize, @Secured와 같은 애노테이션을 사용하여 특정 메서드에 대한 접근을 제한할 수 있다.
+예: @PreAuthorize("hasRole('ADMIN')")
+데이터베이스 기반 접근 제어
+
+역할과 권한 정보를 데이터베이스에서 관리하고, 이를 기반으로 접근을 제어할 수 있다.
+Spring Security에서 역할(Role) 설정하기
+Spring Security에서 역할을 설정하는 방법은 간단하다.
+Spring Security에서는 UserDetails 인터페이스를 구현하여 사용자의 역할(Role)을 정의할 수 있다.
+
+다음은 기본적인 역할(Role) 설정 예제이다.
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
+
+public class CustomUserDetails implements UserDetails {
+    private String username;
+    private String password;
+    private List<GrantedAuthority> authorities;
+
+    public CustomUserDetails(String username, String password, List<GrantedAuthority> authorities) {
+        this.username = username;
+        this.password = password;
+        this.authorities = authorities;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities; // 사용자의 역할(Role) 반환
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}
+위 코드에서 getAuthorities() 메서드는 사용자의 역할(Role)을 반환한다.
+즉, ROLE_USER, ROLE_ADMIN과 같은 값이 여기에 포함될 수 있다.
+
+Spring Security에서 권한(Permission) 설정하기
+권한(Permission)은 역할(Role)보다 더 세부적으로 접근을 제어하는 방식이다.
+Spring Security에서 권한을 설정하는 방법은 다음과 같다.
+
+권한을 GrantedAuthority 객체로 설정
+
+GrantedAuthority는 사용자의 권한 정보를 담고 있다.
+역할(Role)뿐만 아니라 특정 권한(Permission)도 포함할 수 있다.
+권한을 UserDetails 객체에 포함시키기
+
+UserDetails 구현체에서 GrantedAuthority를 리스트 형태로 반환하면 된다.
+다음은 권한을 부여하는 예제 코드이다.
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+public class CustomUserDetails implements UserDetails {
+    private String username;
+    private String password;
+    private List<GrantedAuthority> authorities;
+
+    public CustomUserDetails(String username, String password, String role) {
+        this.username = username;
+        this.password = password;
+        this.authorities = Arrays.asList(new SimpleGrantedAuthority(role)); // 역할 설정
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities; // 역할 반환
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}
+위 코드에서 사용자의 역할(Role)을 SimpleGrantedAuthority 객체로 저장하고 있다.
+이렇게 하면 Spring Security에서 hasRole() 또는 hasAuthority()를 활용하여 접근을 제한할 수 있다.
+
+Spring Security에서 역할(Role)과 권한(Permission) 설정 정리
+역할(Role) : ROLE_USER, ROLE_ADMIN과 같은 그룹 단위의 접근 제어
+권한(Permission) : READ_PRIVILEGE, WRITE_PRIVILEGE와 같은 세부적인 접근 제어
+Spring Security에서는 UserDetails 구현체를 활용하여 역할과 권한을 설정할 수 있음
+역할은 hasRole(), 권한은 hasAuthority()를 사용하여 접근을 제한할 수 있음
+학습자의 사고를 돕기 위한 질문
+사용자 역할(Role)과 권한(Permission)은 어떻게 구분되는가?
+
+ROLE_ADMIN과 READ_PRIVILEGE 같은 개념의 차이를 떠올려보라.
+사용자 역할(Role)과 권한(Permission)을 분리해서 관리하면 어떤 장점이 있는가?
+
+시스템 확장성과 유지보수성을 고려해보라.
+5.2. 역할(Role)에 따른 접근 제어
+Spring Security에서 역할(Role) 기반 접근 제어 방식
+Spring Security는 역할(Role) 기반으로 접근을 제어할 수 있는 여러 가지 방법을 제공한다.
+역할(Role)은 사용자가 특정 리소스에 접근할 수 있도록 그룹화하는 개념이다.
+
+Spring Security에서 역할을 기반으로 접근을 제어하는 대표적인 방식은 다음과 같다.
+
+URL 기반 접근 제어
+
+특정 URL 경로에 대해 접근 권한을 부여할 수 있다.
+HttpSecurity 설정을 통해 hasRole() 또는 hasAuthority()를 사용할 수 있다.
+메서드 기반 접근 제어
+
+@PreAuthorize, @Secured 애노테이션을 사용하여 메서드 단위로 접근을 제한할 수 있다.
+데이터베이스 기반 접근 제어
+
+사용자 및 역할 정보를 데이터베이스에서 관리하고 동적으로 접근 권한을 부여할 수 있다.
+URL 기반 접근 제어
+Spring Security에서는 URL 패턴을 기반으로 접근을 제한할 수 있다.
+이는 주로 HttpSecurity 설정에서 antMatchers() 메서드를 사용하여 구현한다.
+
+다음은 HttpSecurity 설정을 활용한 URL 기반 역할(Role) 접근 제어 예제이다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")  // ROLE_ADMIN 역할만 접근 가능
+                .antMatchers("/user/**").hasRole("USER")    // ROLE_USER 역할만 접근 가능
+                .antMatchers("/public/**").permitAll()     // 모든 사용자 접근 가능
+                .anyRequest().authenticated()             // 그 외의 모든 요청은 인증 필요
+            .and()
+            .formLogin() // 기본 로그인 폼 활성화
+            .and()
+            .logout();   // 로그아웃 기능 활성화
+        return http.build();
+    }
+}
+위 설정을 보면 특정 역할(Role)에 따라 URL 접근을 제어할 수 있다.
+
+/admin/** 경로는 ROLE_ADMIN 역할을 가진 사용자만 접근 가능하다.
+/user/** 경로는 ROLE_USER 역할을 가진 사용자만 접근 가능하다.
+/public/** 경로는 모든 사용자가 접근할 수 있다.
+나머지 경로는 로그인이 필요한 상태에서만 접근 가능하다.
+hasRole()과 hasAuthority()의 차이점
+Spring Security에서 hasRole()과 hasAuthority()는 역할(Role)과 권한(Permission)을 확인하는 데 사용된다.
+이 둘의 차이는 역할(Role) 앞에 "ROLE_" 접두어가 자동으로 추가되느냐의 여부이다.
+
+메서드	설명	예제
+hasRole("USER")	ROLE_ 접두어가 자동 추가됨	hasRole("USER") → ROLE_USER
+hasAuthority("ROLE_USER")	접두어 자동 추가 없음	hasAuthority("ROLE_USER")
+즉, hasRole("ADMIN")을 사용하면 Spring Security는 내부적으로 "ROLE_ADMIN" 과 비교하게 된다.
+하지만 hasAuthority("ROLE_ADMIN")을 사용하면 "ROLE_" 접두어 없이 그대로 비교한다.
+
+예를 들어, 다음과 같은 코드가 있다고 가정하자.
+
+.antMatchers("/admin/**").hasRole("ADMIN")
+.antMatchers("/editor/**").hasAuthority("EDITOR")
+/admin/** 접근 시 hasRole("ADMIN")을 사용했으므로 ROLE_ADMIN을 가진 사용자만 접근 가능하다.
+/editor/** 접근 시 hasAuthority("EDITOR")를 사용했으므로 EDITOR 권한을 가진 사용자만 접근 가능하다.
+결론적으로 역할(Role)을 사용할 경우에는 hasRole()을 사용하고, 특정 권한(Permission)을 사용할 경우에는 hasAuthority()를 사용하는 것이 좋다.
+
+메서드 기반 접근 제어
+Spring Security는 URL 수준에서뿐만 아니라 메서드 단위에서도 역할(Role)에 따라 접근을 제어할 수 있다.
+이것은 @PreAuthorize, @Secured, @PostAuthorize 애노테이션을 활용하여 구현할 수 있다.
+
+@Secured 애노테이션
+특정 역할(Role)을 가진 사용자만 해당 메서드를 실행할 수 있도록 제한한다.
+한 개 이상의 역할을 지정할 수 있다.
+@Secured("ROLE_ADMIN")
+public void adminOnlyMethod() {
+    System.out.println("관리자만 접근 가능");
+}
+@PreAuthorize 애노테이션
+메서드 실행 전에 접근 권한을 검사한다.
+hasRole(), hasAuthority()를 사용할 수 있다.
+@PreAuthorize("hasRole('ADMIN')")
+public void adminAccess() {
+    System.out.println("관리자만 실행 가능");
+}
+
+@PreAuthorize("hasAuthority('READ_PRIVILEGE')")
+public void readAccess() {
+    System.out.println("READ 권한이 있는 사용자만 실행 가능");
+}
+@PostAuthorize 애노테이션
+메서드 실행 후 결과 값을 기반으로 접근을 제어할 수 있다.
+잘 사용되지 않지만, 특정 조건을 검증할 때 활용될 수 있다.
+@PostAuthorize("returnObject.owner == authentication.name")
+public User getUser(Long userId) {
+    return userService.findById(userId);
+}
+위 코드에서 returnObject.owner == authentication.name는
+메서드 실행 후 반환된 객체의 owner 값이 현재 로그인한 사용자(authentication.name)와 일치하는지 검사하는 역할을 한다.
+
+Spring Security에서 역할(Role) 기반 접근 제어 설정 정리
+URL 기반 접근 제어 (HttpSecurity)
+
+특정 URL 경로에 대해 역할(Role) 제한 가능
+hasRole(), hasAuthority() 사용 가능
+메서드 기반 접근 제어 (@PreAuthorize, @Secured)
+
+메서드 실행 전에 접근 권한을 검사
+@PreAuthorize("hasRole('ADMIN')") 사용 가능
+hasRole()과 hasAuthority()의 차이점
+
+hasRole("USER") → ROLE_USER로 자동 변환됨
+hasAuthority("ROLE_USER") → 그대로 사용됨
+학습자의 사고를 돕기 위한 질문
+Spring Security에서 hasRole()과 hasAuthority()는 어떤 차이가 있는가?
+
+역할 기반 접근 제어와 권한 기반 접근 제어의 차이를 떠올려보라.
+애플리케이션에서 ROLE_ADMIN 역할이 WRITE_PRIVILEGE 권한을 포함하도록 설정하려면 어떻게 해야 하는가?
+
+권한과 역할을 매핑하는 방식을 생각해보라.
+실습 문제
+문제 1: 역할(Role) 기반 접근 제한 설정하기
+아래 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+/admin/** 경로는 ROLE_ADMIN만 접근 가능하도록 설정한다.
+/editor/** 경로는 ROLE_EDITOR 또는 ROLE_ADMIN이 접근 가능하도록 설정한다.
+/public/** 경로는 모든 사용자(인증되지 않은 사용자 포함)가 접근할 수 있도록 설정한다.
+문제 2: 역할(Role)과 권한(Permission) 매핑 구현
+아래 요구사항을 만족하는 UserDetails 구현체를 작성하시오.
+
+ROLE_ADMIN 역할을 가진 사용자는 READ_PRIVILEGE와 WRITE_PRIVILEGE를 가질 수 있도록 설정한다.
+ROLE_USER 역할을 가진 사용자는 READ_PRIVILEGE만 가질 수 있도록 설정한다.
+사용자 정보는 UserDetails 인터페이스를 구현하여 제공한다.
+5.3. 로그인 후 특정 페이지 접근 설정
+로그인 후 사용자 역할(Role)에 따른 접근 페이지 분리
+Spring Security에서는 사용자의 권한(Role)에 따라 로그인 후 접근할 수 있는 페이지를 분리할 수 있다.
+예를 들어,
+
+관리자(Admin) 가 로그인하면 관리자 대시보드(admin-dashboard) 로 이동하고,
+일반 사용자(User) 가 로그인하면 사용자 대시보드(user-dashboard) 로 이동하도록 설정할 수 있다.
+이러한 역할(Role) 기반 리다이렉션은 AuthenticationSuccessHandler를 활용하여 구현할 수 있다.
+
+기본적인 로그인 후 리다이렉션 설정 (DefaultSuccessUrl 사용)
+Spring Security에서는 defaultSuccessUrl()을 사용하여 로그인 성공 후 특정 페이지로 리다이렉션할 수 있다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasRole("USER")
+                .anyRequest().authenticated()
+            .and()
+            .formLogin()
+                .loginPage("/login")  
+                .defaultSuccessUrl("/home", true) // 로그인 성공 후 /home으로 이동
+                .permitAll()
+            .and()
+            .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .permitAll();
+        return http.build();
+    }
+}
+위 설정을 보면,
+
+defaultSuccessUrl("/home", true)을 사용하여 로그인 성공 후 /home 페이지로 이동하도록 설정했다.
+true를 설정하면 로그인 직후 항상 /home 페이지로 이동하며, false를 설정하면 로그인 전에 접근했던 페이지로 이동한다.
+하지만 사용자의 역할(Role)에 따라 각기 다른 페이지로 이동하려면 AuthenticationSuccessHandler를 사용해야 한다.
+
+AuthenticationSuccessHandler를 활용한 역할(Role) 기반 리다이렉션
+사용자 역할(Role)에 따라 로그인 후 다른 페이지로 이동하도록 하려면 CustomAuthenticationSuccessHandler를 구현해야 한다.
+
+@Component
+public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, 
+                                        HttpServletResponse response, 
+                                        Authentication authentication) throws IOException {
+        String redirectURL = "/home"; // 기본 경로 설정
+
+        // 사용자의 권한(Role) 확인
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        for (GrantedAuthority authority : authorities) {
+            if (authority.getAuthority().equals("ROLE_ADMIN")) {
+                redirectURL = "/admin/dashboard"; // 관리자 페이지
+                break;
+            } else if (authority.getAuthority().equals("ROLE_USER")) {
+                redirectURL = "/user/dashboard"; // 사용자 페이지
+                break;
+            }
+        }
+
+        response.sendRedirect(redirectURL);
+    }
+}
+SecurityConfig에서 CustomAuthenticationSuccessHandler 적용
+위에서 정의한 CustomAuthenticationSuccessHandler를 Spring Security 설정에 적용하려면 successHandler()를 사용해야 한다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    private final CustomAuthenticationSuccessHandler successHandler;
+
+    public SecurityConfig(CustomAuthenticationSuccessHandler successHandler) {
+        this.successHandler = successHandler;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasRole("USER")
+                .anyRequest().authenticated()
+            .and()
+            .formLogin()
+                .loginPage("/login")
+                .successHandler(successHandler) // 로그인 성공 후 역할 기반 리다이렉션 적용
+                .permitAll()
+            .and()
+            .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .permitAll();
+        return http.build();
+    }
+}
+접근 권한 부족 시 처리 (AccessDeniedHandler 설정)
+사용자가 접근 권한이 없는 페이지에 접속했을 경우, 기본적으로 Spring Security는 403 Forbidden 오류 페이지를 반환한다.
+하지만 이를 사용자 정의 페이지로 리다이렉트하거나 예외 처리를 할 수도 있다.
+
+이럴 때 AccessDeniedHandler를 활용할 수 있다.
+
+@Component
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
+
+    @Override
+    public void handle(HttpServletRequest request, 
+                       HttpServletResponse response, 
+                       AccessDeniedException accessDeniedException) throws IOException {
+        response.sendRedirect("/access-denied"); // 권한 부족 시 리다이렉션
+    }
+}
+이제 SecurityConfig에 accessDeniedHandler()를 추가하여 적용하면 된다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    private final CustomAuthenticationSuccessHandler successHandler;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
+
+    public SecurityConfig(CustomAuthenticationSuccessHandler successHandler,
+                          CustomAccessDeniedHandler accessDeniedHandler) {
+        this.successHandler = successHandler;
+        this.accessDeniedHandler = accessDeniedHandler;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasRole("USER")
+                .anyRequest().authenticated()
+            .and()
+            .formLogin()
+                .loginPage("/login")
+                .successHandler(successHandler) // 로그인 성공 후 역할(Role) 기반 리다이렉션
+                .permitAll()
+            .and()
+            .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler) // 접근 거부 핸들러 적용
+            .and()
+            .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .permitAll();
+        return http.build();
+    }
+}
+Spring Security에서 로그인 후 특정 페이지 접근 설정 정리
+기본 로그인 후 이동 경로 설정 (defaultSuccessUrl())
+
+모든 사용자가 동일한 페이지로 이동할 때 사용
+defaultSuccessUrl("/home", true) → 로그인 후 /home으로 이동
+역할(Role) 기반 리다이렉션 (AuthenticationSuccessHandler)
+
+로그인 성공 후 사용자의 역할(Role)에 따라 다른 페이지로 이동하도록 설정
+ROLE_ADMIN → /admin/dashboard, ROLE_USER → /user/dashboard
+접근 권한 부족 시 처리 (AccessDeniedHandler)
+
+접근 권한이 없을 경우 특정 페이지(/access-denied)로 리다이렉션 설정
+학습자의 사고를 돕기 위한 질문
+사용자 로그인 후 특정 페이지로 리다이렉트할 때 권한(Role)에 따라 다르게 설정할 수 있는가?
+
+ROLE_ADMIN 사용자가 로그인하면 관리자 페이지로, 일반 사용자는 대시보드로 이동하도록 설정하는 방법을 생각해보라.
+권한 부족 시 접근이 거부되었을 때 사용자 경험을 개선하는 방법은 무엇인가?
+
+접근 거부 페이지를 별도로 구성하는 방법을 떠올려보라.
+실습 문제
+문제 1: 로그인 후 역할(Role)별 페이지 리다이렉트 설정하기
+아래 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+ROLE_ADMIN 사용자는 로그인 후 /admin/home 페이지로 리다이렉트되도록 설정한다.
+ROLE_USER 사용자는 로그인 후 /user/dashboard 페이지로 이동하도록 설정한다.
+인증되지 않은 사용자가 보호된 페이지에 접근하려 할 경우 /login 페이지로 리다이렉트되도록 설정한다.
+문제 2: 접근 거부 페이지 설정하기
+아래 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+권한이 부족한 사용자가 접근할 경우 /access-denied 페이지를 보여준다.
+AccessDeniedHandler를 활용하여 사용자에게 적절한 에러 메시지를 표시하도록 설정한다.
+접근 거부 시 기본적으로 403 Forbidden 상태 코드를 반환하도록 설정한다.
+5.4. Spring Security와 데이터베이스 연동
+Spring Security에서 데이터베이스 기반 인증 처리
+Spring Security는 기본적으로 메모리 기반 사용자 관리를 제공하지만, 실제 애플리케이션에서는 데이터베이스를 활용한 사용자 인증을 사용해야 한다.
+이를 위해 JdbcUserDetailsManager 또는 UserDetailsService를 활용하여 사용자 정보를 관리할 수 있다.
+
+Spring Security가 데이터베이스와 연동될 경우, 주요 역할은 다음과 같다.
+
+사용자 정보를 데이터베이스에서 조회
+비밀번호를 암호화하여 저장 및 검증
+사용자의 역할(Role) 및 권한(Permission) 정보 관리
+1. JdbcUserDetailsManager를 활용한 사용자 관리
+Spring Security에서 제공하는 JdbcUserDetailsManager를 사용하면 기본적인 사용자 인증 및 관리 기능을 데이터베이스와 쉽게 연동할 수 있다.
+
+(1) Spring Boot 프로젝트에서 사용할 데이터베이스 테이블 생성
+먼저, Spring Security에서 사용할 사용자(User) 및 권한(Role) 관련 테이블을 생성해야 한다.
+기본적으로 users 테이블과 authorities 테이블을 사용하며, SQL 스키마는 다음과 같다.
+
+CREATE TABLE users (
+    username VARCHAR(50) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,
+    enabled BOOLEAN NOT NULL
+);
+
+CREATE TABLE authorities (
+    username VARCHAR(50) NOT NULL,
+    authority VARCHAR(50) NOT NULL,
+    FOREIGN KEY (username) REFERENCES users(username)
+);
+users 테이블
+
+username: 사용자 ID
+password: 암호화된 비밀번호
+enabled: 계정 활성화 여부
+authorities 테이블
+
+username: 사용자 ID
+authority: 역할(Role) (ROLE_USER, ROLE_ADMIN 등)
+(2) JdbcUserDetailsManager 설정 및 적용
+JdbcUserDetailsManager를 사용하면 Spring Security가 자동으로 데이터베이스에서 사용자 정보를 조회하여 인증할 수 있다.
+이를 위해 DataSource와 함께 JdbcUserDetailsManager를 설정한다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    private final DataSource dataSource;
+
+    public SecurityConfig(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    @Bean
+    public UserDetailsManager userDetailsManager() {
+        return new JdbcUserDetailsManager(dataSource);
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasRole("USER")
+                .anyRequest().authenticated()
+            .and()
+            .formLogin()
+                .loginPage("/login")
+                .permitAll()
+            .and()
+            .logout()
+                .permitAll();
+        return http.build();
+    }
+}
+이렇게 설정하면 Spring Security가 자동으로 데이터베이스에서 사용자 정보를 조회하여 인증을 수행하게 된다.
+
+(3) 사용자 데이터 삽입
+위에서 생성한 users 및 authorities 테이블에 사용자 정보를 추가해야 한다.
+비밀번호는 반드시 암호화(BCrypt) 해야 한다.
+
+@Bean
+CommandLineRunner initDatabase(UserDetailsManager userDetailsManager, PasswordEncoder passwordEncoder) {
+    return args -> {
+        if (!userDetailsManager.userExists("admin")) {
+            UserDetails admin = User.builder()
+                .username("admin")
+                .password(passwordEncoder.encode("admin123"))
+                .roles("ADMIN")
+                .build();
+            userDetailsManager.createUser(admin);
+        }
+
+        if (!userDetailsManager.userExists("user")) {
+            UserDetails user = User.builder()
+                .username("user")
+                .password(passwordEncoder.encode("user123"))
+                .roles("USER")
+                .build();
+            userDetailsManager.createUser(user);
+        }
+    };
+}
+passwordEncoder.encode("admin123") → 비밀번호는 반드시 암호화해야 한다.
+roles("ADMIN") → authorities 테이블에 자동으로 ROLE_ADMIN이 추가된다.
+userDetailsManager.createUser() → 데이터베이스에 사용자 추가
+2. UserDetailsService 커스텀 구현을 통한 데이터베이스 연동
+Spring Security에서 기본적으로 제공하는 JdbcUserDetailsManager는 간편하지만,
+커스텀 테이블 구조를 사용하거나 복잡한 비즈니스 로직을 추가하려면 UserDetailsService를 직접 구현해야 한다.
+
+(1) 사용자 엔티티 생성
+먼저, 데이터베이스 테이블과 매핑할 사용자 엔티티(UserEntity) 클래스를 만든다.
+
+@Entity
+@Table(name = "users")
+public class UserEntity {
+
+    @Id
+    private String username;
+
+    private String password;
+
+    private boolean enabled;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "authorities", joinColumns = @JoinColumn(name = "username"))
+    @Column(name = "authority")
+    private Set<String> roles = new HashSet<>();
+
+    // Getter, Setter 생략
+}
+@Entity → users 테이블과 매핑
+@ElementCollection → authorities 테이블에서 사용자 역할(Role) 조회
+(2) UserDetailsService 커스텀 구현
+Spring Security의 UserDetailsService를 직접 구현하여 데이터베이스에서 사용자 정보를 불러오도록 설정한다.
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        return User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .roles(user.getRoles().toArray(new String[0])) // 역할(Role) 설정
+                .build();
+    }
+}
+findByUsername(username) → 데이터베이스에서 사용자 조회
+roles(user.getRoles().toArray(new String[0])) → 역할(Role) 설정
+비밀번호는 데이터베이스에서 암호화된 형태로 저장되어 있어야 한다.
+(3) SecurityConfig에서 UserDetailsService 적용
+이제 SecurityConfig에서 CustomUserDetailsService를 사용하도록 설정해야 한다.
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    private final CustomUserDetailsService userDetailsService;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasRole("USER")
+                .anyRequest().authenticated()
+            .and()
+            .formLogin()
+                .loginPage("/login")
+                .permitAll()
+            .and()
+            .logout()
+                .permitAll();
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+Spring Security와 데이터베이스 연동 정리
+JdbcUserDetailsManager를 활용한 사용자 인증
+
+Spring Security의 기본 제공 기능을 활용하여 데이터베이스에서 사용자 정보를 불러온다.
+JdbcUserDetailsManager를 사용하여 사용자 정보를 관리한다.
+UserDetailsService 커스텀 구현
+
+사용자 테이블의 구조가 다르거나 복잡한 비즈니스 로직이 필요할 경우 UserDetailsService를 직접 구현해야 한다.
+UserDetailsService는 사용자 정보를 조회하여 UserDetails 객체를 반환하는 역할을 한다.
+학습자의 사고를 돕기 위한 질문
+Spring Security에서 UserDetailsService를 활용하여 데이터베이스에서 사용자 정보를 조회하는 방식은 무엇인가?
+
+사용자 정보를 메모리가 아닌 데이터베이스에서 로드하는 방법을 떠올려보라.
+비밀번호 저장 시 평문이 아닌 해시(Hash) 값으로 저장해야 하는 이유는 무엇인가?
+
+보안상의 위험 요소를 고려해보라.
+실습 문제
+문제 1: Spring Security와 데이터베이스 연동하기
+아래 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+사용자 정보를 데이터베이스(MySQL)에서 조회하도록 설정한다.
+users 테이블에는 username, password, role 컬럼이 존재해야 한다.
+JdbcUserDetailsManager를 활용하여 인증을 처리하도록 설정한다.
+문제 2: 비밀번호 인코딩 적용하기
+아래 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+사용자 비밀번호를 BCryptPasswordEncoder를 사용하여 저장한다.
+로그인 시 비밀번호 검증이 정상적으로 이루어지도록 설정한다.
+기존 평문 비밀번호를 해시 값으로 변환하는 방법을 제시한다.
+연습 문제: 인증과 권한 (Spring Security)
+문제 1: AuthenticationProvider를 활용한 사용자 인증 구현
+다음 요구사항을 만족하는 CustomAuthenticationProvider를 구현하시오.
+
+사용자의 username과 password를 검증하는 authenticate 메서드를 구현한다.
+ROLE_ADMIN 사용자는 관리자 권한을, ROLE_USER 사용자는 기본 권한을 부여한다.
+인증이 실패할 경우 BadCredentialsException을 발생시킨다.
+문제 2: AuthenticationManager를 활용한 사용자 인증 처리
+다음 요구사항을 만족하는 AuthenticationManager 설정을 작성하시오.
+
+CustomAuthenticationProvider를 등록하여 인증을 처리한다.
+사용자가 로그인 요청을 하면 AuthenticationManager를 통해 인증을 수행하고, 성공 시 SecurityContext에 저장한다.
+인증이 실패하면 오류 메시지를 반환한다.
+문제 3: UserDetailsService를 활용한 사용자 정보 조회
+다음 요구사항을 만족하는 CustomUserDetailsService를 구현하시오.
+
+UserDetailsService를 구현하여 사용자 정보를 데이터베이스에서 조회한다.
+사용자 계정이 존재하지 않을 경우 UsernameNotFoundException을 발생시킨다.
+조회한 사용자 정보를 UserDetails 형태로 반환한다.
+문제 4: UserDetails를 활용한 사용자 정보 관리
+다음 요구사항을 만족하는 UserDetails 구현체를 작성하시오.
+
+사용자 정보를 담는 CustomUserDetails 클래스를 생성한다.
+사용자 username, password, roles 정보를 포함하도록 한다.
+GrantedAuthority를 활용하여 사용자 권한을 반환하는 메서드를 구현한다.
+문제 5: 비밀번호 암호화 적용
+다음 요구사항을 만족하는 PasswordEncoder 설정을 작성하시오.
+
+BCryptPasswordEncoder를 사용하여 비밀번호를 암호화한다.
+로그인 시 사용자가 입력한 비밀번호와 암호화된 비밀번호를 비교하여 검증한다.
+기존 평문 비밀번호를 암호화하여 저장하는 방법을 설명한다.
+문제 6: 특정 URL 접근 제한 설정
+다음 요구사항을 만족하는 Spring Security 설정을 작성하시오.
+
+/admin/** 경로는 ROLE_ADMIN 사용자만 접근 가능하도록 설정한다.
+/user/** 경로는 ROLE_USER와 ROLE_ADMIN이 접근 가능하도록 설정한다.
+/public/** 경로는 인증 없이 누구나 접근할 수 있도록 설정한다.
+문제 7: URL 패턴 기반 권한 테스트
+다음 요구사항을 만족하는 테스트 코드를 작성하시오.
+
+ROLE_ADMIN 사용자가 /admin/home에 접근할 때 정상적으로 접근 가능한지 확인한다.
+ROLE_USER 사용자가 /admin/home에 접근할 때 접근이 차단되는지 확인한다.
+인증되지 않은 사용자가 /public/home에 접근할 때 접근이 허용되는지 확인한다.
+문제 8: 메서드 수준 권한 제어 적용
+다음 요구사항을 만족하는 @PreAuthorize 설정을 추가하시오.
+
+getAdminData() 메서드는 ROLE_ADMIN만 호출할 수 있도록 설정한다.
+getUserData() 메서드는 ROLE_USER와 ROLE_ADMIN이 호출 가능하도록 설정한다.
+@PreAuthorize 애노테이션을 활용하여 권한을 설정한다.
+문제 9: 로그인 후 역할(Role)별 페이지 리다이렉트 설정
+다음 요구사항을 만족하는 보안 설정을 작성하시오.
+
+ROLE_ADMIN 사용자는 로그인 후 /admin/home 페이지로 리다이렉트되도록 설정한다.
+ROLE_USER 사용자는 로그인 후 /user/dashboard 페이지로 이동하도록 설정한다.
+인증되지 않은 사용자가 보호된 페이지에 접근하려 할 경우 /login 페이지로 리다이렉트되도록 설정한다.
+문제 10: Spring Security와 데이터베이스 연동
+다음 요구사항을 만족하는 JdbcUserDetailsManager 설정을 작성하시오.
+
+사용자 정보를 데이터베이스(MySQL)에서 조회하도록 설정한다.
+users 테이블에는 username, password, role 컬럼이 존재해야 한다.
+JdbcUserDetailsManager를 활용하여 인증을 처리하도록 설정한다.
+답안
+1. Spring Security 개요
+1.1. Spring Security의 개념
+1.1.1 질문에 대한 답안
+Spring Security는 어떤 방식으로 애플리케이션을 보호하는가?
+
+Spring Security는 필터 기반의 보안 프레임워크로, 인증(Authentication)과 권한(Authorization)을 처리한다.
+보안 필터 체인을 활용하여 요청을 가로채고, 유효한 사용자인지 검증한 후 권한을 확인하여 리소스 접근을 제어한다.
+Spring Security가 기존의 보안 메커니즘과 비교하여 제공하는 주요 이점은 무엇인가?
+
+기본 제공되는 보안 기능(CSRF 보호, 인증 필터, 권한 제어)을 활용하여 추가적인 보안 설정이 불필요하다.
+필터 기반 구조를 사용하여 확장성과 커스터마이징이 용이하다.
+다양한 인증 방식(폼 기반 인증, OAuth2, JWT 등)을 쉽게 적용할 수 있다.
+1.2. 인증과 권한의 차이
+1.2.1 질문에 대한 답안
+인증과 권한의 차이를 실제 서비스(예: 은행 웹사이트)에서 예를 들어 설명할 수 있는가?
+
+인증(Authentication): 사용자가 은행 웹사이트에 로그인할 때, 입력한 ID와 비밀번호가 올바른지 확인하는 과정이다.
+권한(Authorization): 로그인한 사용자가 계좌 이체 기능을 사용할 수 있는지 확인하는 과정이다. 예를 들어, 일반 사용자는 계좌 조회만 가능하고, VIP 사용자는 이체 기능을 사용할 수 있다.
+사용자가 로그인했음에도 불구하고 특정 페이지에 접근할 수 없는 이유는 무엇인가?
+
+로그인은 인증(Authentication) 과정이며, 특정 페이지에 접근할 수 있는지는 권한(Authorization)에 의해 결정된다.
+예를 들어, 로그인한 사용자가 ROLE_USER일 때, 관리자 페이지(/admin/**)에는 접근할 수 없다.
+접근이 제한된 페이지를 열려고 하면 Spring Security는 403 Forbidden 응답을 반환한다.
+1.3. Spring Security의 주요 기능
+1.3.1 질문에 대한 답안
+Spring Security의 핵심 기능 중 하나인 CSRF 보호는 어떤 보안 위협을 방지하는가?
+
+CSRF(Cross-Site Request Forgery)는 사용자가 원치 않는 요청을 강제로 수행하도록 만드는 공격 방식이다.
+예를 들어, 사용자가 은행 웹사이트에 로그인한 상태에서 악의적인 사이트를 방문하면, 해당 사이트에서 사용자의 계좌에서 돈을 송금하는 요청을 보낼 수도 있다.
+Spring Security는 CSRF 보호 기능을 기본적으로 활성화하여, 요청이 올바른 출처에서 온 것인지 확인하여 방지한다.
+Spring Security를 활용하여 특정 URL에 대한 접근을 제한하려면 어떤 설정이 필요한가?
+
+HttpSecurity의 authorizeRequests()를 활용하여 특정 URL 패턴에 대해 접근을 제한할 수 있다.
+예제 코드:
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+            .antMatchers("/admin/**").hasRole("ADMIN") // 관리자만 접근 가능
+            .antMatchers("/user/**").hasAnyRole("USER", "ADMIN") // 사용자와 관리자 접근 가능
+            .anyRequest().authenticated() // 나머지는 인증 필요
+            .and()
+            .formLogin()
+            .and()
+            .logout();
+        return http.build();
+    }
+}
+2. Spring Security의 인증(Authentication) 처리
+2.1. 인증의 개념과 흐름
+2.1.1 질문에 대한 답안
+사용자가 로그인할 때 입력한 정보는 Spring Security 내부에서 어떻게 처리되는가?
+
+사용자가 로그인하면 UsernamePasswordAuthenticationFilter가 요청을 가로채서 ID와 비밀번호를 추출한다.
+추출된 정보를 AuthenticationManager가 AuthenticationProvider에 전달하여 검증을 수행한다.
+인증이 성공하면 SecurityContextHolder에 인증 정보를 저장하고, 요청을 처리한다.
+Stateless 방식의 인증(JWT 활용)과 세션 기반 인증의 차이점은 무엇인가?
+
+세션 기반 인증:
+사용자가 로그인하면 세션 ID가 생성되고 서버에서 유지된다.
+요청마다 세션 ID를 전송하여 사용자 상태를 유지한다.
+Stateless 인증(JWT):
+서버에서 상태를 유지하지 않고, 클라이언트가 JWT를 저장하여 요청 시 포함한다.
+JWT는 자체적으로 사용자 정보를 포함하며, 검증만 수행하면 된다.
+2.2. AuthenticationManager와 AuthenticationProvider
+2.2.1 질문에 대한 답안
+AuthenticationManager가 직접 인증을 처리하지 않고 AuthenticationProvider를 사용하는 이유는 무엇인가?
+
+인증 방식을 유연하게 확장할 수 있도록 분리되어 있다.
+여러 개의 AuthenticationProvider를 등록할 수 있어, 데이터베이스 인증, 소셜 로그인(OAuth2) 등을 쉽게 추가할 수 있다.
+커스텀 AuthenticationProvider를 구현하면 어떤 이점이 있는가?
+
+기본적인 사용자 정보 외에 추가적인 검증 로직(예: 2단계 인증, 특정 필드 검증 등)을 추가할 수 있다.
+데이터베이스가 아닌 외부 인증 시스템(LDAP, OAuth 등)과 연동할 수 있다.
+2.2.2 실습 문제에 대한 답안
+문제 1: 사용자 인증을 처리하는 AuthenticationProvider 구현하기
+
+@Component
+public class CustomAuthenticationProvider implements AuthenticationProvider {
+
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        String username = authentication.getName();
+        String password = authentication.getCredentials().toString();
+
+        if ("admin".equals(username) && "password".equals(password)) {
+            return new UsernamePasswordAuthenticationToken(username, password, List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        } else if ("user".equals(username) && "password".equals(password)) {
+            return new UsernamePasswordAuthenticationToken(username, password, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        } else {
+            throw new BadCredentialsException("Invalid credentials");
+        }
+    }
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return authentication.equals(UsernamePasswordAuthenticationToken.class);
+    }
+}
+문제 2: AuthenticationManager를 활용한 인증 처리
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http, CustomAuthenticationProvider customAuthProvider) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .authenticationProvider(customAuthProvider)
+                .build();
+    }
+}
+2.3. UserDetails와 UserDetailsService
+2.3.1 질문에 대한 답안
+Spring Security가 사용자 정보를 관리할 때 UserDetails 인터페이스를 사용하는 이유는 무엇인가?
+
+UserDetails 인터페이스는 사용자 정보를 표준화된 방식으로 다루기 위해 존재한다.
+사용자 정보(ID, 비밀번호, 권한 등)를 캡슐화하여 보안 기능과 쉽게 연동할 수 있다.
+UserDetailsService를 커스텀 구현하면 어떤 상황에서 유용한가?
+
+데이터베이스에서 사용자 정보를 조회하여 동적으로 인증을 수행해야 하는 경우.
+사용자 정보가 LDAP, OAuth2, 외부 API 등 다른 인증 시스템에서 제공되는 경우.
+2.3.2 실습 문제에 대한 답안
+문제 1: 커스텀 UserDetailsService 구현하기
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return new CustomUserDetails(user);
+    }
+}
+문제 2: Spring Security에서 UserDetailsService 등록하기
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    private final CustomUserDetailsService userDetailsService;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .userDetailsService(userDetailsService)
+            .authorizeRequests()
+            .anyRequest().authenticated()
+            .and()
+            .formLogin();
+
+        return http.build();
+    }
+}
+2.4. 비밀번호 인코딩과 PasswordEncoder
+2.4.1 질문에 대한 답안
+비밀번호를 평문으로 저장하는 것이 보안상 위험한 이유는 무엇인가?
+
+데이터베이스가 유출될 경우, 모든 사용자의 비밀번호가 그대로 노출된다.
+해커는 유출된 비밀번호를 통해 여러 사이트에서 동일한 계정을 악용할 수 있다.
+Spring Security에서 PasswordEncoder 인터페이스를 활용하는 이유는 무엇인가?
+
+비밀번호를 안전하게 저장하고, 암호화된 값을 비교하는 기능을 제공한다.
+BCryptPasswordEncoder, PBKDF2PasswordEncoder 등 다양한 암호화 알고리즘을 사용할 수 있다.
+2.4.2 실습 문제에 대한 답안
+문제 1: 비밀번호 암호화 및 검증
+
+public class PasswordEncoderExample {
+    public static void main(String[] args) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        String rawPassword = "mypassword";
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        System.out.println("암호화된 비밀번호: " + encodedPassword);
+        System.out.println("비밀번호 검증: " + passwordEncoder.matches(rawPassword, encodedPassword));
+    }
+}
+문제 2: 사용자 등록 시 비밀번호 암호화 적용
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public User registerUser(String username, String password) {
+        String encryptedPassword = passwordEncoder.encode(password);
+        User user = new User(username, encryptedPassword);
+        return userRepository.save(user);
+    }
+}
+3. Spring Security의 권한(Authorization) 처리
+3.1. 권한의 개념과 흐름
+3.1.1 질문에 대한 답안
+Spring Security에서 권한(Authorization) 검사는 언제 수행되는가?
+
+사용자가 인증된 후, 특정 리소스(예: API 엔드포인트, 페이지)에 접근할 때 권한 검사가 수행된다.
+요청을 가로채는 FilterSecurityInterceptor가 사용자의 권한을 확인하여 허용 또는 차단한다.
+인증(Authentication)과 권한(Authorization)이 각각 담당하는 역할은 무엇인가?
+
+인증(Authentication): 사용자의 신원을 확인하는 과정으로, 로그인 시 AuthenticationManager가 처리한다.
+권한(Authorization): 인증된 사용자가 특정 리소스에 접근할 권한이 있는지를 확인하는 과정으로, AccessDecisionManager가 수행한다.
+3.2. 역할(Role)과 권한(Permission) 차이
+3.2.1 질문에 대한 답안
+역할(Role)과 권한(Permission)의 차이는 무엇이며, 각각 어떻게 사용되는가?
+
+역할(Role): 사용자의 그룹 또는 직책을 의미하며, ROLE_ADMIN, ROLE_USER 같은 형식으로 정의된다.
+권한(Permission): 특정 액션 수행 권한을 의미하며, READ_PRIVILEGE, WRITE_PRIVILEGE 등으로 표현될 수 있다.
+Spring Security에서 GrantedAuthority 인터페이스는 어떤 역할을 하는가?
+
+사용자가 가진 권한을 나타내는 인터페이스로, ROLE_USER, ROLE_ADMIN 같은 값이 포함될 수 있다.
+UserDetails 객체에서 getAuthorities()를 통해 역할과 권한을 반환한다.
+3.3. URL 기반 접근 제어
+3.3.1 질문에 대한 답안
+Spring Security에서 특정 URL에 대한 접근을 제한하려면 어떤 설정이 필요한가?
+
+HttpSecurity 설정에서 authorizeRequests() 메서드를 사용하여 특정 URL 패턴에 대한 접근 권한을 정의해야 한다.
+예를 들어, /admin/** 경로는 hasRole("ADMIN")을 사용하여 관리자만 접근하도록 설정할 수 있다.
+URL 기반 권한 제어와 메서드 수준 권한 제어의 차이점은 무엇인가?
+
+URL 기반 권한 제어: HttpSecurity를 통해 특정 URL에 대한 접근을 제한하며, 주로 전체적인 보안 정책을 설정할 때 사용된다.
+메서드 수준 권한 제어: @PreAuthorize, @Secured 등의 애노테이션을 사용하여 특정 메서드 호출을 제한하며, 세부적인 권한 관리가 가능하다.
+3.3.2 실습 문제에 대한 답안
+문제 1: 특정 URL에 대한 접근 제어 설정하기
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+                .antMatchers("/public/**").permitAll()
+                .anyRequest().authenticated()
+            .and()
+                .formLogin()
+                .loginPage("/login")
+                .permitAll()
+            .and()
+                .logout()
+                .permitAll();
+        return http.build();
+    }
+}
+문제 2: URL 패턴에 따른 접근 제어 테스트하기
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class SecurityTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminShouldAccessAdminPage() throws Exception {
+        mockMvc.perform(get("/admin/home"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void userShouldNotAccessAdminPage() throws Exception {
+        mockMvc.perform(get("/admin/home"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unauthenticatedUserShouldAccessPublicPage() throws Exception {
+        mockMvc.perform(get("/public/home"))
+                .andExpect(status().isOk());
+    }
+}
+3.4. 메서드 수준 권한 제어
+3.4.1 질문에 대한 답안
+메서드 수준에서 @PreAuthorize와 @Secured를 사용하면 어떤 이점이 있는가?
+
+개별 메서드에 직접 권한을 설정할 수 있어 보안 정책을 더 세밀하게 적용할 수 있다.
+비즈니스 로직과 보안 정책을 명확히 분리하여 코드 가독성이 높아진다.
+Spring Security에서 @PostAuthorize는 언제 유용하게 사용될 수 있는가?
+
+메서드 실행 후 반환된 데이터를 기반으로 권한을 검사할 때 사용된다.
+예를 들어, 특정 사용자가 본인 소유의 데이터만 조회할 수 있도록 제한하는 경우 활용할 수 있다.
+3.4.2 실습 문제에 대한 답안
+문제 1: @PreAuthorize를 사용한 메서드 권한 설정
+
+@Service
+public class AdminService {
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public String getAdminData() {
+        return "Admin Data";
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public String getUserData() {
+        return "User Data";
+    }
+}
+문제 2: @Secured 애노테이션을 활용한 메서드 접근 제한
+
+@Service
+public class UserService {
+
+    @Secured("ROLE_ADMIN")
+    public String getAdminInfo() {
+        return "Admin Information";
+    }
+
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public String getUserInfo() {
+        return "User Information";
+    }
+}
+4. Spring Security의 필터와 보안 설정
+4.1. Spring Security 필터 체인
+4.1.1 질문에 대한 답안
+Spring Security 필터 체인(Security Filter Chain)의 역할은 무엇인가?
+
+사용자의 요청이 서버에 도달하기 전에 여러 개의 필터를 거쳐 보안 검사를 수행하는 역할을 한다.
+각 필터는 인증(Authentication), 권한 검사(Authorization), CSRF 보호, 세션 관리 등의 기능을 수행한다.
+Spring Security의 필터 체인이 실행되는 순서는 어떻게 결정되는가?
+
+Spring Security에서 기본적으로 정의된 필터 순서에 따라 실행된다.
+SecurityFilterChain을 직접 정의하면, 개발자가 원하는 순서대로 필터를 배치할 수 있다.
+4.2. SecurityFilterChain을 활용한 보안 설정
+4.2.1 질문에 대한 답안
+Spring Security에서 SecurityFilterChain을 직접 정의하는 이유는 무엇인가?
+
+기본 보안 설정을 커스텀하여 애플리케이션의 요구사항에 맞게 설정할 수 있기 때문이다.
+특정 요청에 대해 인증을 강제하거나, 특정 API에 대해 다른 보안 정책을 적용할 수 있다.
+로그인 및 로그아웃 설정을 SecurityFilterChain에서 어떻게 관리할 수 있는가?
+
+formLogin()을 사용하여 로그인 페이지를 정의하고, 로그인 성공 후 이동할 경로를 설정할 수 있다.
+logout()을 사용하여 로그아웃 처리 후 리다이렉트할 경로를 지정할 수 있다.
+4.2.2 실습 문제에 대한 답안
+문제 1: SecurityFilterChain을 활용한 인증 및 권한 설정
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+                .antMatchers("/public/**").permitAll()
+                .anyRequest().authenticated()
+            .and()
+                .formLogin()
+                .loginPage("/login")
+                .defaultSuccessUrl("/dashboard", true)
+                .permitAll()
+            .and()
+                .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/")
+                .permitAll();
+        return http.build();
+    }
+}
+문제 2: SecurityFilterChain의 필터 순서 테스트
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class SecurityFilterTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminShouldAccessAdminPage() throws Exception {
+        mockMvc.perform(get("/admin/home"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void userShouldNotAccessAdminPage() throws Exception {
+        mockMvc.perform(get("/admin/home"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unauthenticatedUserShouldBeRedirectedToLogin() throws Exception {
+        mockMvc.perform(get("/user/home"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+    }
+}
+4.3. HTTP 보안 정책 적용
+4.3.1 질문에 대한 답안
+CORS(Cross-Origin Resource Sharing) 설정이 필요한 이유는 무엇인가?
+
+브라우저 보안 정책 중 하나로, 다른 도메인에서 요청을 보낼 때 차단되는 것을 방지하기 위해 필요하다.
+CORS 정책을 통해 특정 출처에서 오는 요청을 허용하거나 제한할 수 있다.
+CSRF(Cross-Site Request Forgery) 공격 방지를 위해 Spring Security는 어떤 보호 기능을 제공하는가?
+
+기본적으로 CSRF 보호 기능을 활성화하여 사용자 세션을 악용한 요청을 차단한다.
+csrf().disable()을 사용하면 CSRF 보호 기능을 비활성화할 수 있지만, 신중하게 적용해야 한다.
+4.3.2 실습 문제에 대한 답안
+문제 1: CORS 설정 추가하기
+
+@Configuration
+@EnableWebSecurity
+public class CorsConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .cors().configurationSource(request -> {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOrigins(List.of("https://example.com"));
+                config.setAllowedMethods(List.of("GET", "POST", "PUT"));
+                config.setAllowCredentials(true);
+                return config;
+            })
+            .and()
+                .authorizeRequests()
+                .antMatchers("/public/**").permitAll()
+                .anyRequest().authenticated()
+            .and()
+                .formLogin()
+                .permitAll();
+        return http.build();
+    }
+}
+문제 2: CSRF 보호 활성화 및 비활성화 설정하기
+
+@Configuration
+@EnableWebSecurity
+public class CsrfConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable() // API 요청의 경우 CSRF 보호 비활성화
+            .authorizeRequests()
+                .antMatchers("/api/**").permitAll()
+                .anyRequest().authenticated()
+            .and()
+                .formLogin()
+                .permitAll();
+        return http.build();
+    }
+}
+5. 실전 예제: 사용자 역할(Role) 기반 권한 관리
+5.1. 사용자 역할(Role)과 권한(Permission) 개념
+5.1.1 질문에 대한 답안
+사용자 역할(Role)과 권한(Permission)은 어떻게 구분되는가?
+
+역할(Role)은 사용자의 그룹이나 계층을 의미하며, 일반적으로 ROLE_ADMIN, ROLE_USER와 같은 형태로 정의된다.
+권한(Permission)은 특정 기능에 대한 접근 권한을 의미하며, 예를 들어 READ_PRIVILEGE, WRITE_PRIVILEGE 등이 있다.
+역할은 여러 개의 권한을 포함할 수 있다.
+사용자 역할(Role)과 권한(Permission)을 분리해서 관리하면 어떤 장점이 있는가?
+
+역할을 통해 사용자 그룹을 정의하고, 그룹별로 세부 권한을 할당할 수 있어 관리가 용이하다.
+역할과 권한을 분리하면 보안 정책 변경 시 특정 역할에 대한 권한을 유연하게 조정할 수 있다.
+5.2. 역할(Role)에 따른 접근 제어
+5.2.1 질문에 대한 답안
+Spring Security에서 hasRole()과 hasAuthority()는 어떤 차이가 있는가?
+
+hasRole()은 ROLE_ 접두어가 자동으로 붙기 때문에 hasRole("ADMIN")을 사용하면 ROLE_ADMIN을 의미한다.
+hasAuthority()는 ROLE_ 접두어 없이도 특정 권한을 직접 지정할 수 있다.
+애플리케이션에서 ROLE_ADMIN 역할이 WRITE_PRIVILEGE 권한을 포함하도록 설정하려면 어떻게 해야 하는가?
+
+권한과 역할을 매핑하는 방법으로는 GrantedAuthority 인터페이스를 사용하여 역할이 여러 개의 권한을 가질 수 있도록 설정한다.
+예를 들어, ROLE_ADMIN은 READ_PRIVILEGE, WRITE_PRIVILEGE 권한을 포함하도록 정의할 수 있다.
+5.2.2 실습 문제에 대한 답안
+문제 1: 역할(Role) 기반 접근 제한 설정하기
+
+@Configuration
+@EnableWebSecurity
+public class RoleBasedSecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/editor/**").hasAnyRole("EDITOR", "ADMIN")
+                .antMatchers("/public/**").permitAll()
+                .anyRequest().authenticated()
+            .and()
+                .formLogin()
+                .permitAll();
+        return http.build();
+    }
+}
+문제 2: 역할(Role)과 권한(Permission) 매핑 구현
+
+public class CustomUserDetails implements UserDetails {
+
+    private String username;
+    private String password;
+    private List<GrantedAuthority> authorities;
+
+    public CustomUserDetails(String username, String password, List<GrantedAuthority> authorities) {
+        this.username = username;
+        this.password = password;
+        this.authorities = authorities;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}
+5.3. 로그인 후 특정 페이지 접근 설정
+5.3.1 질문에 대한 답안
+사용자 로그인 후 특정 페이지로 리다이렉트할 때 권한(Role)에 따라 다르게 설정할 수 있는가?
+
+ROLE_ADMIN 사용자는 관리자 페이지로, ROLE_USER 사용자는 일반 사용자 대시보드로 이동할 수 있도록 설정할 수 있다.
+SimpleUrlAuthenticationSuccessHandler를 활용하면 로그인 후 권한에 따라 서로 다른 페이지로 리다이렉트할 수 있다.
+권한 부족 시 접근이 거부되었을 때 사용자 경험을 개선하는 방법은 무엇인가?
+
+AccessDeniedHandler를 활용하여 403 Forbidden 페이지를 커스텀할 수 있다.
+접근 거부 메시지를 제공하거나, 적절한 안내 페이지로 이동하도록 설정할 수 있다.
+5.3.2 실습 문제에 대한 답안
+문제 1: 로그인 후 역할(Role)별 페이지 리다이렉트 설정하기
+
+@Configuration
+@EnableWebSecurity
+public class LoginRedirectSecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+                .anyRequest().authenticated()
+            .and()
+                .formLogin()
+                .loginPage("/login")
+                .successHandler((request, response, authentication) -> {
+                    String redirectUrl = "/dashboard";
+                    if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                        redirectUrl = "/admin/home";
+                    } else if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
+                        redirectUrl = "/user/dashboard";
+                    }
+                    response.sendRedirect(redirectUrl);
+                })
+                .permitAll()
+            .and()
+                .logout()
+                .permitAll();
+        return http.build();
+    }
+}
+문제 2: 접근 거부 페이지 설정하기
+
+@Configuration
+@EnableWebSecurity
+public class AccessDeniedSecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+                .anyRequest().authenticated()
+            .and()
+                .exceptionHandling()
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.sendRedirect("/access-denied");
+                })
+            .and()
+                .formLogin()
+                .permitAll();
+        return http.build();
+    }
+}
+5.4. Spring Security와 데이터베이스 연동
+5.4.1 질문에 대한 답안
+Spring Security에서 UserDetailsService를 활용하여 데이터베이스에서 사용자 정보를 조회하는 방식은 무엇인가?
+
+UserDetailsService 인터페이스를 구현하여 데이터베이스에서 사용자 정보를 가져온다.
+JdbcUserDetailsManager 또는 CustomUserDetailsService를 사용하여 인증을 수행한다.
+비밀번호 저장 시 평문이 아닌 해시(Hash) 값으로 저장해야 하는 이유는 무엇인가?
+
+데이터베이스가 유출되었을 때 비밀번호가 쉽게 노출되지 않도록 보호하기 위함이다.
+BCryptPasswordEncoder를 사용하여 보안성을 강화할 수 있다.
+5.4.2 실습 문제에 대한 답안
+문제 1: Spring Security와 데이터베이스 연동하기
+
+@Configuration
+@EnableWebSecurity
+public class DatabaseSecurityConfig {
+
+    @Bean
+    public UserDetailsService userDetailsService(DataSource dataSource) {
+        return new JdbcUserDetailsManager(dataSource);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+문제 2: 비밀번호 인코딩 적용하기
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return new CustomUserDetails(user.getUsername(), user.getPassword(), user.getAuthorities());
+    }
+
+    public void saveUser(String username, String rawPassword, String role) {
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setRole(role);
+        userRepository.save(user);
+    }
+}
+6. 연습 문제에 대한 답안
+6.1 AuthenticationProvider를 활용한 사용자 인증 구현
+
+정답:
+사용자의 username과 password를 검증하는 CustomAuthenticationProvider를 구현한다.
+
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.List;
+
+public class CustomAuthenticationProvider implements AuthenticationProvider {
+
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        String username = authentication.getName();
+        String password = authentication.getCredentials().toString();
+
+        if ("admin".equals(username) && "password".equals(password)) {
+            return new UsernamePasswordAuthenticationToken(username, password, List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        } else if ("user".equals(username) && "password".equals(password)) {
+            return new UsernamePasswordAuthenticationToken(username, password, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        }
+        throw new AuthenticationException("인증 실패") {};
+    }
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return authentication.equals(UsernamePasswordAuthenticationToken.class);
+    }
+}
+6.2 AuthenticationManager를 활용한 사용자 인증 처리
+
+정답:
+CustomAuthenticationProvider를 AuthenticationManager에 등록하고 인증을 수행한다.
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import java.util.List;
+
+@Configuration
+public class SecurityConfig {
+    
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        return new ProviderManager(List.of(new CustomAuthenticationProvider()));
+    }
+}
+6.3 UserDetailsService를 활용한 사용자 정보 조회
+
+정답:
+UserDetailsService를 구현하여 사용자 정보를 데이터베이스에서 조회한다.
+
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import java.util.Optional;
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<UserDetails> user = findUserByUsername(username);
+
+        return user.orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없음"));
+    }
+
+    private Optional<UserDetails> findUserByUsername(String username) {
+        if ("admin".equals(username)) {
+            return Optional.of(User.withUsername("admin")
+                .password("password")
+                .roles("ADMIN")
+                .build());
+        } else if ("user".equals(username)) {
+            return Optional.of(User.withUsername("user")
+                .password("password")
+                .roles("USER")
+                .build());
+        }
+        return Optional.empty();
+    }
+}
+6.4 UserDetails를 활용한 사용자 정보 관리
+
+정답:
+사용자 정보를 포함하는 UserDetails 구현체를 작성한다.
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Collection;
+import java.util.List;
+
+public class CustomUserDetails implements UserDetails {
+    private String username;
+    private String password;
+    private List<GrantedAuthority> authorities;
+
+    public CustomUserDetails(String username, String password, List<GrantedAuthority> authorities) {
+        this.username = username;
+        this.password = password;
+        this.authorities = authorities;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}
+6.5 비밀번호 암호화 적용
+
+정답:
+BCryptPasswordEncoder를 사용하여 비밀번호를 암호화한다.
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+public class PasswordEncoderExample {
+    public static void main(String[] args) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String rawPassword = "password";
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        System.out.println("암호화된 비밀번호: " + encodedPassword);
+        System.out.println("비밀번호 검증: " + passwordEncoder.matches(rawPassword, encodedPassword));
+    }
+}
+6.6 특정 URL 접근 제한 설정
+
+정답:
+Spring Security 설정을 통해 특정 경로에 대한 접근을 제한한다.
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class WebSecurityConfig {
+
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/public/**").permitAll()
+            )
+            .formLogin()
+            .and()
+            .logout().logoutUrl("/logout");
+        return http.build();
+    }
+}
+6.7 URL 패턴 기반 권한 테스트
+
+정답:
+Spring Security의 권한 테스트를 위한 JUnit 테스트 코드 작성.
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+public class SecurityTests {
+
+    private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(new WebSecurityConfig()).build();
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void testAdminAccess() throws Exception {
+        mockMvc.perform(get("/admin/home"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void testAdminAccessDenied() throws Exception {
+        mockMvc.perform(get("/admin/home"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void testPublicAccess() throws Exception {
+        mockMvc.perform(get("/public/home"))
+                .andExpect(status().isOk());
+    }
+}
+6.8 메서드 수준 권한 제어 적용
+
+정답:
+@PreAuthorize 애노테이션을 활용하여 특정 메서드의 접근을 제한한다.
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
+@Service
+public class SecureService {
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public String getAdminData() {
+        return "관리자 데이터";
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public String getUserData() {
+        return "사용자 데이터";
+    }
+}
+6.9 로그인 후 역할(Role)별 페이지 리다이렉트 설정
+
+정답:
+사용자의 역할에 따라 로그인 후 이동할 페이지를 설정한다.
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
+@Configuration
+public class SecurityConfig {
+
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .formLogin()
+            .successHandler(customSuccessHandler());
+        return http.build();
+    }
+
+    public AuthenticationSuccessHandler customSuccessHandler() {
+        return (request, response, authentication) -> {
+            if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                response.sendRedirect("/admin/home");
+            } else {
+                response.sendRedirect("/user/dashboard");
+            }
+        };
+    }
+}
+6.10 Spring Security와 데이터베이스 연동
+
+정답:
+JdbcUserDetailsManager를 활용하여 사용자 정보를 데이터베이스에서 로드한다.
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
+import javax.sql.DataSource;
+
+@Configuration
+public class SecurityDatabaseConfig {
+
+    @Bean
+    public JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
+        return new JdbcUserDetailsManager(dataSource);
+    }
+}
+닫기
