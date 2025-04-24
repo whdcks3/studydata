@@ -58,63 +58,64 @@ OAuth2는 기존의 인증 방식보다 다음과 같은 점에서 차별점을 
 ### OAuth2의 일반적인 흐름
 OAuth2를 통해 클라이언트가 사용자의 리소스에 접근하는 일반적인 흐름을 간단히 정리하면 다음과 같다.
 
-사용자가 클라이언트 애플리케이션에서 특정 리소스에 접근하려고 한다.
-클라이언트 애플리케이션은 사용자를 OAuth2 인증 서버로 리디렉션하여 로그인 및 권한 부여를 요청한다.
-사용자는 인증 서버에서 로그인하고, 특정 리소스에 대한 접근을 허용한다.
-인증 서버는 액세스 토큰(Access Token) 을 발급한다.
-클라이언트 애플리케이션은 액세스 토큰을 사용하여 리소스 서버(Resource Server)에 요청을 보낸다.
-리소스 서버는 액세스 토큰을 검증한 후, 유효한 경우 요청된 리소스를 반환한다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 클라이언트 애플리케이션에서 특정 리소스에 접근하려고 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트 애플리케이션은 사용자를 OAuth2 인증 서버로 리디렉션하여 로그인 및 권한 부여를 요청한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자는 인증 서버에서 로그인하고, 특정 리소스에 대한 접근을 허용한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인증 서버는 액세스 토큰(Access Token) 을 발급한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트 애플리케이션은 액세스 토큰을 사용하여 리소스 서버(Resource Server)에 요청을 보낸다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;리소스 서버는 액세스 토큰을 검증한 후, 유효한 경우 요청된 리소스를 반환한다.
 
 ------------------
 ### OAuth2와 기존 인증 방식 비교
 OAuth2는 기존의 사용자 인증 방식(예: ID/PW 기반 로그인)과 비교했을 때 다음과 같은 차이점을 가진다.
 
-비교 항목	기존 로그인 방식	OAuth2 방식
-보안성	비밀번호 노출 위험	토큰을 사용하여 보안 강화
-유연성	특정 플랫폼에 종속	다양한 플랫폼에서 사용 가능
-확장성	개별 애플리케이션마다 별도 관리 필요	단일 인증 서버를 통해 여러 애플리케이션에서 사용 가능
-사용자 경험	서비스마다 별도 로그인 필요	소셜 로그인 등 통합 인증 가능
+비교 항목|기존 로그인 방식|OAuth2 방식
+:---|:---|:---
+보안성|비밀번호 노출 위험|토큰을 사용하여 보안 강화
+유연성|특정 플랫폼에 종속|다양한 플랫폼에서 사용 가능
+확장성|개별 애플리케이션마다 별도 관리 필요|단일 인증 서버를 통해 여러 애플리케이션에서 사용 가능
+사용자 경험|서비스마다 별도 로그인 필요|소셜 로그인 등 통합 인증 가능
+
 이러한 차이점 덕분에 OAuth2는 대규모 웹 서비스, API 기반 시스템, 모바일 애플리케이션 등에서 필수적인 인증 방식으로 자리 잡게 되었다.
 
-OAuth2의 실제 사용 사례
+-------------
+### OAuth2의 실제 사용 사례
 OAuth2는 다양한 서비스에서 사용되고 있으며, 대표적인 예로 다음과 같은 사례를 들 수 있다.
 
-소셜 로그인(Social Login)
+**소셜 로그인(Social Login)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Google, Facebook, Kakao, Naver 등의 계정을 이용하여 다른 애플리케이션에서 로그인할 수 있도록 한다.
 
-Google, Facebook, Kakao, Naver 등의 계정을 이용하여 다른 애플리케이션에서 로그인할 수 있도록 한다.
-API 접근 제어
+**API 접근 제어**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GitHub API, Google Drive API, Twitter API 등은 OAuth2를 통해 인증된 사용자에게만 데이터를 제공한다.
 
-GitHub API, Google Drive API, Twitter API 등은 OAuth2를 통해 인증된 사용자에게만 데이터를 제공한다.
-기업 내부 시스템 연동
+**기업 내부 시스템 연동**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사내 서비스 간 인증을 위해 OAuth2를 활용하여 싱글 사인온(SSO, Single Sign-On)을 구현할 수 있다.
 
-사내 서비스 간 인증을 위해 OAuth2를 활용하여 싱글 사인온(SSO, Single Sign-On)을 구현할 수 있다.
-학습자의 사고를 돕기 위한 질문
-OAuth2는 기존의 인증 방식과 비교했을 때 어떤 차이점이 있는가?
-
-사용자 자격 증명을 직접 전달하는 방식과 비교해보라.
-OAuth2에서 '토큰'을 활용하는 이유는 무엇인가?
-
-사용자 정보 보호 및 인증 과정에서의 보안성을 고려해보라.
-1.2. OAuth2의 인증 방식
+--------------
+## 1-2. OAuth2의 인증 방식
 OAuth2는 다양한 환경에서 사용될 수 있도록 여러 가지 인증 방식을 제공한다. OAuth2의 인증 방식은 주어진 상황과 보안 요구 사항에 따라 선택될 수 있으며, 일반적으로 네 가지 인증 방식(Grant Type)이 사용된다.
 
-OAuth2 인증 방식이 필요한 이유
-OAuth2의 인증 방식(Grant Type)은 다양한 클라이언트 유형과 환경에서 안전하게 권한을 위임할 수 있도록 설계되었다. 예를 들어, 웹 애플리케이션과 모바일 애플리케이션은 보안 위험이 다르므로, 이에 맞는 인증 흐름이 필요하다. OAuth2의 인증 방식은 이러한 보안 요구 사항을 충족하면서도 사용자 경험을 해치지 않도록 설계되어 있다.
+### OAuth2 인증 방식이 필요한 이유
+OAuth2의 인증 방식(Grant Type)은 다양한 클라이언트 유형과 환경에서 안전하게 권한을 위임할 수 있도록 설계되었다.<br>
+예를 들어, 웹 애플리케이션과 모바일 애플리케이션은 보안 위험이 다르므로, 이에 맞는 인증 흐름이 필요하다. OAuth2의 인증 방식은 이러한 보안 요구 사항을 충족하면서도 사용자 경험을 해치지 않도록 설계되어 있다.
 
-Authorization Code Grant (인가 코드 방식)
+### Authorization Code Grant (인가 코드 방식)
 이 방식은 가장 일반적으로 사용되는 OAuth2 인증 방식이다. 주로 웹 애플리케이션에서 사용되며, 클라이언트 애플리케이션이 직접 사용자 자격 증명을 처리하지 않고 인가 코드(Authorization Code) 를 이용하여 인증을 수행한다.
 
-동작 방식
-사용자가 클라이언트 애플리케이션에서 로그인 요청을 한다.
-클라이언트는 사용자를 OAuth2 인증 서버(Authorization Server) 로 리디렉션한다.
-사용자는 인증 서버에서 로그인하고, 인증 서버는 클라이언트에게 인가 코드를 발급한다.
-클라이언트는 받은 인가 코드를 이용해 액세스 토큰(Access Token) 을 요청한다.
-인증 서버는 클라이언트의 요청을 검증한 후, 액세스 토큰을 발급한다.
-클라이언트는 액세스 토큰을 사용하여 리소스 서버에서 보호된 리소스를 요청한다.
-주요 특징
-보안성이 높다: 인가 코드가 직접 사용자에게 전달되지 않고, 클라이언트와 인증 서버 간의 백엔드 통신을 통해 교환된다.
-리프레시 토큰(Refresh Token) 지원: 사용자의 지속적인 인증이 필요할 경우, 새 액세스 토큰을 발급받을 수 있다.
+**동작 방식**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 클라이언트 애플리케이션에서 로그인 요청을 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 사용자를 OAuth2 인증 서버(Authorization Server) 로 리디렉션한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자는 인증 서버에서 로그인하고, 인증 서버는 클라이언트에게 인가 코드를 발급한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 받은 인가 코드를 이용해 액세스 토큰(Access Token) 을 요청한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인증 서버는 클라이언트의 요청을 검증한 후, 액세스 토큰을 발급한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 액세스 토큰을 사용하여 리소스 서버에서 보호된 리소스를 요청한다.
+
+**주요 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;보안성이 높다: 인가 코드가 직접 사용자에게 전달되지 않고, 클라이언트와 인증 서버 간의 백엔드 통신을 통해 교환된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;리프레시 토큰(Refresh Token) 지원: 사용자의 지속적인 인증이 필요할 경우, 새 액세스 토큰을 발급받을 수 있다.
+
 예제 코드 (Spring Security 기반)
+```java
 @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
@@ -125,7 +126,9 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
         .oauth2Login(Customizer.withDefaults()); // OAuth2 기반 로그인 활성화
     return http.build();
 }
-Implicit Grant (암시적 승인 방식)
+```
+---------------
+### Implicit Grant (암시적 승인 방식)
 이 방식은 주로 SPA(Single Page Application) 같은 클라이언트 측 애플리케이션에서 사용되며, 인가 코드 없이 액세스 토큰을 직접 발급받는다.
 
 동작 방식
