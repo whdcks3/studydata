@@ -376,64 +376,78 @@ JWT(Json Web Token)는 인증과 정보 교환을 위해 사용되는 JSON 기�
 -------------
 ### JWT의 구조
 JWT는 세 개의 구성 요소(Header, Payload, Signature) 로 이루어져 있으며, 각 요소는 마침표(.)로 구분된다.
-
+```
 <Header>.<Payload>.<Signature>
+```
 이러한 구조를 통해 JWT는 변조 방지 기능을 제공하면서도, 클라이언트가 필요한 정보를 포함할 수 있도록 설계되었다.
 
-JWT 예제 (Base64 인코딩된 형태)
+**JWT 예제 (Base64 인코딩된 형태)**
+```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 .
 eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvbiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9
 .
 SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+```
 각 구성 요소를 하나씩 살펴보면 다음과 같다.
 
-1. Header (헤더)
+---------------
+#### 1. Header (헤더)
 JWT의 헤더(Header) 는 토큰의 타입과 서명 알고리즘을 지정하는 JSON 객체이다. JWT를 사용할 때, 어떤 방식으로 서명되었는지를 확인하는 역할을 한다.
 
-Header 예제 (JSON 형태)
+**Header 예제 (JSON 형태)**
+```
 {
   "alg": "HS256",
   "typ": "JWT"
 }
-alg (Algorithm) : 서명에 사용할 알고리즘을 명시 (HS256, RS256, ES256 등).
-typ (Type) : 토큰 타입을 명시 (JWT).
+```
+**alg (Algorithm**) : 서명에 사용할 알고리즘을 명시 (HS256, RS256, ES256 등).<br>
+**typ (Type)** : 토큰 타입을 명시 (JWT).
+
 해당 JSON 객체는 Base64Url 인코딩을 거쳐 JWT의 첫 번째 부분을 구성한다.
 
-2. Payload (페이로드)
+#### 2. Payload (페이로드)
 Payload(페이로드) 는 JWT의 본문으로, 인증과 관련된 클레임(Claim) 정보를 포함한다.
 
 Payload 예제 (JSON 형태)
+```
 {
   "sub": "1234567890",
   "name": "John Doe",
   "iat": 1516239022,
   "exp": 1516249022
 }
-sub (Subject) : 토큰의 주체(사용자 ID).
-name: 사용자 이름.
-iat (Issued At) : 토큰 발급 시간.
-exp (Expiration Time) : 토큰 만료 시간.
-Payload는 또한 사용자 정의 데이터를 포함할 수도 있으며, 일반적으로 토큰의 유효 기간(exp), 발급자(iss), 사용자 권한(role) 등의 정보가 포함된다.
+```
+**sub (Subject)** : 토큰의 주체(사용자 ID).<br>
+**name**: 사용자 이름.<br>
+**iat (Issued At)** : 토큰 발급 시간.<br>
+**exp (Expiration Time)** : 토큰 만료 시간.
+
+Payload는 또한 사용자 정의 데이터를 포함할 수도 있으며, 일반적으로 **토큰의 유효 기간(exp), 발급자(iss), 사용자 권한(role) 등의 정보가 포함**된다.
 
 이 JSON 객체도 Base64Url 인코딩을 거쳐 JWT의 두 번째 부분을 구성한다.
 
-3. Signature (서명)
-서명(Signature) 은 JWT의 무결성을 보장하기 위해 사용된다.
+#### 3. Signature (서명)
+서명(Signature) 은 JWT의 무결성을 보장하기 위해 사용된다.<br>
 서명은 헤더(Header)와 페이로드(Payload)를 조합한 후, 특정 비밀 키를 사용해 생성된다.
 
-서명 생성 방식 (HMAC SHA256)
+**서명 생성 방식 (HMAC SHA256)**
+```
 HMACSHA256(
   base64UrlEncode(Header) + "." +
   base64UrlEncode(Payload),
   secret
 )
+```
 이렇게 생성된 서명은 JWT의 마지막 부분을 구성하며, 토큰이 변조되지 않았음을 서버가 검증하는 데 사용된다.
 
-JWT 예제 (전체 구조)
+---------------
+### JWT 예제 (전체 구조)
 아래는 실제 JWT를 구성하는 예제이다.
 
-JWT 예제 (Base64Url 인코딩)
+**JWT 예제 (Base64Url 인코딩)**
+```
 Header:
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 
@@ -442,77 +456,79 @@ eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvbiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9
 
 Signature:
 SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+```
 JWT는 이처럼 Header, Payload, Signature 세 가지 요소로 구성되며, 토큰 내부에 정보를 포함하여 상태를 유지하지 않는 인증 방식을 가능하게 한다.
 
-JWT의 활용 사례
+-------------
+### JWT의 활용 사례
 JWT는 다양한 환경에서 활용될 수 있으며, 대표적인 사례는 다음과 같다.
 
-사용자 인증(Authentication)
+**사용자 인증(Authentication)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 로그인하면, 서버는 JWT를 발급하여 클라이언트가 이후 요청마다 이를 포함하도록 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 웹 애플리케이션에서 로그인 후 세션을 사용하지 않고 JWT로 인증을 유지할 수 있다.
 
-사용자가 로그인하면, 서버는 JWT를 발급하여 클라이언트가 이후 요청마다 이를 포함하도록 한다.
-예를 들어, 웹 애플리케이션에서 로그인 후 세션을 사용하지 않고 JWT로 인증을 유지할 수 있다.
-API 접근 권한 관리(Authorization)
-
-클라이언트는 API 요청을 보낼 때, JWT를 HTTP 헤더에 포함하여 서버에 인증 정보를 제공할 수 있다.
+**API 접근 권한 관리(Authorization)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 API 요청을 보낼 때, JWT를 HTTP 헤더에 포함하여 서버에 인증 정보를 제공할 수 있다.<br>
 예제:
+```
 GET /api/user/profile HTTP/1.1
 Host: example.com
 Authorization: Bearer <JWT>
-싱글 사인온(SSO, Single Sign-On)
+```
 
-여러 애플리케이션에서 한 번의 로그인으로 사용자를 인증할 수 있도록 JWT를 활용할 수 있다.
-정보 보호 및 무결성 유지
+**싱글 사인온(SSO, Single Sign-On)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;여러 애플리케이션에서 한 번의 로그인으로 사용자를 인증할 수 있도록 JWT를 활용할 수 있다.
 
-JWT는 서명(Signature)을 포함하여 변조를 방지할 수 있다.
-학습자의 사고를 돕기 위한 질문
-JWT는 왜 JSON 형식을 사용하여 정보를 저장하는가?
+**정보 보호 및 무결성 유지**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 서명(Signature)을 포함하여 변조를 방지할 수 있다.
 
-데이터 교환의 용이성과 구조적 접근성을 고려해보라.
-JWT가 일반적인 세션 기반 인증 방식과 비교했을 때 가지는 장점은 무엇인가?
-
-상태를 유지하지 않는(stateless) 방식의 특징을 떠올려보라.
-2.2. JWT의 동작 방식
+--------------
+## 2-2. JWT의 동작 방식
 JWT(Json Web Token)는 클라이언트와 서버 간의 인증 및 권한 부여를 위한 중요한 토큰 기반 인증 방식이다. 이를 이해하기 위해 JWT가 생성되고 검증되는 과정을 단계별로 살펴보자.
 
-JWT 발급 및 인증 흐름
-JWT는 사용자의 인증을 위해 발급되며, 이후 API 요청에서 사용된다. 다음은 JWT 인증 과정을 단계별로 설명한 것이다.
+**JWT 발급 및 인증 흐름**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 사용자의 인증을 위해 발급되며, 이후 API 요청에서 사용된다. 다음은 JWT 인증 과정을 단계별로 설명한 것이다.
 
-사용자가 로그인 요청
+**사용자가 로그인 요청**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자는 아이디와 비밀번호를 입력하여 로그인 요청을 보낸다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 해당 사용자의 자격 증명을 검증한다.
 
-사용자는 아이디와 비밀번호를 입력하여 로그인 요청을 보낸다.
-서버는 해당 사용자의 자격 증명을 검증한다.
-서버에서 JWT 발급
+**서버에서 JWT 발급**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;로그인에 성공하면, 서버는 사용자의 정보를 포함한 JWT를 생성한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT에는 사용자의 ID, 권한(Role) 정보, 발급 시간(iat), 만료 시간(exp) 등의 정보가 포함될 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 이 JWT를 클라이언트에게 반환한다.
 
-로그인에 성공하면, 서버는 사용자의 정보를 포함한 JWT를 생성한다.
-JWT에는 사용자의 ID, 권한(Role) 정보, 발급 시간(iat), 만료 시간(exp) 등의 정보가 포함될 수 있다.
-서버는 이 JWT를 클라이언트에게 반환한다.
-클라이언트에서 JWT 저장
+**클라이언트에서 JWT 저장**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트(예: 웹 브라우저, 모바일 앱)는 발급된 JWT를 저장한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일반적으로 JWT는 다음과 같은 방식으로 저장될 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**로컬 스토리지(LocalStorage)** : 브라우저에서 localStorage.setItem("token", JWT) 형태로 저장.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**세션 스토리지(SessionStorage)** : 세션 종료 시 삭제되는 방식으로 저장.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**HTTP 쿠키(HTTP-Only Cookie)** : XSS 공격 방지를 위해 보안 설정된 쿠키에 저장.
 
-클라이언트(예: 웹 브라우저, 모바일 앱)는 발급된 JWT를 저장한다.
-일반적으로 JWT는 다음과 같은 방식으로 저장될 수 있다.
-로컬 스토리지(LocalStorage) : 브라우저에서 localStorage.setItem("token", JWT) 형태로 저장.
-세션 스토리지(SessionStorage) : 세션 종료 시 삭제되는 방식으로 저장.
-HTTP 쿠키(HTTP-Only Cookie) : XSS 공격 방지를 위해 보안 설정된 쿠키에 저장.
-클라이언트가 API 요청 시 JWT 포함
-
-이후 클라이언트가 API를 호출할 때, 요청 헤더에 JWT를 포함한다.
+**클라이언트가 API 요청 시 JWT 포함**<br>
+이후 클라이언트가 API를 호출할 때, 요청 헤더에 JWT를 포함한다.<br>
 일반적으로 Authorization 헤더에 Bearer 토큰 방식으로 전송된다.
+```
 GET /api/user/profile HTTP/1.1
 Host: example.com
 Authorization: Bearer <JWT>
-서버에서 JWT 검증
+```
 
-서버는 요청을 받으면, Authorization 헤더에서 JWT를 추출한다.
-서버는 JWT의 서명을 검증하여 변조되지 않았음을 확인한다.
-만약 JWT가 유효하다면, 해당 사용자의 정보로 요청을 처리한다.
-API 응답 반환
+**서버에서 JWT 검증**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 요청을 받으면, Authorization 헤더에서 JWT를 추출한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 JWT의 서명을 검증하여 변조되지 않았음을 확인한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;만약 JWT가 유효하다면, 해당 사용자의 정보로 요청을 처리한다.
 
-서버는 JWT 검증이 완료되면, 요청에 대한 적절한 응답을 클라이언트에 반환한다.
-클라이언트는 응답을 받아 화면에 데이터를 표시하거나 다음 작업을 수행한다.
-JWT 인증 흐름 예제
+**API 응답 반환**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 JWT 검증이 완료되면, 요청에 대한 적절한 응답을 클라이언트에 반환한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 응답을 받아 화면에 데이터를 표시하거나 다음 작업을 수행한다.
+
+--------------
+### JWT 인증 흐름 예제
 아래는 JWT를 활용한 인증 과정에서의 클라이언트-서버 상호작용을 보여주는 예제이다.
 
-1. 클라이언트에서 로그인 요청 (사용자 로그인)
+**1. 클라이언트에서 로그인 요청 (사용자 로그인)**
+```
 POST /auth/login HTTP/1.1
 Host: example.com
 Content-Type: application/json
@@ -521,7 +537,10 @@ Content-Type: application/json
   "username": "user1",
   "password": "password123"
 }
-2. 서버에서 JWT 발급 후 응답
+```
+
+**2. 서버에서 JWT 발급 후 응답**
+```
 HTTP/1.1 200 OK
 Content-Type: application/json
 
@@ -529,11 +548,17 @@ Content-Type: application/json
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
-3. 클라이언트가 API 요청 시 JWT 포함
+```
+
+**3. 클라이언트가 API 요청 시 JWT 포함**
+```
 GET /api/user/profile HTTP/1.1
 Host: example.com
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-4. 서버에서 JWT 검증 후 응답
+```
+
+**4. 서버에서 JWT 검증 후 응답**
+```
 HTTP/1.1 200 OK
 Content-Type: application/json
 
@@ -542,43 +567,49 @@ Content-Type: application/json
   "username": "user1",
   "email": "user1@example.com"
 }
-JWT 서명 방식
-JWT의 보안성을 높이기 위해 서명이 사용된다. 서버는 JWT를 생성할 때 비밀 키(Secret Key) 또는 공개-개인 키(Public-Private Key) 쌍을 이용하여 서명한다.
+```
+--------------------
+### JWT 서명 방식
+JWT의 보안성을 높이기 위해 서명이 사용된다. 서버는 JWT를 생성할 때 **비밀 키(Secret Key) 또는 공개-개인 키(Public-Private Key) 쌍**을 이용하여 서명한다.
 
-HMAC (HMAC-SHA256)
+**HMAC (HMAC-SHA256)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;대칭 키 방식의 서명 알고리즘.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버에서만 비밀 키를 알고 있어야 하며, 해당 키를 이용해 토큰이 변조되지 않았는지 검증할 수 있다.
 
-대칭 키 방식의 서명 알고리즘.
-서버에서만 비밀 키를 알고 있어야 하며, 해당 키를 이용해 토큰이 변조되지 않았는지 검증할 수 있다.
-RSA (RS256, RS512)
+**RSA (RS256, RS512)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;비대칭 키 방식의 서명 알고리즘.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 개인 키(Private Key)로 서명하고, 공개 키(Public Key)로 검증할 수 있다.
 
-비대칭 키 방식의 서명 알고리즘.
-서버는 개인 키(Private Key)로 서명하고, 공개 키(Public Key)로 검증할 수 있다.
 JWT 서명 예제 (HMAC SHA256 방식)
+```
 HMACSHA256(
   base64UrlEncode(Header) + "." +
   base64UrlEncode(Payload),
   secret
 )
+```
 위와 같은 방식으로 서명이 생성되며, 서버는 요청을 받을 때마다 서명이 변조되지 않았는지 검증한다.
 
-JWT 검증 과정
+-----------------
+### JWT 검증 과정
 서버는 클라이언트가 보낸 JWT를 검증하여 유효한지 확인해야 한다. 검증 과정에서 다음을 체크한다.
 
-토큰의 서명이 유효한지 확인
+**토큰의 서명이 유효한지 확인**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 보낸 JWT의 서명을 서버에서 검증한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서명이 유효하지 않으면 토큰이 변조되었을 가능성이 높다.
 
-클라이언트가 보낸 JWT의 서명을 서버에서 검증한다.
-서명이 유효하지 않으면 토큰이 변조되었을 가능성이 높다.
-토큰의 만료 시간(exp) 확인
+**토큰의 만료 시간(exp) 확인**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 exp(Expiration) 필드에 만료 시간이 포함될 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;만료된 JWT는 유효하지 않으며, 새 토큰을 발급해야 한다.
 
-JWT는 exp(Expiration) 필드에 만료 시간이 포함될 수 있다.
-만료된 JWT는 유효하지 않으며, 새 토큰을 발급해야 한다.
-토큰의 발급자(iss) 및 대상(aud) 확인
+**토큰의 발급자(iss) 및 대상(aud) 확인**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iss(Issuer) 필드는 토큰을 발급한 서버를 나타낸다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aud(Audience) 필드는 해당 토큰이 특정 서비스에서만 사용 가능하도록 지정한다.
 
-iss(Issuer) 필드는 토큰을 발급한 서버를 나타낸다.
-aud(Audience) 필드는 해당 토큰이 특정 서비스에서만 사용 가능하도록 지정한다.
-JWT 검증 코드 예제 (Java Spring Boot)
+------------
+### JWT 검증 코드 예제 (Java Spring Boot)
 Spring Security를 사용하여 JWT를 검증하는 코드 예제는 다음과 같다.
-
+```java
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -606,87 +637,76 @@ public class JwtUtil {
                 .getBody();
     }
 }
-위 코드에서 generateToken 메서드는 JWT를 생성하며, verifyToken 메서드는 토큰을 검증한다.
+```
+위 코드에서 ```generateToken``` 메서드는 JWT를 생성하며, ```verifyToken``` 메서드는 토큰을 검증한다.
 
-JWT의 특징 요약
-클라이언트와 서버 간 상태를 유지하지 않는(stateless) 방식으로 인증이 가능하다.
-JWT는 헤더(Header), 페이로드(Payload), 서명(Signature)로 구성된다.
-API 요청 시 Authorization: Bearer <JWT> 형식으로 토큰을 포함하여 인증을 수행한다.
-서버는 JWT의 서명을 검증하여 토큰이 변조되지 않았음을 확인한다.
-토큰의 유효 기간을 설정하여 보안성을 높일 수 있다.
-학습자의 사고를 돕기 위한 질문
-JWT가 서버에서 사용자의 인증 정보를 검증할 때 데이터베이스 조회 없이도 검증할 수 있는 이유는 무엇인가?
+---------------
+### JWT의 특징 요약
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트와 서버 간 **상태를 유지하지 않는(stateless) 방식**으로 인증이 가능하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 헤더(Header), 페이로드(Payload), 서명(Signature)로 구성된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;API 요청 시 Authorization: Bearer <JWT> 형식으로 토큰을 포함하여 인증을 수행한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 JWT의 서명을 검증하여 토큰이 변조되지 않았음을 확인한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;토큰의 유효 기간을 설정하여 보안성을 높일 수 있다.
 
-JWT의 서명(Signature) 검증 방식과 토큰 자체에 정보를 포함하는 특징을 고려해보라.
-JWT가 클라이언트-서버 간의 인증 과정에서 일반적인 쿠키-세션 방식보다 효율적인 경우는 언제인가?
+----------------
+## 2-3. JWT의 장점과 보안 고려 사항
+JWT는 클라이언트와 서버 간의 인증 및 권한 부여를 위해 사용되며, **세션을 유지하지 않아도 되는(stateless) 구조**와 빠른 인증 속도 등의 장점이 있다.<br>
+하지만, JWT를 안전하게 사용하기 위해서는 보안 취약점을 고려해야 한다. 이번 장에서는 JWT의 주요 장점과 보안 고려 사항을 설명한다.
 
-분산 시스템이나 마이크로서비스 환경을 고려해보라.
-실습 문제
-문제 1: JWT의 구조 분석
-다음 요구사항을 만족하는 코드를 작성하시오.
-
-JWT를 구성하는 3개의 주요 요소(Header, Payload, Signature)를 개별적으로 출력한다.
-예제 토큰(eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)을 디코딩하여, Payload에 담긴 정보를 확인한다.
-Header와 Payload는 Base64 디코딩을 활용하여 분석한다.
-문제 2: JWT 발급과 검증 흐름 이해
-다음 요구사항을 만족하는 코드를 작성하시오.
-
-사용자의 ID와 역할(Role)을 포함하는 JWT를 생성한다.
-생성된 JWT를 검증하여 유효한 토큰인지 확인한다.
-토큰이 유효한 경우 Payload 정보를 출력한다.
-2.3. JWT의 장점과 보안 고려 사항
-JWT는 클라이언트와 서버 간의 인증 및 권한 부여를 위해 사용되며, 세션을 유지하지 않아도 되는(stateless) 구조와 빠른 인증 속도 등의 장점이 있다. 하지만, JWT를 안전하게 사용하기 위해서는 보안 취약점을 고려해야 한다. 이번 장에서는 JWT의 주요 장점과 보안 고려 사항을 설명한다.
-
-JWT의 주요 장점
+------------------
+### JWT의 주요 장점
 JWT가 널리 사용되는 이유는 다음과 같은 핵심적인 장점 때문이다.
 
-Stateless(상태 유지가 필요 없음)
+**Stateless(상태 유지가 필요 없음)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 클라이언트 측에서 보관되며, 요청마다 JWT를 서버로 보내 검증하는 방식이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버가 사용자의 인증 상태를 저장할 필요가 없으므로, 세션(session) 기반 인증보다 확장성이 뛰어나다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버 간 로드 밸런싱(Load Balancing) 환경에서 효과적으로 사용 가능하다.
 
-JWT는 클라이언트 측에서 보관되며, 요청마다 JWT를 서버로 보내 검증하는 방식이다.
-서버가 사용자의 인증 상태를 저장할 필요가 없으므로, 세션(session) 기반 인증보다 확장성이 뛰어나다.
-서버 간 로드 밸런싱(Load Balancing) 환경에서 효과적으로 사용 가능하다.
-빠른 인증 처리
+**빠른 인증 처리**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 단순한 문자열 기반의 토큰이므로, 서버가 데이터베이스(DB)에 접근하여 인증 정보를 조회할 필요가 없다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;대신, 서버는 JWT의 서명(Signature) 을 검증하는 것만으로 사용자를 인증할 수 있어 응답 속도가 빠르다.
 
-JWT는 단순한 문자열 기반의 토큰이므로, 서버가 데이터베이스(DB)에 접근하여 인증 정보를 조회할 필요가 없다.
-대신, 서버는 JWT의 서명(Signature) 을 검증하는 것만으로 사용자를 인증할 수 있어 응답 속도가 빠르다.
-다양한 플랫폼 및 프로토콜 지원
+**다양한 플랫폼 및 프로토콜 지원**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JSON 형식의 데이터 구조를 사용하기 때문에 모든 프로그래밍 언어에서 쉽게 파싱(Parsing) 가능하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RESTful API, GraphQL, WebSocket 등 다양한 통신 방식에서 인증을 지원한다.
 
-JSON 형식의 데이터 구조를 사용하기 때문에 모든 프로그래밍 언어에서 쉽게 파싱(Parsing) 가능하다.
-RESTful API, GraphQL, WebSocket 등 다양한 통신 방식에서 인증을 지원한다.
-클라이언트에서 자체적으로 정보 활용 가능
+**클라이언트에서 자체적으로 정보 활용 가능**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT의 Payload(페이로드) 에 포함된 정보를 디코딩(Decoding)하면, 사용자 ID, 권한(Role) 등의 정보를 읽을 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;별도의 API 요청 없이 클라이언트 측에서 사용자의 권한을 확인하는 데 활용할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;하지만, **Payload 데이터는 서명(Signature)만 보호되고 암호화되지 않기 때문에 중요한 정보는 포함하지 않는 것이 좋다.**
 
-JWT의 Payload(페이로드) 에 포함된 정보를 디코딩(Decoding)하면, 사용자 ID, 권한(Role) 등의 정보를 읽을 수 있다.
-별도의 API 요청 없이 클라이언트 측에서 사용자의 권한을 확인하는 데 활용할 수 있다.
-하지만, Payload 데이터는 서명(Signature)만 보호되고 암호화되지 않기 때문에 중요한 정보는 포함하지 않는 것이 좋다.
-Access Token과 Refresh Token의 분리 가능
+**Access Token과 Refresh Token의 분리 가능**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT 기반 인증에서는 **Access Token(짧은 수명)** 과 **Refresh Token(긴 수명)** 을 별도로 발급하여 보안성과 인증 편의성을 동시에 제공할 수 있다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access Token은 짧은 시간만 유효하도록 설정하고, Refresh Token을 활용하여 새로운 Access Token을 발급받는 방식이 가능하다.<br>
 
-JWT 기반 인증에서는 Access Token(짧은 수명) 과 Refresh Token(긴 수명) 을 별도로 발급하여 보안성과 인증 편의성을 동시에 제공할 수 있다.
-Access Token은 짧은 시간만 유효하도록 설정하고, Refresh Token을 활용하여 새로운 Access Token을 발급받는 방식이 가능하다.
-JWT 사용 시 보안 고려 사항
+-----------------
+### JWT 사용 시 보안 고려 사항
 JWT는 위와 같은 장점을 가지고 있지만, 보안 설정을 적절히 하지 않으면 심각한 보안 문제가 발생할 수 있다. 따라서, JWT 사용 시 고려해야 할 보안 요소들을 살펴보자.
 
-HTTPS를 통한 안전한 전송
+**HTTPS를 통한 안전한 전송**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 요청 헤더(Authorization: Bearer <토큰>)에 포함되어 전송된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;평문 HTTP 환경에서는 JWT가 탈취될 위험이 크므로, 반드시 HTTPS를 사용해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPS를 사용하지 않는 경우, 중간자 공격(Man-in-the-Middle, MITM) 에 취약할 수 있다.
 
-JWT는 요청 헤더(Authorization: Bearer <토큰>)에 포함되어 전송된다.
-평문 HTTP 환경에서는 JWT가 탈취될 위험이 크므로, 반드시 HTTPS를 사용해야 한다.
-HTTPS를 사용하지 않는 경우, 중간자 공격(Man-in-the-Middle, MITM) 에 취약할 수 있다.
-토큰 만료 시간(exp) 설정
-
-JWT는 발급 후 유효 기간이 설정되지 않으면, 만료되지 않고 계속 사용될 위험이 있다.
-exp(Expiration) 클레임을 설정하여, 일정 시간이 지나면 토큰이 만료되도록 해야 한다.
-보통 Access Token의 만료 시간은 짧게(예: 15분 ~ 1시간) , Refresh Token의 만료 시간은 길게(예: 7일 ~ 30일) 설정하는 것이 일반적이다.
+**토큰 만료 시간(exp) 설정**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 발급 후 유효 기간이 설정되지 않으면, 만료되지 않고 계속 사용될 위험이 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exp(Expiration) 클레임을 설정하여, 일정 시간이 지나면 토큰이 만료되도록 해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;보통 **Access Token의 만료 시간은 짧게(예: 15분 ~ 1시간) , Refresh Token의 만료 시간은 길게(예: 7일 ~ 30일)** 설정하는 것이 일반적이다.
+```
 {
   "exp": 1712710800  // UNIX Timestamp (만료 시간)
 }
-JWT 서명(Signature)의 강력한 보안 유지
+```
 
-JWT의 무결성을 보장하기 위해 서명(Signature)을 사용하지만, 서명 키(Secret Key)가 노출되면 누구나 JWT를 위조할 수 있다.
-따라서, 비밀 키(Secret Key)는 서버에서 환경 변수(.env 파일) 또는 보안 저장소에 안전하게 저장해야 한다.
-대칭 키(HMAC)보다는 비대칭 키(RSA, ECDSA) 방식을 사용하는 것이 더 안전하다.
-JWT 저장 위치 및 보안
+**JWT 서명(Signature)의 강력한 보안 유지**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT의 무결성을 보장하기 위해 서명(Signature)을 사용하지만, **서명 키(Secret Key)가 노출되면 누구나 JWT를 위조할 수 있다.**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;따라서, 비밀 키(Secret Key)는 서버에서 환경 변수(.env 파일) 또는 보안 저장소에 안전하게 저장해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;대칭 키(HMAC)보다는 **비대칭 키(RSA, ECDSA) 방식**을 사용하는 것이 더 안전하다.
 
-클라이언트에서 JWT를 저장할 때, 로컬 스토리지(LocalStorage)나 세션 스토리지(SessionStorage)를 사용하는 것은 보안적으로 취약하다.
-쿠키(Cookie) + HTTP-Only 설정을 사용하면, JavaScript에서 접근할 수 없도록 하여 XSS(크로스 사이트 스크립팅) 공격을 방지할 수 있다.
+**JWT 저장 위치 및 보안**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트에서 JWT를 저장할 때, 로컬 스토리지(LocalStorage)나 세션 스토리지(SessionStorage)를 사용하는 것은 보안적으로 취약하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;쿠키(Cookie) + HTTP-Only 설정을 사용하면, JavaScript에서 접근할 수 없도록 하여 XSS(크로스 사이트 스크립팅) 공격을 방지할 수 있다.
+```
 // Spring Boot - JWT 쿠키 설정
 ResponseCookie jwtCookie = ResponseCookie.from("token", jwt)
     .httpOnly(true)  // XSS 공격 방지
@@ -695,22 +715,26 @@ ResponseCookie jwtCookie = ResponseCookie.from("token", jwt)
     .maxAge(60 * 60) // 1시간 유지
     .build();
 response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
-토큰 재사용 방지 및 블랙리스트 관리
+```
 
-JWT는 기본적으로 상태를 유지하지 않기 때문에, 사용자가 로그아웃을 해도 기존 토큰이 유효한 상태로 남아있을 수 있다.
-이를 방지하기 위해, 서버에서 로그아웃한 사용자의 JWT를 블랙리스트에 등록하여 차단할 수 있다.
-또는, 토큰이 요청될 때마다 기존 토큰과 비교하는 데이터베이스 검증 방식을 적용할 수 있다.
-JWT Payload 데이터 보호
+**토큰 재사용 방지 및 블랙리스트 관리**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 기본적으로 상태를 유지하지 않기 때문에, 사용자가 로그아웃을 해도 기존 토큰이 유효한 상태로 남아있을 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이를 방지하기 위해, 서버에서 로그아웃한 사용자의 JWT를 블랙리스트에 등록하여 차단할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;또는, 토큰이 요청될 때마다 기존 토큰과 비교하는 데이터베이스 검증 방식을 적용할 수 있다.
 
-JWT의 Payload에는 사용자 정보(예: userId, role, email 등)를 포함할 수 있지만, 이는 단순한 Base64 URL Encoding 방식으로 인코딩된 것이므로 누구나 디코딩이 가능하다.
-따라서, 중요한 데이터(예: 비밀번호, 카드 정보)는 절대로 Payload에 포함해서는 안 된다.
-중요한 데이터가 필요할 경우, JWT의 JWE(JSON Web Encryption) 암호화 방식을 사용하거나, 해당 데이터를 서버에서 관리하는 것이 안전하다.
-JWT의 길이 제한 및 최적화
+**JWT Payload 데이터 보호**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT의 Payload에는 사용자 정보(예: userId, role, email 등)를 포함할 수 있지만, 이는 단순한 Base64 URL Encoding 방식으로 인코딩된 것이므로 누구나 디코딩이 가능하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;따라서, 중요한 데이터(예: 비밀번호, 카드 정보)는 절대로 Payload에 포함해서는 안 된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;중요한 데이터가 필요할 경우, JWT의 JWE(JSON Web Encryption) 암호화 방식을 사용하거나, 해당 데이터를 서버에서 관리하는 것이 안전하다.
 
-JWT는 일반적으로 Header, Payload, Signature를 포함한 문자열로 구성되며, 길이가 길어질 수 있다.
-Payload에 불필요한 정보를 포함하면, 토큰의 크기가 커져 전송 속도에 영향을 줄 수 있다.
-따라서, 최소한의 정보만 포함하도록 설계하고, 필요할 경우 토큰을 압축하는 방안을 고려해야 한다.
-보안 설정을 반영한 JWT 예제 (Spring Boot)
+**JWT의 길이 제한 및 최적화**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 일반적으로 Header, Payload, Signature를 포함한 문자열로 구성되며, 길이가 길어질 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Payload에 불필요한 정보를 포함하면, 토큰의 크기가 커져 전송 속도에 영향을 줄 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;따라서, 최소한의 정보만 포함하도록 설계하고, 필요할 경우 토큰을 압축하는 방안을 고려해야 한다.
+
+----------------------
+### 보안 설정을 반영한 JWT 예제 (Spring Boot)
+```java
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
@@ -740,60 +764,61 @@ public class JwtUtil {
         }
     }
 }
-학습자의 사고를 돕기 위한 질문
-JWT의 stateless 특성이 인증 시스템에서 어떤 이점을 제공하는가?
-
-중앙 서버에 세션을 저장하지 않는 구조를 고려해보라.
-JWT를 사용할 때 보안적으로 고려해야 할 주요 사항은 무엇인가?
-
-토큰 탈취, 만료 시간, 서명 검증 등의 보안 요소를 떠올려보라.
-3. OAuth2와 JWT의 관계 및 통합 개념
-3.1. OAuth2에서 JWT를 사용하는 이유
-OAuth2는 애플리케이션이 사용자 인증 및 권한 부여를 위임받을 수 있도록 설계된 프로토콜이다. 그러나 OAuth2 자체는 액세스 토큰의 형식을 명확히 정의하지 않는다. 즉, OAuth2의 액세스 토큰은 반드시 특정 포맷을 따라야 하는 것이 아니라 다양한 형태로 구현될 수 있다. 여기서 JWT(Json Web Token) 를 액세스 토큰으로 활용하면 여러 가지 이점이 존재하며, 특히 OAuth2 기반 API 인증에서 큰 강점을 발휘한다.
+```
+--------------------
+# 3. OAuth2와 JWT의 관계 및 통합 개념
+## 3-1. OAuth2에서 JWT를 사용하는 이유
+OAuth2는 애플리케이션이 사용자 인증 및 권한 부여를 위임받을 수 있도록 설계된 프로토콜이다.<br>
+그러나 OAuth2 자체는 액세스 토큰의 형식을 명확히 정의하지 않는다. 즉, OAuth2의 액세스 토큰은 반드시 특정 포맷을 따라야 하는 것이 아니라 다양한 형태로 구현될 수 있다.<br>
+여기서 JWT(Json Web Token) 를 액세스 토큰으로 활용하면 여러 가지 이점이 존재하며, 특히 OAuth2 기반 API 인증에서 큰 강점을 발휘한다.
 
 이번 장에서는 OAuth2에서 JWT를 사용하는 이유를 설명하고, JWT가 OAuth2 기반 인증에서 어떻게 활용될 수 있는지에 대해 자세히 다룬다.
 
-OAuth2의 기존 액세스 토큰 방식
-OAuth2에서 액세스 토큰은 기본적으로 문자열 형태의 토큰으로 발급된다. 즉, 서버가 랜덤한 문자열을 생성하여 액세스 토큰을 발급하고, 해당 토큰을 이용해 클라이언트가 API를 호출하는 방식이다. 이런 방식에서는 일반적으로 액세스 토큰을 데이터베이스(DB)에서 관리하게 되며, 클라이언트가 토큰을 전송하면 서버가 이를 조회하여 인증 여부를 확인하는 구조를 가진다.
+--------------------
+### OAuth2의 기존 액세스 토큰 방식
+OAuth2에서 액세스 토큰은 기본적으로 문자열 형태의 토큰으로 발급된다. 즉, 서버가 **랜덤한 문자열을 생성하여 액세스 토큰을 발급하고, 해당 토큰을 이용해 클라이언트가 API를 호출하는 방식**이다.<br>
+이런 방식에서는 일반적으로 액세스 토큰을 데이터베이스(DB)에서 관리하게 되며, 클라이언트가 토큰을 전송하면 서버가 이를 조회하여 인증 여부를 확인하는 구조를 가진다.
 
 그러나, 이러한 방식은 몇 가지 문제를 유발할 수 있다.
 
-토큰 검증 시 성능 저하
+**토큰 검증 시 성능 저하**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;액세스 토큰을 검증하려면 서버가 DB에서 해당 토큰을 조회하는 과정이 필요하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;트래픽이 많아질수록 DB 조회 부담이 커지며, API 요청에 대한 응답 시간이 증가할 수 있다.
 
-액세스 토큰을 검증하려면 서버가 DB에서 해당 토큰을 조회하는 과정이 필요하다.
-트래픽이 많아질수록 DB 조회 부담이 커지며, API 요청에 대한 응답 시간이 증가할 수 있다.
-확장성 문제
+**확장성 문제**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버가 액세스 토큰을 중앙에서 관리하므로, 여러 개의 서버가 있는 환경에서 토큰을 공유하기 어렵다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;하나의 서버에서 발급된 토큰을 다른 서버에서 검증하려면, 공유 저장소나 별도의 인증 서버를 구축해야 하는 복잡성이 추가된다.
 
-서버가 액세스 토큰을 중앙에서 관리하므로, 여러 개의 서버가 있는 환경에서 토큰을 공유하기 어렵다.
-하나의 서버에서 발급된 토큰을 다른 서버에서 검증하려면, 공유 저장소나 별도의 인증 서버를 구축해야 하는 복잡성이 추가된다.
-보안 문제
+**보안 문제**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;토큰이 탈취되면, 악의적인 사용자가 서버의 DB에 저장된 유효한 토큰을 계속 사용할 가능성이 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;특정 토큰을 무효화하려면 블랙리스트(Blacklist) 관리가 필요하며, 이는 추가적인 DB 연산을 요구한다.
 
-토큰이 탈취되면, 악의적인 사용자가 서버의 DB에 저장된 유효한 토큰을 계속 사용할 가능성이 있다.
-특정 토큰을 무효화하려면 블랙리스트(Blacklist) 관리가 필요하며, 이는 추가적인 DB 연산을 요구한다.
-OAuth2에서 JWT를 사용하면 해결할 수 있는 문제
+---------------
+### OAuth2에서 JWT를 사용하면 해결할 수 있는 문제
 OAuth2의 액세스 토큰을 JWT 기반으로 발급하면 앞서 설명한 문제를 해결할 수 있다.
 
-토큰 검증 시 DB 조회 불필요 (Stateless)
+**토큰 검증 시 DB 조회 불필요 (Stateless)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 디지털 서명을 포함하는 자체 포함(Self-contained) 토큰이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 토큰을 DB에서 조회하지 않고 서명(Signature)만 검증하여 즉시 신뢰할 수 있는 데이터인지 판단할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;즉, API 요청 시마다 DB 조회가 필요하지 않아 성능이 크게 향상된다.
 
-JWT는 디지털 서명을 포함하는 자체 포함(Self-contained) 토큰이다.
-서버는 토큰을 DB에서 조회하지 않고 서명(Signature)만 검증하여 즉시 신뢰할 수 있는 데이터인지 판단할 수 있다.
-즉, API 요청 시마다 DB 조회가 필요하지 않아 성능이 크게 향상된다.
-토큰 공유 및 확장성 향상
+**토큰 공유 및 확장성 향상**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 서버 간에 공유할 수 있는 토큰이므로, 여러 개의 API 서버에서 같은 JWT를 검증할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이를 통해 OAuth2 기반의 분산 시스템에서 인증 서버를 따로 두지 않아도 된다.
 
-JWT는 서버 간에 공유할 수 있는 토큰이므로, 여러 개의 API 서버에서 같은 JWT를 검증할 수 있다.
-이를 통해 OAuth2 기반의 분산 시스템에서 인증 서버를 따로 두지 않아도 된다.
-유효 기간이 포함된 보안 강화
+**유효 기간이 포함된 보안 강화**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT에는 토큰 만료 시간(exp, expiration time)이 포함되어 있어, 클라이언트가 만료된 토큰을 사용하지 않도록 자동으로 제한할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일반적인 OAuth2 토큰에서는 DB에서 만료 여부를 체크해야 하지만, JWT는 자체적으로 만료 시간을 검증할 수 있다.
 
-JWT에는 토큰 만료 시간(exp, expiration time)이 포함되어 있어, 클라이언트가 만료된 토큰을 사용하지 않도록 자동으로 제한할 수 있다.
-일반적인 OAuth2 토큰에서는 DB에서 만료 여부를 체크해야 하지만, JWT는 자체적으로 만료 시간을 검증할 수 있다.
-추가적인 사용자 정보 포함 가능
+**추가적인 사용자 정보 포함 가능**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일반적인 OAuth2 토큰은 단순한 문자열이므로, 토큰만으로 사용자 정보를 확인할 수 없다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;반면, JWT의 Payload에는 사용자 ID, 권한(Role), 이메일 등 다양한 정보를 포함할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이를 통해 추가적인 DB 조회 없이도 사용자 정보를 활용할 수 있다.
 
-일반적인 OAuth2 토큰은 단순한 문자열이므로, 토큰만으로 사용자 정보를 확인할 수 없다.
-반면, JWT의 Payload에는 사용자 ID, 권한(Role), 이메일 등 다양한 정보를 포함할 수 있다.
-이를 통해 추가적인 DB 조회 없이도 사용자 정보를 활용할 수 있다.
-JWT를 사용한 OAuth2 액세스 토큰 예제
+------------------
+### JWT를 사용한 OAuth2 액세스 토큰 예제
 OAuth2에서 JWT를 액세스 토큰으로 활용하면, JWT의 Payload에 사용자 관련 정보를 담아서 API 인증을 간편하게 수행할 수 있다. 일반적인 JWT 액세스 토큰의 예시는 다음과 같다.
-
+```
 {
   "iss": "auth.server.com",  // 발급자(Authorization Server)
   "sub": "user123",         // 사용자 ID
@@ -803,9 +828,11 @@ OAuth2에서 JWT를 액세스 토큰으로 활용하면, JWT의 Payload에 사�
   "scope": "read write",    // 권한 범위(Scope)
   "role": "USER"            // 사용자 역할(Role)
 }
+```
 위와 같은 JWT 구조를 사용하면, 별도의 DB 조회 없이도 사용자의 ID, 권한, 만료 여부를 즉시 확인할 수 있다. 서버는 클라이언트로부터 JWT를 전달받은 후, 서명을 검증하여 해당 토큰이 신뢰할 수 있는지 확인하면 된다.
 
-JWT 기반 OAuth2 인증 흐름
+--------------------
+### JWT 기반 OAuth2 인증 흐름
 OAuth2에서 JWT를 액세스 토큰으로 사용하는 인증 흐름은 다음과 같다.
 
 사용자가 로그인 요청
