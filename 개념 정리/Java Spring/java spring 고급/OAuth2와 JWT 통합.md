@@ -131,29 +131,36 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 ### Implicit Grant (암시적 승인 방식)
 이 방식은 주로 SPA(Single Page Application) 같은 클라이언트 측 애플리케이션에서 사용되며, 인가 코드 없이 액세스 토큰을 직접 발급받는다.
 
-동작 방식
-사용자가 클라이언트 애플리케이션에서 로그인 요청을 한다.
-클라이언트는 사용자를 인증 서버로 리디렉션한다.
-사용자는 인증 서버에서 로그인하고, 액세스 토큰을 직접 전달받는다.
-클라이언트는 액세스 토큰을 이용해 보호된 리소스에 접근한다.
-주요 특징
-보안성이 낮다: 액세스 토큰이 URL 프래그먼트(fragment)로 직접 전달되므로, 중간자 공격(MITM)에 취약할 수 있다.
-리프레시 토큰 미지원: 보안 문제로 인해 리프레시 토큰이 지원되지 않으며, 토큰이 만료되면 다시 로그인해야 한다.
-사용 제한
-보안 문제로 인해 OAuth2.1에서는 제거되었으며, 권장되지 않는 방식이다.
-대체 방식으로 PKCE(Proof Key for Code Exchange) 를 활용하는 것이 추천된다.
-Resource Owner Password Credentials Grant (비밀번호 방식)
+**동작 방식**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 클라이언트 애플리케이션에서 로그인 요청을 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 사용자를 인증 서버로 리디렉션한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자는 인증 서버에서 로그인하고, 액세스 토큰을 직접 전달받는다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 액세스 토큰을 이용해 보호된 리소스에 접근한다.
+
+**주요 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**보안성이 낮다**: 액세스 토큰이 URL 프래그먼트(fragment)로 직접 전달되므로, 중간자 공격(MITM)에 취약할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**리프레시 토큰 미지원**: 보안 문제로 인해 리프레시 토큰이 지원되지 않으며, 토큰이 만료되면 다시 로그인해야 한다.<br>
+
+**사용 제한**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;보안 문제로 인해 OAuth2.1에서는 제거되었으며, 권장되지 않는 방식이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;대체 방식으로 PKCE(Proof Key for Code Exchange) 를 활용하는 것이 추천된다.
+
+---------------
+### Resource Owner Password Credentials Grant (비밀번호 방식)
 이 방식은 내부 시스템 또는 신뢰할 수 있는 애플리케이션에서 사용될 수 있다. 사용자가 애플리케이션에 직접 ID와 비밀번호를 입력하면, 클라이언트가 이를 이용해 액세스 토큰을 요청하는 방식이다.
 
-동작 방식
-사용자가 클라이언트 애플리케이션에서 ID와 비밀번호를 입력한다.
-클라이언트는 이를 인증 서버에 전달하고, 액세스 토큰을 요청한다.
-인증 서버는 사용자 정보를 검증한 후, 액세스 토큰을 발급한다.
-클라이언트는 액세스 토큰을 이용해 보호된 리소스를 요청한다.
-주요 특징
-보안 위험이 있음: 클라이언트가 사용자 자격 증명을 직접 다루므로, 보안적으로 권장되지 않는다.
-내부 서비스용으로 적합: 일반적인 사용자는 사용하지 않고, 내부 API 서비스에서 사용될 수 있다.
+**동작 방식**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 클라이언트 애플리케이션에서 ID와 비밀번호를 입력한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 이를 인증 서버에 전달하고, 액세스 토큰을 요청한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인증 서버는 사용자 정보를 검증한 후, 액세스 토큰을 발급한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 액세스 토큰을 이용해 보호된 리소스를 요청한다.
+
+**주요 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**보안 위험이 있음**: 클라이언트가 사용자 자격 증명을 직접 다루므로, 보안적으로 권장되지 않는다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**내부 서비스용으로 적합**: 일반적인 사용자는 사용하지 않고, 내부 API 서비스에서 사용될 수 있다.
+
 예제 코드 (Spring Security 기반)
+```java
 @Bean
 public AuthenticationManager authenticationManager(
         UserDetailsService userDetailsService,
@@ -163,17 +170,22 @@ public AuthenticationManager authenticationManager(
     authProvider.setPasswordEncoder(passwordEncoder);
     return new ProviderManager(authProvider);
 }
-Client Credentials Grant (클라이언트 자격 증명 방식)
+```
+-----------------
+### Client Credentials Grant (클라이언트 자격 증명 방식)
 이 방식은 사용자 없이 서버 간(API 서버 간) 인증이 필요한 경우 사용된다. 특정 클라이언트(애플리케이션)가 인증 서버에서 직접 액세스 토큰을 발급받아 리소스 서버와 통신하는 방식이다.
 
-동작 방식
-클라이언트가 인증 서버에 클라이언트 ID와 시크릿(Client Secret)을 전송하여 인증 요청을 한다.
-인증 서버는 클라이언트를 검증하고, 액세스 토큰을 발급한다.
-클라이언트는 발급받은 액세스 토큰을 이용하여 리소스 서버에 요청을 보낸다.
-주요 특징
-사용자가 개입하지 않음: 서버 간 통신에서 사용되므로, 사용자 로그인 과정이 필요하지 않다.
-API 보안에 활용: 기업의 내부 API 또는 서비스 간 데이터 공유에 적합하다.
+**동작 방식**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 인증 서버에 클라이언트 ID와 시크릿(Client Secret)을 전송하여 인증 요청을 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인증 서버는 클라이언트를 검증하고, 액세스 토큰을 발급한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 발급받은 액세스 토큰을 이용하여 리소스 서버에 요청을 보낸다.
+
+**주요 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**사용자가 개입하지 않음**: 서버 간 통신에서 사용되므로, 사용자 로그인 과정이 필요하지 않다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**API 보안에 활용**: 기업의 내부 API 또는 서비스 간 데이터 공유에 적합하다.
+
 예제 코드 (Spring Security 기반)
+```java
 @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
@@ -184,62 +196,69 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
         .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
     return http.build();
 }
-OAuth2 인증 방식 비교
-인증 방식	사용 사례	보안 수준	특징
-Authorization Code	웹 애플리케이션, 모바일 앱	높음	인가 코드 사용, 보안 강화
-Implicit	SPA, 클라이언트 측 애플리케이션	낮음	액세스 토큰 직접 발급 (OAuth2.1에서 제거)
-Password Grant	내부 시스템, 신뢰된 클라이언트	중간	사용자 자격 증명 필요, 권장되지 않음
-Client Credentials	서버 간 API 인증	높음	사용자가 개입하지 않음
+```
+
+--------------------
+### OAuth2 인증 방식 비교
+
+인증 방식|사용 사례|보안 수준|특징
+:---|:---|:---|:---
+Authorization Code|웹 애플리케이션, 모바일 앱|높음|인가 코드 사용, 보안 강화
+Implicit|SPA, 클라이언트 측 애플리케이션|낮음|액세스 토큰 직접 발급 (OAuth2.1에서 제거)
+Password Grant|내부 시스템, 신뢰된 클라이언트|중간|사용자 자격 증명 필요, 권장되지 않음
+Client Credentials|서버 간 API 인증|높음|사용자가 개입하지 않음
+
 OAuth2 인증 방식은 애플리케이션의 특성과 보안 요구 사항에 따라 적절한 방식을 선택해야 한다. 특히, 보안 강화를 위해 Authorization Code 방식 + PKCE가 가장 권장되는 방식이다.
 
-학습자의 사고를 돕기 위한 질문
-Authorization Code Grant 방식이 보안적으로 가장 안전한 이유는 무엇인가?
-
-Access Token이 클라이언트에 직접 노출되지 않는 구조를 떠올려보라.
-Implicit Grant 방식이 점점 사용되지 않는 이유는 무엇인가?
-
-클라이언트 측에서 Access Token을 직접 다루는 방식의 보안 취약점을 고려해보라.
-1.3. OAuth2와 OpenID Connect (OIDC)
-OAuth2는 애플리케이션이 사용자 정보를 안전하게 위임받아 사용할 수 있도록 설계된 권한 부여 프로토콜(Authorization Protocol) 이다. 그러나 OAuth2 자체는 사용자 인증(Authentication)을 담당하지 않으며, 대신 인증된 사용자의 권한을 위임하는 역할을 한다. 즉, OAuth2를 사용한다고 해서 애플리케이션이 사용자의 신원을 검증하는 것은 아니다.
+-------------------
+## 1-3. OAuth2와 OpenID Connect (OIDC)
+OAuth2는 애플리케이션이 사용자 정보를 안전하게 위임받아 사용할 수 있도록 설계된 권한 부여 프로토콜(Authorization Protocol) 이다.<br>
+그러나 OAuth2 자체는 사용자 인증(Authentication)을 담당하지 않으며, 대신 인증된 사용자의 권한을 위임하는 역할을 한다. 즉, OAuth2를 사용한다고 해서 애플리케이션이 사용자의 신원을 검증하는 것은 아니다.
 
 이러한 OAuth2의 한계를 보완하기 위해 등장한 것이 OpenID Connect(OIDC) 이다. OIDC는 OAuth2를 기반으로 사용자 인증(Authentication) 기능을 추가하여, 애플리케이션이 신뢰할 수 있는 방식으로 사용자의 신원을 검증할 수 있도록 한다.
 
-OpenID Connect(OIDC)의 개념
+-------------
+### OpenID Connect(OIDC)의 개념
 OpenID Connect(OIDC)는 OAuth2를 기반으로 사용자 인증(Authentication) 기능을 추가한 프로토콜이다. OAuth2가 "이 사용자에게 특정 리소스에 대한 접근 권한을 줄 수 있는가?"라는 질문을 해결하는 반면, OIDC는 "이 사용자가 실제로 누구인가?"라는 질문을 해결한다.
 
-OIDC는 인증이 필요한 애플리케이션에서 OAuth2만으로는 부족한 사용자 인증 기능을 보완하여, 보다 신뢰할 수 있는 사용자 정보 제공 메커니즘을 제공한다.
+OIDC는 인증이 필요한 애플리케이션에서 OAuth2만으로는 부족한 사용자 인증 기능을 보완하여, 보다 **신뢰할 수 있는 사용자 정보 제공 메커니즘**을 제공한다.
 
 OIDC는 다음과 같은 주요 기능을 포함한다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**ID Token 발급**: 사용자의 신원을 검증하는 토큰을 제공한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**OAuth2와의 통합**: OAuth2를 기반으로 하기 때문에, 기존 OAuth2 인증 흐름과 쉽게 결합할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**확장성**: OIDC는 다양한 애플리케이션 환경(웹, 모바일, 데스크톱 등)에서 동작할 수 있도록 설계되었다.
 
-ID Token 발급: 사용자의 신원을 검증하는 토큰을 제공한다.
-OAuth2와의 통합: OAuth2를 기반으로 하기 때문에, 기존 OAuth2 인증 흐름과 쉽게 결합할 수 있다.
-확장성: OIDC는 다양한 애플리케이션 환경(웹, 모바일, 데스크톱 등)에서 동작할 수 있도록 설계되었다.
-OAuth2와 OpenID Connect의 차이점
-기능	OAuth2	OpenID Connect (OIDC)
-목적	권한 부여 (Authorization)	사용자 인증 (Authentication)
-주요 역할	리소스에 대한 액세스 권한 부여	사용자의 신원을 검증하고 정보 제공
-Access Token 포함 여부	포함	포함 (보안 강화를 위해 추가)
-ID Token 제공 여부	없음	있음 (사용자의 정보를 포함)
-사용 사례	API 보호, 애플리케이션 간 권한 위임	소셜 로그인, SSO(Single Sign-On) 등
-표준화 여부	보안 요구 사항이 명확하지 않음	표준화된 인증 프로세스 제공
+-----------------
+### OAuth2와 OpenID Connect의 차이점
+기능|OAuth2|OpenID Connect (OIDC)
+:---|:---|:---
+목적|권한 부여 (Authorization)|사용자 인증 (Authentication)
+주요 역할|리소스에 대한 액세스 권한 부여|사용자의 신원을 검증하고 정보 제공
+Access Token 포함 여부|포함|포함 (보안 강화를 위해 추가)
+ID Token 제공 여부|없음|있음 (사용자의 정보를 포함)
+사용 사례|API 보호, 애플리케이션 간 권한 위임|소셜 로그인, SSO(Single Sign-On) 등
+표준화 여부|보안 요구 사항이 명확하지 않음|표준화된 인증 프로세스 제공
+
 OAuth2만 사용할 경우, 애플리케이션이 사용자의 신원을 직접 검증할 방법이 없다. 반면, OpenID Connect는 OAuth2의 인증 서버가 사용자 정보를 포함한 ID Token을 발급하여, 애플리케이션이 해당 사용자가 실제 누구인지 확인할 수 있도록 한다.
 
-ID Token이란?
-ID Token은 OpenID Connect에서 사용자의 신원을 검증하기 위해 발급되는 JWT(JSON Web Token) 형태의 토큰이다. Access Token이 API 리소스 접근을 위한 권한을 부여하는 데 사용된다면, ID Token은 사용자의 신원을 증명하는 역할을 한다.
+-------------
+### ID Token이란?
+ID Token은 OpenID Connect에서 사용자의 신원을 검증하기 위해 발급되는 **JWT(JSON Web Token) 형태의 토큰**이다. Access Token이 API 리소스 접근을 위한 권한을 부여하는 데 사용된다면, ID Token은 사용자의 신원을 증명하는 역할을 한다.
 
 ID Token의 구조는 일반적인 JWT와 동일하며, 다음과 같은 세 부분으로 구성된다.
 
-Header (헤더)
+**Header (헤더)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;토큰의 서명 방식(HMAC, RSA 등)을 지정한다.
 
-토큰의 서명 방식(HMAC, RSA 등)을 지정한다.
-Payload (페이로드)
+**Payload (페이로드)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자의 정보(클레임, Claims)를 포함한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일반적으로 sub(사용자 ID), iss(발급자), exp(만료 시간) 등이 포함된다.
 
-사용자의 정보(클레임, Claims)를 포함한다.
-일반적으로 sub(사용자 ID), iss(발급자), exp(만료 시간) 등이 포함된다.
-Signature (서명)
+**Signature (서명)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;토큰의 무결성을 검증하기 위한 서명이 포함된다.
 
-토큰의 무결성을 검증하기 위한 서명이 포함된다.
 예제: ID Token의 구조 (JWT 형태)
+```
 {
   "alg": "RS256",
   "typ": "JWT"
@@ -255,28 +274,31 @@ Signature (서명)
 }
 .
 "HMACSHA256(Base64UrlEncode(header) + '.' + Base64UrlEncode(payload), secret)"
-OIDC 인증 흐름 (Authorization Code Flow)
+```
+----------------
+### OIDC 인증 흐름 (Authorization Code Flow)
 OIDC는 OAuth2의 Authorization Code Flow를 기반으로 인증을 수행한다. 기본적인 흐름은 다음과 같다.
 
-사용자가 애플리케이션에 로그인 요청
+**사용자가 애플리케이션에 로그인 요청**<br>
 → 클라이언트 애플리케이션(예: 웹 앱, 모바일 앱)이 사용자를 로그인 페이지로 리디렉션한다.
 
-사용자는 인증 서버에서 로그인
+**사용자는 인증 서버에서 로그인**<br>
 → OAuth2 인증 서버가 사용자 자격 증명을 확인하고 인증을 진행한다.
 
-인증 서버가 Authorization Code 반환
+**인증 서버가 Authorization Code 반환**<br>
 → 로그인 성공 시, 클라이언트 애플리케이션은 Authorization Code를 발급받는다.
 
-클라이언트 애플리케이션이 Authorization Code를 사용해 토큰 요청
+**클라이언트 애플리케이션이 Authorization Code를 사용해 토큰 요청**<br>
 → 클라이언트는 받은 Authorization Code를 사용하여 인증 서버에 Access Token과 ID Token을 요청한다.
 
-Access Token과 ID Token 발급
+**Access Token과 ID Token 발급**<br>
 → 인증 서버는 Access Token과 ID Token을 클라이언트 애플리케이션에 반환한다.
 
-클라이언트 애플리케이션이 ID Token을 검증하여 사용자 정보 확인
+**클라이언트 애플리케이션이 ID Token을 검증하여 사용자 정보 확인**<br>
 → 클라이언트 애플리케이션은 ID Token을 디코딩하여, 사용자의 신원을 확인하고 로그인 세션을 생성한다.
 
 OIDC 인증 요청 예제 (Authorization Code Flow)
+```
 GET /authorize?
    response_type=code
    &client_id=client-id-123
@@ -288,9 +310,11 @@ GET /authorize?
    &code_challenge_method=S256
    HTTP/1.1
 Host: auth.example.com
-이후 클라이언트는 Authorization Code를 받아 다음과 같이 Access Token과 ID Token을 요청할 수 있다.
+```
+이후 클라이언트는 ```Authorization Code```를 받아 다음과 같이 Access Token과 ID Token을 요청할 수 있다.
 
 토큰 요청 예제
+```
 POST /token HTTP/1.1
 Host: auth.example.com
 Content-Type: application/x-www-form-urlencoded
@@ -301,56 +325,56 @@ grant_type=authorization_code
 &client_id=client-id-123
 &client_secret=client-secret
 &code_verifier=code-verifier-value
-OpenID Connect의 활용 사례
+```
+------------
+### OpenID Connect의 활용 사례
 OIDC는 다양한 환경에서 사용될 수 있으며, 다음과 같은 주요 활용 사례가 있다.
 
-소셜 로그인 (Social Login)
+**소셜 로그인 (Social Login)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Google, Facebook, Naver, Kakao 등의 OAuth2 Provider를 이용하여 간편 로그인 기능을 구현할 수 있다.
 
-Google, Facebook, Naver, Kakao 등의 OAuth2 Provider를 이용하여 간편 로그인 기능을 구현할 수 있다.
-SSO (Single Sign-On)
+**SSO (Single Sign-On)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;한 번 로그인하면 여러 서비스에서 동일한 사용자 인증 정보를 사용할 수 있도록 한다.
 
-한 번 로그인하면 여러 서비스에서 동일한 사용자 인증 정보를 사용할 수 있도록 한다.
-기업 내부 시스템의 인증
+**기업 내부 시스템의 인증**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사내 애플리케이션에서 OIDC 기반의 인증 시스템을 구축할 수 있다.
 
-사내 애플리케이션에서 OIDC 기반의 인증 시스템을 구축할 수 있다.
-API 및 마이크로서비스 보안 강화
+**API 및 마이크로서비스 보안 강화**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OAuth2의 권한 위임과 OIDC의 사용자 인증을 조합하여 보다 강력한 보안 구조를 만들 수 있다.
 
-OAuth2의 권한 위임과 OIDC의 사용자 인증을 조합하여 보다 강력한 보안 구조를 만들 수 있다.
-학습자의 사고를 돕기 위한 질문
-OAuth2는 인증(Authentication) 프로토콜이 아닌 이유는 무엇인가?
+-----------------
+# 2. JWT(Json Web Token) 개요
+## 2-1. JWT의 개념
+JWT(Json Web Token)는 인증과 정보 교환을 위해 사용되는 JSON 기반의 토큰이다. JWT는 **서버와 클라이언트 간의 상태를 유지하지 않는(stateless) 인증 방식**을 가능하게 하며, 인증된 정보를 안전하게 전달하는 역할을 한다.
 
-OAuth2의 목적이 무엇인지 다시 떠올려보라.
-OpenID Connect(OIDC)가 OAuth2와 함께 사용될 때 제공하는 추가적인 기능은 무엇인가?
+기존의 **세션 기반 인증(Session-based Authentication)** 에서는 클라이언트가 로그인하면, 서버는 해당 클라이언트의 세션 정보를 저장하고 이를 관리해야 한다.<br>
+하지만 **JWT기반 인증(Token-based Authentication)** 에서는 클라이언트가 로그인할 때, 서버는 특정 정보를 포함한 JWT를 발급하고, 이후 클라이언트가 이 토큰을 요청마다 포함하여 서버에 전달하면 된다.<br>
+이 방식은 서버가 세션을 직접 관리할 필요가 없기 때문에, 확장성(Scalability)이 뛰어나다.
 
-ID Token과 사용자 프로필 정보의 역할을 생각해보라.
-2. JWT(Json Web Token) 개요
-2.1. JWT의 개념
-JWT(Json Web Token)는 인증과 정보 교환을 위해 사용되는 JSON 기반의 토큰이다. JWT는 서버와 클라이언트 간의 상태를 유지하지 않는(stateless) 인증 방식을 가능하게 하며, 인증된 정보를 안전하게 전달하는 역할을 한다.
+--------------
+### JWT의 주요 특징
+**토큰 기반 인증(Token-based Authentication)**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 인증 정보를 포함한 토큰을 발급하여, 별도의 세션을 유지할 필요 없이 사용자 인증을 처리할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 서버에서 받은 JWT를 API 요청마다 포함하여 보냄으로써 인증을 유지한다.
 
-기존의 세션 기반 인증(Session-based Authentication) 에서는 클라이언트가 로그인하면, 서버는 해당 클라이언트의 세션 정보를 저장하고 이를 관리해야 한다. 하지만 JWT 기반 인증(Token-based Authentication) 에서는 클라이언트가 로그인할 때, 서버는 특정 정보를 포함한 JWT를 발급하고, 이후 클라이언트가 이 토큰을 요청마다 포함하여 서버에 전달하면 된다. 이 방식은 서버가 세션을 직접 관리할 필요가 없기 때문에, 확장성(Scalability)이 뛰어나다.
+**JSON 기반의 데이터 구조**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 JSON 형태로 인코딩되며, 클라이언트와 서버 간 쉽게 데이터를 주고받을 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;경량(Lightweight)하며, 다양한 프로그래밍 언어에서 쉽게 활용할 수 있다.
 
-JWT의 주요 특징
-토큰 기반 인증(Token-based Authentication)
+**자체 포함(Self-contained)** <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT 내부에 필요한 정보를 모두 포함하고 있어, 별도의 데이터베이스 조회 없이도 토큰만으로 사용자 인증을 수행할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 사용자의 권한(Role) 정보를 포함할 수도 있다.
 
-JWT는 인증 정보를 포함한 토큰을 발급하여, 별도의 세션을 유지할 필요 없이 사용자 인증을 처리할 수 있다.
-클라이언트는 서버에서 받은 JWT를 API 요청마다 포함하여 보냄으로써 인증을 유지한다.
-JSON 기반의 데이터 구조
+**무결성 보장**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 디지털 서명(Digital Signature) 을 포함하기 때문에 변조가 어렵다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 클라이언트가 보낸 JWT가 조작되지 않았음을 서명을 검증하는 방식으로 확인할 수 있다.
 
-JWT는 JSON 형태로 인코딩되며, 클라이언트와 서버 간 쉽게 데이터를 주고받을 수 있다.
-경량(Lightweight)하며, 다양한 프로그래밍 언어에서 쉽게 활용할 수 있다.
-자체 포함(Self-contained)
+**확장성(Scalability) 우수**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;세션 저장이 필요 없는 구조이므로, 분산 시스템(Distributed System) 환경에서 효과적이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 토큰을 보유하고 있으므로, 요청이 증가해도 서버의 부하가 상대적으로 낮다.
 
-JWT 내부에 필요한 정보를 모두 포함하고 있어, 별도의 데이터베이스 조회 없이도 토큰만으로 사용자 인증을 수행할 수 있다.
-예를 들어, 사용자의 권한(Role) 정보를 포함할 수도 있다.
-무결성 보장
-
-JWT는 디지털 서명(Digital Signature) 을 포함하기 때문에 변조가 어렵다.
-서버는 클라이언트가 보낸 JWT가 조작되지 않았음을 서명을 검증하는 방식으로 확인할 수 있다.
-확장성(Scalability) 우수
-
-세션 저장이 필요 없는 구조이므로, 분산 시스템(Distributed System) 환경에서 효과적이다.
-클라이언트가 토큰을 보유하고 있으므로, 요청이 증가해도 서버의 부하가 상대적으로 낮다.
-JWT의 구조
+-------------
+### JWT의 구조
 JWT는 세 개의 구성 요소(Header, Payload, Signature) 로 이루어져 있으며, 각 요소는 마침표(.)로 구분된다.
 
 <Header>.<Payload>.<Signature>
