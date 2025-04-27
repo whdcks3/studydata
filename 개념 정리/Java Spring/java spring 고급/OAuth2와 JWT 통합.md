@@ -867,26 +867,31 @@ JWT는 OAuth2 액세스 토큰으로 사용하기에 많은 장점을 제공하�
 
 -------------------
 ## 3-2. OAuth2 기반 JWT 인증 흐름
-OAuth2와 JWT를 결합하면 인증 및 권한 부여 과정이 단순해지고 확장성이 커진다. 특히, OAuth2 인증 서버에서 JWT 기반 액세스 토큰을 발급하면 리소스 서버가 별도의 DB 조회 없이 토큰을 검증하고 요청을 처리할 수 있다. 이를 통해 인증 속도가 향상되며, 분산 시스템에서 중앙 인증 서버의 부하를 줄일 수 있다.
+OAuth2와 JWT를 결합하면 인증 및 권한 부여 과정이 단순해지고 확장성이 커진다.<br>
+특히, OAuth2 인증 서버에서 JWT 기반 액세스 토큰을 발급하면 리소스 서버가 별도의 DB 조회 없이 토큰을 검증하고 요청을 처리할 수 있다. 이를 통해 인증 속도가 향상되며, 분산 시스템에서 중앙 인증 서버의 부하를 줄일 수 있다.
 
 이번 장에서는 OAuth2에서 JWT를 활용한 인증 흐름을 구체적으로 설명하며, 각 단계에서의 역할을 분석한다.
 
-OAuth2에서 JWT 기반 인증 흐름 개요
+### OAuth2에서 JWT 기반 인증 흐름 개요
 OAuth2 인증 과정에서 JWT를 활용하면, 다음과 같은 흐름으로 인증이 이루어진다.
 
-사용자가 클라이언트를 통해 로그인 요청을 보낸다.
-클라이언트는 OAuth2 인증 서버로부터 JWT 액세스 토큰을 요청한다.
-OAuth2 인증 서버는 사용자 정보를 확인한 후 JWT를 생성하여 클라이언트에 반환한다.
-클라이언트는 API 요청 시 Authorization: Bearer <JWT> 헤더를 포함하여 리소스 서버에 요청을 보낸다.
-리소스 서버는 JWT의 서명을 검증하고, 토큰의 유효성을 확인한 후 요청을 처리한다.
-OAuth2에서 JWT 기반 인증 흐름 상세 과정
-1단계: 사용자 로그인 요청
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 클라이언트를 통해 로그인 요청을 보낸다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 OAuth2 인증 서버로부터 JWT 액세스 토큰을 요청한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OAuth2 인증 서버는 사용자 정보를 확인한 후 JWT를 생성하여 클라이언트에 반환한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 API 요청 시 Authorization: Bearer <JWT> 헤더를 포함하여 리소스 서버에 요청을 보낸다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;리소스 서버는 JWT의 서명을 검증하고, 토큰의 유효성을 확인한 후 요청을 처리한다.
+
+----------------
+### OAuth2에서 JWT 기반 인증 흐름 상세 과정
+
+**1단계: 사용자 로그인 요청**<br>
 사용자가 클라이언트 애플리케이션을 통해 로그인 요청을 보낸다. 일반적으로 로그인은 이메일과 비밀번호를 입력하거나, OAuth2를 이용한 소셜 로그인 방식(Google, Facebook 등)을 통해 진행된다.
 
-2단계: 클라이언트가 OAuth2 인증 서버에 인증 요청
+**2단계: 클라이언트가 OAuth2 인증 서버에 인증 요청**<br>
 클라이언트 애플리케이션은 OAuth2 인증 서버에 인증 요청을 보낸다. 이때, 클라이언트는 client_id, client_secret 등의 정보를 함께 제공하여 서버가 요청을 검증할 수 있도록 한다.
 
 Authorization Code Grant 방식의 예제:
+```
 POST /oauth/token HTTP/1.1
 Host: auth.server.com
 Content-Type: application/x-www-form-urlencoded
@@ -896,49 +901,56 @@ code=AUTH_CODE_FROM_LOGIN&
 redirect_uri=https://client.app/callback&
 client_id=client123&
 client_secret=secretKey
-3단계: OAuth2 인증 서버에서 JWT 발급
+```
+
+**3단계: OAuth2 인증 서버에서 JWT 발급**<br>
 OAuth2 인증 서버는 사용자의 인증 정보를 확인한 후, JWT를 생성하고 이를 액세스 토큰으로 반환한다.
 
 JWT 응답 예제 (액세스 토큰)
+```
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "token_type": "Bearer",
   "expires_in": 3600,
   "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
-여기서 access_token 값은 JWT이며, expires_in 값은 액세스 토큰의 유효 기간(초 단위)을 나타낸다.
+```
+여기서 ```access_token``` 값은 JWT이며, ```expires_in``` 값은 액세스 토큰의 유효 기간(초 단위)을 나타낸다.
 
-4단계: 클라이언트가 리소스 서버에 API 요청 시 JWT 포함
+**4단계: 클라이언트가 리소스 서버에 API 요청 시 JWT 포함**<br>
 클라이언트 애플리케이션은 API 요청을 보낼 때, 발급받은 JWT를 Authorization 헤더에 포함하여 전송한다.
-
+```
 GET /api/user/profile HTTP/1.1
 Host: api.server.com
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-5단계: 리소스 서버에서 JWT 검증 및 요청 처리
+```
+
+**5단계: 리소스 서버에서 JWT 검증 및 요청 처리**<br>
 리소스 서버(API 서버)는 클라이언트가 보낸 요청을 처리하기 전에, 포함된 JWT를 검증한다.
 
 검증 과정은 다음과 같다.
 
-JWT의 서명(Signature) 검증
+**JWT의 서명(Signature) 검증**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 JWT의 서명이 신뢰할 수 있는 인증 서버에서 생성된 것인지 확인한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서명이 올바르지 않다면 요청을 거부한다.
 
-서버는 JWT의 서명이 신뢰할 수 있는 인증 서버에서 생성된 것인지 확인한다.
-서명이 올바르지 않다면 요청을 거부한다.
-토큰 만료 여부 확인
+**토큰 만료 여부 확인**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exp(Expiration) 값을 확인하여 JWT가 만료되었는지 검사한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;만료된 JWT는 사용할 수 없으며, 클라이언트는 새 토큰을 발급받아야 한다.
 
-exp(Expiration) 값을 확인하여 JWT가 만료되었는지 검사한다.
-만료된 JWT는 사용할 수 없으며, 클라이언트는 새 토큰을 발급받아야 한다.
-토큰의 클레임(Claim) 정보 확인
+**토큰의 클레임(Claim) 정보 확인**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iss(Issuer): JWT의 발급자가 신뢰할 수 있는 인증 서버인지 확인한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aud(Audience): JWT가 현재 요청하는 API에 사용 가능한지 확인한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sub(Subject): 사용자 ID 정보를 가져온다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scope(Scope): 사용자가 요청한 권한 범위를 확인한다.
 
-iss(Issuer): JWT의 발급자가 신뢰할 수 있는 인증 서버인지 확인한다.
-aud(Audience): JWT가 현재 요청하는 API에 사용 가능한지 확인한다.
-sub(Subject): 사용자 ID 정보를 가져온다.
-scope(Scope): 사용자가 요청한 권한 범위를 확인한다.
-6단계: 인증이 성공하면 리소스 서버가 요청을 처리
+**6단계: 인증이 성공하면 리소스 서버가 요청을 처리**<br>
 JWT가 유효하면, 서버는 사용자의 권한을 확인한 후 해당 API 요청을 정상적으로 처리한다.
 
-JWT 검증 코드 예제 (Spring Security 적용)
+--------------------
+### JWT 검증 코드 예제 (Spring Security 적용)
 Spring Boot 기반 리소스 서버에서 JWT 검증을 수행하는 예제 코드는 다음과 같다.
-
+```java
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -959,83 +971,74 @@ public class SecurityConfig {
         return NimbusJwtDecoder.withJwkSetUri("https://auth.server.com/.well-known/jwks.json").build();
     }
 }
+```
 이 설정을 적용하면, Spring Security가 자동으로 JWT를 검증하고 요청을 인증하게 된다.
 
-JWT 기반 OAuth2 인증의 이점
+--------------
+### JWT 기반 OAuth2 인증의 이점
 OAuth2에서 JWT를 사용하면 다음과 같은 장점이 있다.
 
-인증 속도 향상
+**인증 속도 향상**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 자체 포함된(Self-contained) 토큰이므로, 별도의 DB 조회 없이 서명을 검증하여 인증을 수행할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;API 서버는 매 요청마다 DB를 조회할 필요가 없어 성능이 향상된다.
 
-JWT는 자체 포함된(Self-contained) 토큰이므로, 별도의 DB 조회 없이 서명을 검증하여 인증을 수행할 수 있다.
-API 서버는 매 요청마다 DB를 조회할 필요가 없어 성능이 향상된다.
-확장성 높은 분산 시스템 구축 가능
+**확장성 높은 분산 시스템 구축 가능**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT를 사용하면 중앙 인증 서버 없이 여러 개의 독립적인 리소스 서버에서 인증을 수행할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;여러 마이크로서비스가 존재하는 환경에서 특히 유용하다.
 
-JWT를 사용하면 중앙 인증 서버 없이 여러 개의 독립적인 리소스 서버에서 인증을 수행할 수 있다.
-여러 마이크로서비스가 존재하는 환경에서 특히 유용하다.
-안전한 권한 관리 가능
+**안전한 권한 관리 가능**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT의 Payload에 사용자의 역할(Role)과 권한(Scope)을 포함할 수 있으므로, API 접근을 보다 세밀하게 제어할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, scope: "read write" 권한을 부여하면, 특정 API는 읽기만 가능하게 설정할 수 있다.
 
-JWT의 Payload에 사용자의 역할(Role)과 권한(Scope)을 포함할 수 있으므로, API 접근을 보다 세밀하게 제어할 수 있다.
-예를 들어, scope: "read write" 권한을 부여하면, 특정 API는 읽기만 가능하게 설정할 수 있다.
-JWT 기반 OAuth2 인증의 한계점
-토큰 취소(Revocation)가 어렵다
+-----------------
+### JWT 기반 OAuth2 인증의 한계점
 
-JWT는 자체 포함된 토큰이므로, 한 번 발급되면 서버에서 이를 취소할 방법이 없다.
-따라서, 사용자가 로그아웃했거나 권한이 변경된 경우에도 기존 JWT는 여전히 유효할 수 있다.
-해결책: 짧은 만료 시간(exp) 설정 + Refresh Token 사용.
-Payload 데이터가 노출될 가능성
+**토큰 취소(Revocation)가 어렵다**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 자체 포함된 토큰이므로, 한 번 발급되면 서버에서 이를 취소할 방법이 없다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;따라서, 사용자가 로그아웃했거나 권한이 변경된 경우에도 기존 JWT는 여전히 유효할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;해결책: **짧은 만료 시간(exp) 설정 + Refresh Token 사용.**
 
-JWT의 Payload는 Base64 URL 인코딩되므로, 누구나 디코딩하여 내용을 확인할 수 있다.
-따라서 비밀번호 같은 민감한 정보는 JWT에 저장하면 안 된다.
-필요하면 JWE(JSON Web Encryption) 를 사용하여 암호화할 수 있다.
-학습자의 사고를 돕기 위한 질문
-OAuth2 기반 시스템에서 Access Token이 발급될 때, JWT를 사용하면 서버의 부하를 줄일 수 있는 이유는 무엇인가?
+**Payload 데이터가 노출될 가능성**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT의 Payload는 Base64 URL 인코딩되므로, 누구나 디코딩하여 내용을 확인할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;따라서 비밀번호 같은 민감한 정보는 JWT에 저장하면 안 된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;필요하면 JWE(JSON Web Encryption) 를 사용하여 암호화할 수 있다.
 
-세션 기반 인증과 비교하여 서버의 부담이 어떻게 감소하는지 생각해보라.
-JWT 기반의 OAuth2 인증이 적용될 경우, 사용자의 요청이 처리되는 과정에서 서버가 JWT를 검증하는 단계는 무엇인가?
-
-클라이언트가 API 요청을 보낼 때 JWT가 어떻게 검증되는지 확인해보라.
-실습 문제
-문제 1: OAuth2 인증 서버에서 JWT 발급 흐름 이해
-다음 요구사항을 만족하는 코드를 작성하시오.
-
-OAuth2 인증 서버를 구성하여 JWT 기반의 Access Token을 발급한다.
-클라이언트가 인증 요청을 보낼 때 필요한 정보를 명확하게 입력한다.
-인증이 성공하면 발급된 JWT를 출력한다.
-문제 2: JWT를 사용한 OAuth2 인증 검증 프로세스
-다음 요구사항을 만족하는 코드를 작성하시오.
-
-발급된 JWT를 사용하여 리소스 서버에 API 요청을 보낸다.
-서버가 JWT를 검증하는 과정을 코드로 구현한다.
-유효한 JWT의 경우 요청이 정상 처리되고, 유효하지 않은 JWT의 경우 인증 실패 메시지가 출력되도록 구현한다.
-3.3. Access Token과 Refresh Token의 차이
-OAuth2를 사용할 때, Access Token과 Refresh Token의 개념을 이해하는 것은 매우 중요하다. Access Token은 API 요청 시 사용자의 인증을 대신하는 토큰이고, Refresh Token은 만료된 Access Token을 재발급하는 역할을 한다.
+---------------
+## 3-3. Access Token과 Refresh Token의 차이
+OAuth2를 사용할 때, Access Token과 Refresh Token의 개념을 이해하는 것은 매우 중요하다.<br>
+Access Token은 API 요청 시 사용자의 인증을 대신하는 토큰이고, Refresh Token은 만료된 Access Token을 재발급하는 역할을 한다.
 
 이번 장에서는 Access Token과 Refresh Token의 차이점, 각각의 특징과 사용 방식, 그리고 보안상 고려해야 할 사항들을 다룬다.
 
-Access Token과 Refresh Token의 개념
-OAuth2 기반 인증 시스템에서 클라이언트가 API 요청을 할 때 직접적으로 사용되는 것은 Access Token이다. 하지만, Access Token은 보안상의 이유로 수명이 짧게 설정된다. 즉, 특정 시간이 지나면 자동으로 만료된다.
+### Access Token과 Refresh Token의 개념
+OAuth2 기반 인증 시스템에서 클라이언트가 API 요청을 할 때 직접적으로 사용되는 것은 **Access Token**이다. 하지만, Access Token은 보안상의 이유로 수명이 짧게 설정된다. 즉, 특정 시간이 지나면 자동으로 만료된다.
 
-이와 반대로, Refresh Token은 보다 긴 수명을 가지며, Access Token이 만료되었을 때 새로운 Access Token을 발급받기 위해 사용된다.
+이와 반대로, **Refresh Token**은 보다 긴 수명을 가지며, Access Token이 만료되었을 때 새로운 Access Token을 발급받기 위해 사용된다.
 
 Access Token과 Refresh Token의 주요 차이점은 다음과 같다.
 
-토큰 유형	역할 및 특징
-Access Token	API 요청 시 인증에 사용. 보안 강화를 위해 짧은 수명을 가짐.
-Refresh Token	새로운 Access Token을 발급받을 때 사용. 긴 수명을 가지며, 클라이언트가 서버에 요청해 새 Access Token을 받을 수 있음.
-Access Token의 동작 방식
-Access Token은 클라이언트가 API를 호출할 때 사용되며, 보통 Authorization 헤더에 포함된다.
-아래는 Access Token을 사용한 HTTP 요청 예제이다.
+토큰 유형|역할 및 특징
+:---|:---
+Access Token|API 요청 시 인증에 사용. 보안 강화를 위해 짧은 수명을 가짐.
+Refresh Token|새로운 Access Token을 발급받을 때 사용. 긴 수명을 가지며, 클라이언트가 서버에 요청해 새 Access Token을 받을 수 있음.
 
+-----------------
+### Access Token의 동작 방식
+Access Token은 클라이언트가 API를 호출할 때 사용되며, 보통 Authorization 헤더에 포함된다.<br>
+아래는 Access Token을 사용한 HTTP 요청 예제이다.
+```
 GET /api/user/profile HTTP/1.1
 Host: api.server.com
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-리소스 서버(API 서버)는 이 토큰을 검증하고, 유효하면 사용자의 정보를 확인한 후 요청을 처리한다.
+```
+리소스 서버(API 서버)는 이 토큰을 검증하고, 유효하면 사용자의 정보를 확인한 후 요청을 처리한다.<br>
 그러나 Access Token은 짧은 수명을 가지므로, 일정 시간이 지나면 만료되어 더 이상 사용할 수 없다.
 
-Refresh Token의 동작 방식
-Access Token이 만료되면, 클라이언트는 새로운 Access Token을 받기 위해 Refresh Token을 사용하여 OAuth2 인증 서버에 요청을 보낸다.
+-------------
+### Refresh Token의 동작 방식
+Access Token이 만료되면, 클라이언트는 새로운 Access Token을 받기 위해 **Refresh Token을 사용하여 OAuth2 인증 서버에 요청**을 보낸다.<br>
 아래는 Refresh Token을 사용하여 새로운 Access Token을 요청하는 예제이다.
-
+```
 POST /oauth/token HTTP/1.1
 Host: auth.server.com
 Content-Type: application/x-www-form-urlencoded
@@ -1044,49 +1047,55 @@ grant_type=refresh_token&
 refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...&
 client_id=client123&
 client_secret=secretKey
+```
 서버는 Refresh Token을 검증한 후 새로운 Access Token을 발급하여 클라이언트에 반환한다.
-
+```
 {
   "access_token": "new-access-token-value",
   "token_type": "Bearer",
   "expires_in": 3600
 }
+```
 이제 클라이언트는 새로운 Access Token을 사용하여 API 요청을 계속 보낼 수 있다.
 
-Access Token과 Refresh Token 사용 흐름
+----------------
+### Access Token과 Refresh Token 사용 흐름
 Access Token과 Refresh Token을 사용하는 OAuth2 인증 과정은 다음과 같이 진행된다.
 
-클라이언트가 로그인하여 OAuth2 인증 서버에서 Access Token과 Refresh Token을 발급받는다.
-클라이언트는 Access Token을 사용하여 리소스 서버에 API 요청을 보낸다.
-Access Token이 만료되면, 클라이언트는 Refresh Token을 이용하여 새로운 Access Token을 요청한다.
-OAuth2 인증 서버는 Refresh Token을 검증하고, 새로운 Access Token을 발급하여 반환한다.
-클라이언트는 새로운 Access Token을 사용하여 다시 API 요청을 수행한다.
-Access Token과 Refresh Token의 보안 고려 사항
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 로그인하여 OAuth2 인증 서버에서 Access Token과 Refresh Token을 발급받는다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 Access Token을 사용하여 리소스 서버에 API 요청을 보낸다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access Token이 만료되면, 클라이언트는 Refresh Token을 이용하여 새로운 Access Token을 요청한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OAuth2 인증 서버는 Refresh Token을 검증하고, 새로운 Access Token을 발급하여 반환한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 새로운 Access Token을 사용하여 다시 API 요청을 수행한다.
+
+------------------
+### Access Token과 Refresh Token의 보안 고려 사항
 Access Token과 Refresh Token을 안전하게 관리하기 위해서는 몇 가지 보안 조치가 필요하다.
 
-Access Token의 수명을 짧게 설정해야 한다.
+**Access Token의 수명을 짧게 설정해야 한다.**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access Token은 외부 API 요청 시 직접 사용되므로 탈취될 위험이 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;따라서 짧은 만료 시간을 설정하고, 만료된 후에는 Refresh Token을 통해 새로 발급받도록 해야 한다.
 
-Access Token은 외부 API 요청 시 직접 사용되므로 탈취될 위험이 있다.
-따라서 짧은 만료 시간을 설정하고, 만료된 후에는 Refresh Token을 통해 새로 발급받도록 해야 한다.
-Refresh Token은 서버에서 안전하게 저장해야 한다.
+**Refresh Token은 서버에서 안전하게 저장해야 한다.**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Refresh Token은 Access Token보다 더 긴 수명을 가지므로, 이를 안전하게 관리해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Refresh Token이 탈취되면 새로운 Access Token을 계속 발급받을 수 있기 때문에, 보안이 중요하다.
 
-Refresh Token은 Access Token보다 더 긴 수명을 가지므로, 이를 안전하게 관리해야 한다.
-Refresh Token이 탈취되면 새로운 Access Token을 계속 발급받을 수 있기 때문에, 보안이 중요하다.
-Refresh Token을 클라이언트에 저장하는 방식 고려
+**Refresh Token을 클라이언트에 저장하는 방식 고려**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;웹 애플리케이션에서는 Refresh Token을 HttpOnly 쿠키에 저장하는 것이 일반적이다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;모바일 애플리케이션에서는 보안 저장소(예: iOS Keychain, Android EncryptedSharedPreferences)에 저장할 수 있다.
 
-웹 애플리케이션에서는 Refresh Token을 HttpOnly 쿠키에 저장하는 것이 일반적이다.
-모바일 애플리케이션에서는 보안 저장소(예: iOS Keychain, Android EncryptedSharedPreferences)에 저장할 수 있다.
-Refresh Token의 사용 제한
+**Refresh Token의 사용 제한**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Refresh Token을 한 번 사용하면 새로운 Refresh Token을 발급하고 기존의 Refresh Token은 폐기해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이를 통해 탈취된 Refresh Token을 재사용하는 것을 방지할 수 있다.
 
-Refresh Token을 한 번 사용하면 새로운 Refresh Token을 발급하고 기존의 Refresh Token은 폐기해야 한다.
-이를 통해 탈취된 Refresh Token을 재사용하는 것을 방지할 수 있다.
-Refresh Token을 주기적으로 갱신
+**Refresh Token을 주기적으로 갱신**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Refresh Token도 만료 기간을 설정해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일정 기간이 지나면 사용자가 다시 로그인하도록 요구하여 보안을 강화할 수 있다.
 
-Refresh Token도 만료 기간을 설정해야 한다.
-일정 기간이 지나면 사용자가 다시 로그인하도록 요구하여 보안을 강화할 수 있다.
-Spring Security에서 Access Token과 Refresh Token 관리
+---------------------
+### Spring Security에서 Access Token과 Refresh Token 관리
 Spring Security 기반의 OAuth2 인증 서버에서 Access Token과 Refresh Token을 발급하고 검증하는 예제 코드는 다음과 같다.
-
+```java
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
@@ -1102,51 +1111,51 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
             .refreshTokenValiditySeconds(86400); // Refresh Token 유효 시간: 1일
     }
 }
+```
 이 설정을 적용하면, Access Token과 Refresh Token을 각각 1시간, 24시간 동안 유효하도록 관리할 수 있다.
 
-Access Token과 Refresh Token을 사용하는 이유
+--------------------
+### Access Token과 Refresh Token을 사용하는 이유
 Access Token과 Refresh Token을 사용하는 이유는 보안성과 성능을 모두 고려한 설계 때문이다.
 
-Access Token을 짧게 설정함으로써 보안을 강화한다.
+**Access Token을 짧게 설정함으로써 보안을 강화한다.**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;해킹당하더라도 금방 만료되기 때문에 피해를 줄일 수 있다.
 
-해킹당하더라도 금방 만료되기 때문에 피해를 줄일 수 있다.
-Refresh Token을 통해 사용자가 다시 로그인하지 않고도 Access Token을 갱신할 수 있다.
+**Refresh Token을 통해 사용자가 다시 로그인하지 않고도 Access Token을 갱신할 수 있다.**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 매번 로그인할 필요 없이 백그라운드에서 자동으로 인증을 갱신할 수 있다.
 
-사용자가 매번 로그인할 필요 없이 백그라운드에서 자동으로 인증을 갱신할 수 있다.
-리소스 서버(API 서버)의 부담을 줄일 수 있다.
+**리소스 서버(API 서버)의 부담을 줄일 수 있다.**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access Token 검증은 빠르게 진행할 수 있으며, DB 조회 없이 검증할 수 있도록 설계 가능하다.
 
-Access Token 검증은 빠르게 진행할 수 있으며, DB 조회 없이 검증할 수 있도록 설계 가능하다.
-학습자의 사고를 돕기 위한 질문
-Access Token과 Refresh Token은 각각 언제 사용되며, Refresh Token이 필요한 이유는 무엇인가?
-
-보안성과 토큰 재발급의 효율성을 고려해보라.
-Refresh Token이 Access Token보다 보안 측면에서 더 강력하게 보호되어야 하는 이유는 무엇인가?
-
-Refresh Token이 탈취되었을 때 발생할 수 있는 문제를 생각해보라.
-4. Spring Security에서 OAuth2 및 JWT 통합
-4.1. OAuth2 인증 구현
-OAuth2 인증을 Spring Security에서 구현하려면 OAuth2 Client, Authorization Server, Resource Server를 설정해야 한다.
+---------------------
+# 4. Spring Security에서 OAuth2 및 JWT 통합
+## 4-1. OAuth2 인증 구현
+OAuth2 인증을 Spring Security에서 구현하려면 **OAuth2 Client, Authorization Server, Resource Server**를 설정해야 한다.<br>
 이 장에서는 OAuth2 인증의 기본 개념을 설명하고, Spring Security를 활용하여 OAuth2 인증을 구현하는 방법을 다룬다.
 
-OAuth2 인증 흐름
+### OAuth2 인증 흐름
 OAuth2 인증의 주요 흐름은 다음과 같다.
 
-클라이언트(Client) : 사용자의 인증을 위해 OAuth2 인증 서버에 요청을 보낸다.
-Authorization Server(인증 서버) : 사용자 인증 후 Access Token을 발급한다.
-Resource Server(리소스 서버) : 클라이언트가 Access Token을 사용하여 보호된 API에 접근할 수 있도록 한다.
-사용자(User) : OAuth2 인증 서버를 통해 인증을 진행한다.
-Spring Security를 활용한 OAuth2 인증 구성
-OAuth2 인증을 Spring Security에서 구현하려면 spring-security-oauth2-client 및 spring-security-oauth2-resource-server 라이브러리를 활용한다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**클라이언트(Client)** : 사용자의 인증을 위해 OAuth2 인증 서버에 요청을 보낸다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Authorization Server(인증 서버)** : 사용자 인증 후 Access Token을 발급한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Resource Server(리소스 서버)** : 클라이언트가 Access Token을 사용하여 보호된 API에 접근할 수 있도록 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**사용자(User)** : OAuth2 인증 서버를 통해 인증을 진행한다.
+
+-----------------
+### Spring Security를 활용한 OAuth2 인증 구성
+OAuth2 인증을 Spring Security에서 구현하려면 ```spring-security-oauth2-client``` 및 ```spring-security-oauth2-resource-server``` 라이브러리를 활용한다.
 
 우선, build.gradle에 필요한 라이브러리를 추가한다.
-
+```
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 }
-OAuth2 Client 설정
-OAuth2 클라이언트를 설정하기 위해 application.yml 파일에서 OAuth2 Provider(Google, Facebook, Naver, Kakao 등)를 설정할 수 있다.
-
+```
+---------------
+### OAuth2 Client 설정
+OAuth2 클라이언트를 설정하기 위해 ```application.yml``` 파일에서 OAuth2 Provider(Google, Facebook, Naver, Kakao 등)를 설정할 수 있다.
+```
 spring:
   security:
     oauth2:
@@ -1160,14 +1169,16 @@ spring:
             client-id: your-github-client-id
             client-secret: your-github-client-secret
             scope: user:email
-client-id : OAuth2 인증을 위해 등록된 클라이언트 ID
-client-secret : OAuth2 클라이언트의 비밀 키
-scope : OAuth2에서 요청할 사용자 정보 범위
+```
+```client-id``` : OAuth2 인증을 위해 등록된 클라이언트 ID<br>
+```client-secret``` : OAuth2 클라이언트의 비밀 키<br>
+```scope``` : OAuth2에서 요청할 사용자 정보 범위<br>
 OAuth2 Client는 사용자가 로그인하면 OAuth2 Provider(Google, GitHub 등) 에서 사용자 정보를 받아올 수 있도록 한다.
 
-OAuth2 Client를 활용한 로그인 구현
-Spring Security를 활용하여 OAuth2 로그인을 적용하려면 SecurityFilterChain을 설정해야 한다.
-
+-------------
+### OAuth2 Client를 활용한 로그인 구현
+Spring Security를 활용하여 OAuth2 로그인을 적용하려면 ```SecurityFilterChain```을 설정해야 한다.
+```java
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -1184,22 +1195,26 @@ public class SecurityConfig {
         return http.build();
     }
 }
-위 설정을 통해 OAuth2 로그인을 활성화할 수 있으며, 사용자는 /oauth2/authorization/{provider} 엔드포인트를 통해 로그인할 수 있다.
+```
+위 설정을 통해 OAuth2 로그인을 활성화할 수 있으며, 사용자는 ```/oauth2/authorization/{provider}``` 엔드포인트를 통해 로그인할 수 있다.
 
 예를 들어, Google OAuth2 로그인을 수행하려면 다음과 같은 URL을 호출하면 된다.
-
+```
 https://your-app.com/oauth2/authorization/google
+```
 OAuth2 Provider(Google 등)에서 인증이 완료되면, Spring Security는 자동으로 사용자 정보를 가져와 세션에 저장한다.
 
-OAuth2 Authorization Server 설정
-OAuth2 Authorization Server는 Access Token 및 Refresh Token을 발급하는 역할을 수행한다.
+-----------------
+### OAuth2 Authorization Server 설정
+OAuth2 Authorization Server는 **Access Token 및 Refresh Token을 발급하는 역할**을 수행한다.<br>
 Spring Security를 사용하여 Authorization Server를 설정하려면 spring-authorization-server 라이브러리를 추가해야 한다.
-
+```
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
 }
-Authorization Server를 설정하기 위해 SecurityConfig에 @EnableAuthorizationServer를 추가하고, Access Token을 발급하는 엔드포인트를 정의한다.
-
+```
+Authorization Server를 설정하기 위해 ```SecurityConfig```에``` @EnableAuthorizationServer```를 추가하고, Access Token을 발급하는 엔드포인트를 정의한다.
+```java
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
@@ -1215,21 +1230,24 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
             .refreshTokenValiditySeconds(86400); // Refresh Token 유효 시간: 1일
     }
 }
+```
 이 설정을 통해 클라이언트는 Access Token과 Refresh Token을 받을 수 있으며, OAuth2 인증 서버가 토큰을 관리하도록 설정할 수 있다.
 
-OAuth2 Resource Server 설정
-OAuth2 인증 후 발급된 Access Token을 검증하고 API 접근을 제어하는 역할을 수행하는 것이 Resource Server이다.
+----------------
+### OAuth2 Resource Server 설정
+OAuth2 인증 후 발급된 **Access Token을 검증하고 API 접근을 제어하는 역할**을 수행하는 것이 Resource Server이다.<br>
 Spring Security에서 Resource Server를 설정하려면 spring-security-oauth2-resource-server 라이브러리를 사용해야 한다.
-
+```
 spring:
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: https://auth.server.com
-Resource Server 설정을 추가하면 OAuth2 Access Token을 검증하고 보호된 API에 접근할 수 있다.
+```
+Resource Server 설정을 추가하면 **OAuth2 Access Token을 검증**하고 보호된 API에 접근할 수 있다.<br>
 다음과 같이 Spring Security 설정에서 Resource Server를 활성화할 수 있다.
-
+```java
 @Configuration
 @EnableWebSecurity
 public class ResourceServerConfig {
@@ -1246,12 +1264,14 @@ public class ResourceServerConfig {
         return http.build();
     }
 }
+```
 이 설정을 적용하면 JWT를 검증하여 API 요청을 처리할 수 있다.
 
-OAuth2 인증을 위한 application.yml 구성
-OAuth2 인증 설정을 application.yml에서 구성할 수 있다.
+-------------
+### OAuth2 인증을 위한 application.yml 구성
+OAuth2 인증 설정을 ```application.yml```에서 구성할 수 있다.<br>
 아래는 OAuth2 Authorization Server와 Resource Server를 설정하는 예제이다.
-
+```
 spring:
   security:
     oauth2:
@@ -1268,51 +1288,42 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://auth.server.com
-OAuth2 인증 방식별 적용
+```
+-------------------
+### OAuth2 인증 방식별 적용
 Spring Security에서 OAuth2 인증 방식은 크게 세 가지로 나뉜다.
 
-OAuth2 Login
+**OAuth2 Login**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 소셜 로그인(Google, Facebook 등)을 사용하여 인증하는 방식<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oauth2Login()을 통해 활성화
 
-사용자가 소셜 로그인(Google, Facebook 등)을 사용하여 인증하는 방식
-oauth2Login()을 통해 활성화
-OAuth2 Authorization Server
+**OAuth2 Authorization Server**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 자체적으로 OAuth2 인증을 처리할 수 있도록 Authorization Server 설정<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@EnableAuthorizationServer 설정을 추가
 
-클라이언트가 자체적으로 OAuth2 인증을 처리할 수 있도록 Authorization Server 설정
-@EnableAuthorizationServer 설정을 추가
-OAuth2 Resource Server
+**OAuth2 Resource Server**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT 기반 인증을 사용하여 API 접근을 제어하는 방식<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)를 사용하여 Access Token 검증
 
-JWT 기반 인증을 사용하여 API 접근을 제어하는 방식
-oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)를 사용하여 Access Token 검증
 이처럼 OAuth2 인증을 적용하는 방식은 각 애플리케이션의 요구 사항에 따라 다를 수 있다.
 
-실습 문제
-문제 1: OAuth2 인증 서버 설정
-아래 요구사항을 만족하는 코드를 작성하시오.
-
-Spring Boot와 Spring Security를 사용하여 OAuth2 인증 서버를 설정한다.
-클라이언트가 OAuth2 인증 요청을 보내고, 인증이 성공하면 Access Token을 반환한다.
-인증 요청 시 클라이언트 ID와 클라이언트 비밀번호를 요구하도록 구성한다.
-문제 2: OAuth2 클라이언트 설정
-다음 요구사항을 만족하는 코드를 작성하시오.
-
-OAuth2 클라이언트를 설정하여 인증 서버에 요청을 보낸다.
-인증이 완료되면 발급된 Access Token을 저장하고 출력한다.
-OAuth2 인증 방식 중 Authorization Code Grant를 사용한다.
-4.2. Spring Security에서 JWT 적용
-Spring Security에서 JWT(JSON Web Token) 를 활용한 인증을 적용하는 과정은 크게 토큰 발급, 검증, 및 인증 필터 설정으로 나뉜다.
+------------------------------
+## 4-2. Spring Security에서 JWT 적용
+Spring Security에서 JWT(JSON Web Token) 를 활용한 인증을 적용하는 과정은 크게 토큰 발급, 검증, 및 인증 필터 설정으로 나뉜다.<br>
 이 장에서는 Spring Security에서 JWT를 활용하는 방법을 자세히 설명한다.
 
-JWT 인증 방식 개요
-JWT를 활용한 인증의 핵심 개념은 다음과 같다.
+### JWT 인증 방식 개요
+JWT를 활용한 인증의 핵심 개념은 다음과 같다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 로그인 요청을 보냄<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버에서 사용자를 인증한 후 JWT를 발급<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 JWT를 포함하여 API 요청을 보냄<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버에서 JWT를 검증하여 사용자 인증을 수행
 
-사용자가 로그인 요청을 보냄
-서버에서 사용자를 인증한 후 JWT를 발급
-클라이언트가 JWT를 포함하여 API 요청을 보냄
-서버에서 JWT를 검증하여 사용자 인증을 수행
-JWT 기반 인증의 가장 큰 특징은 서버가 세션을 유지할 필요가 없다는 점이다.
+JWT 기반 인증의 가장 큰 특징은 서버가 **세션을 유지할 필요가 없다는 점이다.**<br>
 즉, Stateless(무상태) 방식으로 동작하며, 사용자의 인증 상태를 클라이언트에서 유지할 수 있다.
 
-Spring Security에서 JWT 발급 및 검증 설정
+-----------------
+### Spring Security에서 JWT 발급 및 검증 설정
 JWT를 Spring Security에서 사용하려면 Security Filter Chain을 활용하여 인증 필터를 적용해야 한다.
 먼저, JWT를 발급하고 검증할 수 있도록 JwtDecoder와 JwtEncoder를 설정해야 한다.
 
