@@ -835,43 +835,38 @@ OAuth2에서 JWT를 액세스 토큰으로 활용하면, JWT의 Payload에 사�
 ### JWT 기반 OAuth2 인증 흐름
 OAuth2에서 JWT를 액세스 토큰으로 사용하는 인증 흐름은 다음과 같다.
 
-사용자가 로그인 요청
+**사용자가 로그인 요청**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 OAuth2 클라이언트를 통해 로그인한다.
 
-사용자가 OAuth2 클라이언트를 통해 로그인한다.
-OAuth2 Authorization Server에서 JWT 발급
+**OAuth2 Authorization Server에서 JWT 발급**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인증 서버(Authorization Server)는 사용자의 정보를 확인한 후, JWT 형식의 액세스 토큰을 생성하여 클라이언트에 반환한다.
 
-인증 서버(Authorization Server)는 사용자의 정보를 확인한 후, JWT 형식의 액세스 토큰을 생성하여 클라이언트에 반환한다.
-클라이언트가 API 호출 시 JWT 포함
+**클라이언트가 API 호출 시 JWT 포함**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 API를 호출할 때 Authorization: Bearer <JWT> 헤더를 포함하여 요청을 보낸다.
 
-클라이언트는 API를 호출할 때 Authorization: Bearer <JWT> 헤더를 포함하여 요청을 보낸다.
-Resource Server에서 JWT 검증
+**Resource Server에서 JWT 검증**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;API 서버(Resource Server)는 전달받은 JWT를 검증하여, 사용자가 유효한지, 권한이 적절한지 판단한 후 API 요청을 처리한다.
 
-API 서버(Resource Server)는 전달받은 JWT를 검증하여, 사용자가 유효한지, 권한이 적절한지 판단한 후 API 요청을 처리한다.
-JWT를 사용한 OAuth2 인증의 한계점
+--------------
+### JWT를 사용한 OAuth2 인증의 한계점
 JWT는 OAuth2 액세스 토큰으로 사용하기에 많은 장점을 제공하지만, 몇 가지 고려해야 할 사항도 있다.
 
-JWT는 한 번 발급되면 변경할 수 없다
+**JWT는 한 번 발급되면 변경할 수 없다**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT는 자체 포함된 토큰이므로, 한 번 발급된 후에는 서버에서 해당 JWT를 무효화할 방법이 없다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;즉, 사용자가 로그아웃을 해도 기존 JWT는 만료될 때까지 여전히 유효할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이를 해결하기 위해 짧은 만료 시간(exp)을 설정하고, Refresh Token을 활용하는 방식을 사용한다.
 
-JWT는 자체 포함된 토큰이므로, 한 번 발급된 후에는 서버에서 해당 JWT를 무효화할 방법이 없다.
-즉, 사용자가 로그아웃을 해도 기존 JWT는 만료될 때까지 여전히 유효할 수 있다.
-이를 해결하기 위해 짧은 만료 시간(exp)을 설정하고, Refresh Token을 활용하는 방식을 사용한다.
-서명 검증이 필요하므로 약간의 연산 비용이 존재
+**서명 검증이 필요하므로 약간의 연산 비용이 존재**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT 검증 과정에서 서명(Signature)을 확인하는 연산이 필요하므로, 단순한 문자열 기반 토큰보다 약간의 CPU 연산이 추가된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;그러나, 이는 DB 조회 비용보다 훨씬 낮은 비용으로 유지할 수 있다.<br>
 
-JWT 검증 과정에서 서명(Signature)을 확인하는 연산이 필요하므로, 단순한 문자열 기반 토큰보다 약간의 CPU 연산이 추가된다.
-그러나, 이는 DB 조회 비용보다 훨씬 낮은 비용으로 유지할 수 있다.
-Payload 데이터는 암호화되지 않는다
+**Payload 데이터는 암호화되지 않는다**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT의 Payload는 Base64 URL 인코딩된 값이므로, 누구나 디코딩하여 내용을 확인할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;따라서, 중요한 정보(예: 비밀번호, 카드 정보)를 JWT에 포함하지 않도록 주의해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;중요한 데이터가 필요할 경우, JWT 대신 JWE(JSON Web Encryption)를 활용하여 암호화된 토큰을 사용하는 방식을 고려해야 한다.
 
-JWT의 Payload는 Base64 URL 인코딩된 값이므로, 누구나 디코딩하여 내용을 확인할 수 있다.
-따라서, 중요한 정보(예: 비밀번호, 카드 정보)를 JWT에 포함하지 않도록 주의해야 한다.
-중요한 데이터가 필요할 경우, JWT 대신 JWE(JSON Web Encryption)를 활용하여 암호화된 토큰을 사용하는 방식을 고려해야 한다.
-학습자의 사고를 돕기 위한 질문
-OAuth2는 원래 자체적인 인증 방식(예: Authorization Code Grant)을 제공하는데, 왜 JWT를 사용하여 인증을 보완하는가?
-
-OAuth2의 인증 프로세스와 JWT의 stateless 특성을 비교해보라.
-JWT를 OAuth2의 Access Token으로 활용할 경우, 기존의 OAuth2 토큰 방식과 비교했을 때 어떤 장점이 있는가?
-
-토큰의 검증 방식과 네트워크 요청의 감소 여부를 고려해보라.
-3.2. OAuth2 기반 JWT 인증 흐름
+-------------------
+## 3-2. OAuth2 기반 JWT 인증 흐름
 OAuth2와 JWT를 결합하면 인증 및 권한 부여 과정이 단순해지고 확장성이 커진다. 특히, OAuth2 인증 서버에서 JWT 기반 액세스 토큰을 발급하면 리소스 서버가 별도의 DB 조회 없이 토큰을 검증하고 요청을 처리할 수 있다. 이를 통해 인증 속도가 향상되며, 분산 시스템에서 중앙 인증 서버의 부하를 줄일 수 있다.
 
 이번 장에서는 OAuth2에서 JWT를 활용한 인증 흐름을 구체적으로 설명하며, 각 단계에서의 역할을 분석한다.
