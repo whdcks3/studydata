@@ -1324,9 +1324,9 @@ JWT 기반 인증의 가장 큰 특징은 서버가 **세션을 유지할 필요
 
 -----------------
 ### Spring Security에서 JWT 발급 및 검증 설정
-JWT를 Spring Security에서 사용하려면 Security Filter Chain을 활용하여 인증 필터를 적용해야 한다.
-먼저, JWT를 발급하고 검증할 수 있도록 JwtDecoder와 JwtEncoder를 설정해야 한다.
-
+JWT를 Spring Security에서 사용하려면 Security Filter Chain을 활용하여 인증 필터를 적용해야 한다.<br>
+먼저, JWT를 발급하고 검증할 수 있도록 ```JwtDecoder```와 ```JwtEncoder```를 설정해야 한다.
+```java
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -1353,14 +1353,17 @@ public class SecurityConfig {
         return http.build();
     }
 }
-jwtDecoder : 클라이언트가 보낸 JWT를 해석하여 검증
-jwtEncoder : JWT를 발급하는 역할
+```
+```jwtDecoder``` : 클라이언트가 보낸 JWT를 해석하여 검증<br>
+```jwtEncoder``` : JWT를 발급하는 역할
+
 위 설정을 적용하면 JWT를 기반으로 한 API 인증을 수행할 수 있다.
 
-JWT 발급을 위한 Security 설정
-Spring Security에서 JWT를 발급하려면 사용자 인증 후 JWT를 생성하는 로직이 필요하다.
+----------------
+### JWT 발급을 위한 Security 설정
+Spring Security에서 JWT를 발급하려면 사용자 인증 후 JWT를 생성하는 로직이 필요하다.<br>
 아래는 JWT를 생성하는 JwtTokenProvider 클래스의 예제이다.
-
+```java
 @Component
 public class JwtTokenProvider {
 
@@ -1386,15 +1389,18 @@ public class JwtTokenProvider {
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 }
-JwtEncoder : JWT를 생성하는 역할
-JwtClaimsSet : JWT 내부의 Payload를 정의하는 객체
-expiresAt : 토큰의 만료 시간을 설정
+```
+```JwtEncoder``` : JWT를 생성하는 역할<br>
+```JwtClaimsSet``` : JWT 내부의 Payload를 정의하는 객체<br>
+```expiresAt``` : 토큰의 만료 시간을 설정
+
 이제 사용자가 로그인하면 JWT를 발급하여 반환할 수 있다.
 
-JWT 검증을 위한 Security 설정
-클라이언트가 API 요청 시, Authorization 헤더에 JWT를 포함하여 요청을 보내면, 서버에서는 이를 검증해야 한다.
-Spring Security에서 JWT 검증을 수행하는 JwtDecoder를 설정할 수 있다.
-
+-----------
+### JWT 검증을 위한 Security 설정
+클라이언트가 API 요청 시, ```Authorization``` 헤더에 JWT를 포함하여 요청을 보내면, 서버에서는 이를 검증해야 한다.<br>
+Spring Security에서 JWT 검증을 수행하는 ```JwtDecoder```를 설정할 수 있다.
+```java
 @Bean
 public JwtDecoder jwtDecoder() {
     return NimbusJwtDecoder.withSecretKey(secretKey()).build();
@@ -1404,14 +1410,16 @@ public JwtDecoder jwtDecoder() {
 public Key secretKey() {
     return new SecretKeySpec("your-secret-key".getBytes(), "HmacSHA256");
 }
-jwtDecoder : JWT의 서명을 검증하고 Payload를 파싱
-secretKey : 대칭 키 기반의 서명을 위한 키 설정
+```
+```jwtDecoder``` : JWT의 서명을 검증하고 Payload를 파싱<br>
+```secretKey``` : 대칭 키 기반의 서명을 위한 키 설정<br>
 이제 클라이언트가 유효한 JWT를 포함하여 API를 호출하면, 서버는 이를 검증한 후 인증을 수행한다.
 
-JWT 인증 필터 적용
-JWT를 활용한 인증을 수행하려면 Spring Security 필터를 추가해야 한다.
-아래 JwtAuthenticationFilter는 요청을 가로채 JWT를 검증하는 역할을 수행한다.
-
+-----------------
+### JWT 인증 필터 적용
+JWT를 활용한 인증을 수행하려면 Spring Security 필터를 추가해야 한다.<br>
+아래 ```JwtAuthenticationFilter```는 요청을 가로채 JWT를 검증하는 역할을 수행한다.
+```java
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -1458,14 +1466,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return new UsernamePasswordAuthenticationToken(jwt.getSubject(), null, authorities);
     }
 }
-doFilterInternal() : 요청을 가로채 JWT를 검증
-resolveToken() : HTTP 요청에서 Authorization 헤더를 파싱하여 토큰을 추출
-getAuthentication() : JWT의 Claims에서 사용자 정보를 가져와 Authentication 객체로 변환
+```
+```doFilterInternal()``` : 요청을 가로채 JWT를 검증<br>
+```resolveToken()``` : HTTP 요청에서 Authorization 헤더를 파싱하여 토큰을 추출<br>
+```getAuthentication()``` : JWT의 Claims에서 사용자 정보를 가져와 Authentication 객체로 변환
+
 이제 Spring Security에서 JWT 기반 인증을 필터로 처리할 수 있다.
 
-JWT 설정을 위한 application.yml 구성
+----------
+### JWT 설정을 위한 application.yml 구성
 JWT의 발급 및 검증을 위해 application.yml 파일에서 Secret Key 및 설정을 정의할 수 있다.
-
+```
 spring:
   security:
     oauth2:
@@ -1473,73 +1484,70 @@ spring:
         jwt:
           issuer-uri: https://your-auth-server.com
           jwk-set-uri: https://your-auth-server.com/oauth2/jwks
-issuer-uri : JWT를 발급한 서버의 주소
-jwk-set-uri : JSON Web Key Set(JWKS) URL (비대칭 키 기반 JWT 사용 시 필요)
-JWT 인증 적용 방식
+```
+```issuer-uri``` : JWT를 발급한 서버의 주소<br>
+```jwk-set-uri``` : JSON Web Key Set(JWKS) URL (비대칭 키 기반 JWT 사용 시 필요)
+
+-------------
+### JWT 인증 적용 방식
 Spring Security에서 JWT를 적용하는 방법은 크게 세 가지로 나뉜다.
 
-JWT를 통한 OAuth2 Resource Server 인증
+**JWT를 통한 OAuth2 Resource Server 인증**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JwtDecoder를 사용하여 Access Token을 검증<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt) 설정 적용
 
-JwtDecoder를 사용하여 Access Token을 검증
-oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt) 설정 적용
-JWT를 활용한 사용자 인증 및 권한 부여
+**JWT를 활용한 사용자 인증 및 권한 부여**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JWT 내부의 claims를 활용하여 사용자 역할(Role) 부여<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring Security의 @PreAuthorize 및 @PostAuthorize를 적용하여 접근 제어
 
-JWT 내부의 claims를 활용하여 사용자 역할(Role) 부여
-Spring Security의 @PreAuthorize 및 @PostAuthorize를 적용하여 접근 제어
-JWT Refresh Token을 활용한 인증 갱신
+**JWT Refresh Token을 활용한 인증 갱신**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access Token이 만료되면 Refresh Token을 활용하여 새로운 JWT를 발급<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Refresh Token을 저장하고 보안성을 고려한 처리 방식 적용
 
-Access Token이 만료되면 Refresh Token을 활용하여 새로운 JWT를 발급
-Refresh Token을 저장하고 보안성을 고려한 처리 방식 적용
 이와 같이 JWT를 활용하면 Spring Security에서 세션 없이도 안전한 인증을 구현할 수 있다.
 
-실습 문제
-문제 1: JWT를 사용한 인증 필터 구현
-아래 요구사항을 만족하는 코드를 작성하시오.
+-------------------
+## 4-3. OAuth2 및 JWT 설정을 위한 주요 컴포넌트
+OAuth2와 JWT 기반 인증을 구현할 때는 Spring Security의 여러 주요 컴포넌트를 활용하게 된다.<br>
+이 장에서는 **OAuth2 및 JWT 설정을 위해 필수적으로 알아야 할 주요 컴포넌트**를 상세히 설명한다.
 
-Spring Security의 필터를 확장하여 JWT 인증 필터를 구현한다.
-HTTP 요청의 Authorization 헤더에서 JWT를 추출하고 검증한다.
-유효한 토큰일 경우 SecurityContext에 사용자 정보를 저장한다.
-문제 2: JWT 기반 로그인 구현
-다음 요구사항을 만족하는 코드를 작성하시오.
-
-사용자가 로그인 시 JWT를 생성하여 반환하는 API를 구현한다.
-JWT는 사용자 ID와 역할(Role) 정보를 포함하도록 설정한다.
-인증이 완료되면 발급된 JWT를 클라이언트에 반환한다.
-4.3. OAuth2 및 JWT 설정을 위한 주요 컴포넌트
-OAuth2와 JWT 기반 인증을 구현할 때는 Spring Security의 여러 주요 컴포넌트를 활용하게 된다.
-이 장에서는 OAuth2 및 JWT 설정을 위해 필수적으로 알아야 할 주요 컴포넌트를 상세히 설명한다.
-
-AuthenticationManager의 역할
-AuthenticationManager는 Spring Security에서 사용자의 인증(Authentication)을 처리하는 핵심 인터페이스이다.
-사용자가 로그인을 시도할 때, AuthenticationManager는 입력된 자격 증명을 검증하고 적절한 인증 객체(Authentication)를 반환한다.
-
+### AuthenticationManager의 역할
+```AuthenticationManager```는 Spring Security에서 **사용자의 인증(Authentication)을 처리하는 핵심 인터페이스**이다.<br>
+사용자가 로그인을 시도할 때, ```AuthenticationManager```는 **입력된 자격 증명을 검증하고 적절한 인증 객체(Authentication)를 반환**한다.
+```java
 @Bean
 public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
         throws Exception {
     return authenticationConfiguration.getAuthenticationManager();
 }
-AuthenticationManager는 사용자의 인증 요청을 검증하는 역할을 수행한다.
-내부적으로 AuthenticationProvider를 호출하여 사용자 인증 절차를 위임한다.
+```
+AuthenticationManager는 사용자의 인증 요청을 검증하는 역할을 수행한다.<br>
+내부적으로 AuthenticationProvider를 호출하여 사용자 인증 절차를 위임한다.<br>
 인증이 성공하면, 인증된 사용자 정보(Authentication)를 반환하고, 실패하면 예외를 발생시킨다.
-SecurityContextHolder를 활용한 인증 정보 저장
-Spring Security에서 인증된 사용자 정보를 저장하고 관리하는 객체가 SecurityContextHolder이다.
-SecurityContextHolder는 현재 요청의 인증 상태를 유지하며, 이를 통해 애플리케이션 전반에서 인증 정보를 활용할 수 있다.
 
+----------------
+### SecurityContextHolder를 활용한 인증 정보 저장
+Spring Security에서 **인증된 사용자 정보를 저장하고 관리하는 객체**가 ```SecurityContextHolder```이다.<br>
+```SecurityContextHolder```는 현재 요청의 인증 상태를 유지하며, 이를 통해 애플리케이션 전반에서 인증 정보를 활용할 수 있다.
+```
 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+```
 위 코드를 실행하면 현재 로그인한 사용자의 인증 정보를 가져올 수 있다.
 
-SecurityContextHolder의 동작 방식
-사용자가 로그인 요청을 보냄
-AuthenticationManager가 사용자를 인증하고 Authentication 객체를 생성
-인증이 완료되면 SecurityContextHolder에 Authentication 객체를 저장
-이후의 모든 요청에서 SecurityContextHolder를 통해 사용자 정보를 조회 가능
-JwtDecoder와 JwtEncoder를 활용한 JWT 처리
-Spring Security에서 JWT를 활용하려면 JwtDecoder와 JwtEncoder를 사용해야 한다.
+### SecurityContextHolder의 동작 방식
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 로그인 요청을 보냄<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AuthenticationManager가 사용자를 인증하고 Authentication 객체를 생성<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인증이 완료되면 SecurityContextHolder에 Authentication 객체를 저장<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이후의 모든 요청에서 SecurityContextHolder를 통해 사용자 정보를 조회 가능
 
-JwtDecoder: JWT 검증을 담당
-JWT가 요청의 Authorization 헤더에 포함되어 있을 경우, 서버는 이를 검증해야 한다.
-이를 수행하는 컴포넌트가 JwtDecoder이다.
+---------------------
+### JwtDecoder와 JwtEncoder를 활용한 JWT 처리
+Spring Security에서 JWT를 활용하려면 ```JwtDecoder```와 ```JwtEncoder```를 사용해야 한다.
 
+**JwtDecoder: JWT 검증을 담당**<br>
+JWT가 요청의 ```Authorization``` 헤더에 포함되어 있을 경우, 서버는 이를 검증해야 한다.<br>
+이를 수행하는 컴포넌트가 ```JwtDecoder```이다.
+```java
 @Bean
 public JwtDecoder jwtDecoder() {
     return NimbusJwtDecoder.withSecretKey(secretKey()).build();
@@ -1549,23 +1557,28 @@ public JwtDecoder jwtDecoder() {
 public Key secretKey() {
     return new SecretKeySpec("your-secret-key".getBytes(), "HmacSHA256");
 }
-jwtDecoder()는 Authorization 헤더에서 JWT를 가져와 디코딩 및 검증한다.
-NimbusJwtDecoder.withSecretKey()를 사용하여 대칭키(HMAC) 기반의 JWT 검증을 수행한다.
-비대칭키(RSA, ECDSA)를 사용할 경우 NimbusJwtDecoder.withPublicKey()를 사용할 수 있다.
-JwtEncoder: JWT 생성 및 서명
-JwtEncoder는 새로운 JWT를 발급할 때 사용된다.
+```
+```jwtDecoder()```는 ```Authorization``` 헤더에서 JWT를 가져와 디코딩 및 검증한다.<br>
+```NimbusJwtDecoder.withSecretKey()```를 사용하여 대칭키(HMAC) 기반의 JWT 검증을 수행한다.<br>
+비대칭키(RSA, ECDSA)를 사용할 경우 ```NimbusJwtDecoder.withPublicKey()```를 사용할 수 있다.
 
+**JwtEncoder: JWT 생성 및 서명**<br>
+JwtEncoder는 새로운 JWT를 발급할 때 사용된다.
+```java
 @Bean
 public JwtEncoder jwtEncoder() {
     return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey().getEncoded()));
 }
-JwtEncoder는 서버에서 사용자가 로그인할 때 JWT를 생성하는 역할을 한다.
-ImmutableSecret<>(secretKey().getEncoded())를 통해 HMAC 기반 서명을 적용한다.
+```
+```JwtEncoder```는 서버에서 사용자가 로그인할 때 JWT를 생성하는 역할을 한다.<br>
+```ImmutableSecret<>(secretKey().getEncoded())```를 통해 HMAC 기반 서명을 적용한다.<br>
 JWT의 Payload를 설정하여 사용자 정보와 만료 시간 등을 포함할 수 있다.
-JwtAuthenticationConverter를 이용한 권한 변환
-JWT에는 사용자의 역할(Role) 및 권한(Authorities)이 포함될 수 있다.
-이를 JwtAuthenticationConverter를 활용하여 Spring Security의 GrantedAuthority 객체로 변환할 수 있다.
 
+---------------
+### JwtAuthenticationConverter를 이용한 권한 변환
+JWT에는 사용자의 역할(Role) 및 권한(Authorities)이 포함될 수 있다.<br>
+이를 JwtAuthenticationConverter를 활용하여 Spring Security의 GrantedAuthority 객체로 변환할 수 있다.
+```java
 @Component
 public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
@@ -1578,12 +1591,15 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
         return new UsernamePasswordAuthenticationToken(jwt.getSubject(), jwt, authorities);
     }
 }
-JwtAuthenticationConverter는 JWT 내부의 "roles" 클레임을 GrantedAuthority로 변환한다.
-ROLE_ 접두사를 붙여 Spring Security에서 권한을 인식할 수 있도록 설정한다.
-변환된 권한 정보는 Spring Security의 인증 객체에 저장되며, @PreAuthorize 등의 접근 제어에서 활용할 수 있다.
-SecurityFilterChain에서 JWT 인증 적용
-이제 위의 설정들을 Spring Security 필터 체인에 적용하여 JWT 인증을 활성화해야 한다.
+```
+```JwtAuthenticationConverter```는 JWT 내부의 "roles" 클레임을 ```GrantedAuthority```로 변환한다.<br>
+ROLE_ 접두사를 붙여 Spring Security에서 권한을 인식할 수 있도록 설정한다.<br>
+변환된 권한 정보는 Spring Security의 인증 객체에 저장되며, ```@PreAuthorize``` 등의 접근 제어에서 활용할 수 있다.
 
+--------------
+### SecurityFilterChain에서 JWT 인증 적용
+이제 위의 설정들을 Spring Security 필터 체인에 적용하여 JWT 인증을 활성화해야 한다.
+```java
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -1616,13 +1632,17 @@ public class SecurityConfig {
         return http.build();
     }
 }
-jwtDecoder를 적용하여 JWT를 이용한 인증을 수행한다.
-jwtAuthenticationConverter를 설정하여 JWT 내부의 역할(Role)을 GrantedAuthority로 변환한다.
-oauth2ResourceServer().jwt()를 활용하여 JWT를 인증 방식으로 사용하는 API 서버를 구성한다.
-@PreAuthorize 및 @PostAuthorize를 활용한 권한 제어
-Spring Security에서는 @PreAuthorize 및 @PostAuthorize를 활용하여 메소드 실행 전후로 권한을 검사할 수 있다.
-JWT를 활용한 인증이 적용되었다면, 다음과 같이 특정 역할(Role)이 있는 사용자만 접근할 수 있도록 설정할 수 있다.
+```
+----------------
+```jwtDecoder```를 적용하여 JWT를 이용한 인증을 수행한다.<br>
+```jwtAuthenticationConverter```를 설정하여 JWT 내부의 역할(Role)을 ```GrantedAuthority```로 변환한다.<br>
+```oauth2ResourceServer().jwt()```를 활용하여 JWT를 인증 방식으로 사용하는 API 서버를 구성한다.
 
+---------------------
+### @PreAuthorize 및 @PostAuthorize를 활용한 권한 제어
+Spring Security에서는 ```@PreAuthorize``` 및 ```@PostAuthorize```를 활용하여 메소드 실행 전후로 권한을 검사할 수 있다.<br>
+JWT를 활용한 인증이 적용되었다면, 다음과 같이 특정 역할(Role)이 있는 사용자만 접근할 수 있도록 설정할 수 있다.
+```java
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -1633,12 +1653,15 @@ public class AdminController {
         return "Admin Dashboard";
     }
 }
-@PreAuthorize("hasRole('ADMIN')"): "ROLE_ADMIN" 권한이 있는 사용자만 접근 가능
-@PostAuthorize("returnObject.owner == authentication.name"): 메소드 실행 후, 반환된 객체의 소유자가 현재 사용자와 일치하는지 확인 가능
-Refresh Token을 활용한 JWT 인증 갱신
-JWT 기반 인증을 사용할 때, Access Token이 만료되었을 때 새롭게 발급하는 방법이 필요하다.
-이를 위해 Refresh Token을 활용하여 JWT를 갱신하는 API를 구성할 수 있다.
+```
+```@PreAuthorize("hasRole('ADMIN')")```: "ROLE_ADMIN" 권한이 있는 사용자만 접근 가능<br>
+```@PostAuthorize("returnObject.owner == authentication.name")```: 메소드 실행 후, 반환된 객체의 소유자가 현재 사용자와 일치하는지 확인 가능
 
+-------------
+### Refresh Token을 활용한 JWT 인증 갱신
+JWT 기반 인증을 사용할 때, **Access Token이 만료되었을 때 새롭게 발급하는 방법**이 필요하다.<br>
+이를 위해 **Refresh Token을 활용하여 JWT를 갱신하는 API를 구성**할 수 있다.
+```java
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -1655,79 +1678,75 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
 }
-사용자가 Refresh Token을 전송하면, 새로운 Access Token을 발급하여 반환한다.
-Refresh Token은 일반적으로 데이터베이스 또는 Redis에 저장하여 검증 과정을 거친다.
+```
+사용자가 **Refresh Token을 전송하면, 새로운 Access Token을 발급**하여 반환한다.<br>
+Refresh Token은 **일반적으로 데이터베이스 또는 Redis에 저장**하여 검증 과정을 거친다.<br>
 Refresh Token이 유효하지 않으면 401 Unauthorized 응답을 반환한다.
-실습 문제
-문제 1: JwtDecoder와 JwtEncoder를 사용한 JWT 발급 및 검증
-아래 요구사항을 만족하는 코드를 작성하시오.
 
-Spring Security에서 제공하는 JwtDecoder와 JwtEncoder를 활용하여 JWT를 발급한다.
-발급된 JWT를 검증하는 API를 구현한다.
-유효한 JWT일 경우 사용자 정보를 반환하고, 유효하지 않은 경우 예외를 발생시킨다.
-문제 2: AuthenticationManager와 SecurityContextHolder를 활용한 사용자 인증
-다음 요구사항을 만족하는 코드를 작성하시오.
-
-AuthenticationManager를 사용하여 사용자를 인증하고 JWT를 발급한다.
-SecurityContextHolder를 사용하여 현재 인증된 사용자의 정보를 가져오는 API를 구현한다.
-JWT를 포함한 요청이 들어올 경우, SecurityContext에서 사용자 정보를 읽어 처리한다.
-5. JWT 발급 및 검증 구현
-5.1. JWT 생성 및 서명
-JWT(Json Web Token)는 사용자의 인증 정보를 포함한 토큰을 생성하여 클라이언트와 서버 간에 효율적인 인증을 수행할 수 있도록 한다.
-이 과정에서 JWT의 보안성을 보장하기 위해 서명(Signature) 과정이 필수적이다.
+---------------
+# 5. JWT 발급 및 검증 구현
+## 5-1. JWT 생성 및 서명
+JWT(Json Web Token)는 **사용자의 인증 정보를 포함한 토큰을 생성**하여 클라이언트와 서버 간에 효율적인 인증을 수행할 수 있도록 한다.<br>
+이 과정에서 **JWT의 보안성을 보장하기 위해 서명(Signature) 과정이 필수적**이다.
 
 JWT 생성 및 서명 과정은 크게 다음과 같은 절차를 따른다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Header 생성**: 알고리즘 및 토큰 타입 지정<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Payload 생성**: 사용자 정보 및 토큰 만료 시간 포함<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Signature 생성**: 비밀키를 사용하여 서명
 
-Header 생성: 알고리즘 및 토큰 타입 지정
-Payload 생성: 사용자 정보 및 토큰 만료 시간 포함
-Signature 생성: 비밀키를 사용하여 서명
 이제 각 과정을 구체적으로 살펴보자.
 
-JWT Header 생성
-JWT의 Header(헤더) 는 토큰의 형식과 서명 알고리즘을 지정하는 역할을 한다.
+**JWT Header 생성**<br>
+JWT의 Header(헤더) 는 **토큰의 형식과 서명 알고리즘을 지정**하는 역할을 한다.<br>
 헤더는 Base64 URL 인코딩된 JSON 형식으로 표현되며, 일반적으로 다음과 같은 구조를 가진다.
-
+```
 {
   "alg": "HS256",
   "typ": "JWT"
 }
-"alg": 서명에 사용할 알고리즘(예: HS256 → HMAC SHA-256)
-"typ": 토큰 유형(일반적으로 "JWT" 사용)
+```
+```"alg"```: 서명에 사용할 알고리즘(예: HS256 → HMAC SHA-256)<br>
+```"typ"```: 토큰 유형(일반적으로 "JWT" 사용)<br>
 서버에서는 Spring Security의 JwtEncoder 를 사용하여 이 정보를 자동으로 설정할 수 있다.
 
-JWT Payload 생성
-JWT의 Payload(페이로드) 는 토큰에 포함될 사용자 정보 및 추가 데이터를 포함한다.
+**JWT Payload 생성**<br>
+JWT의 Payload(페이로드) 는 토큰에 포함될 **사용자 정보 및 추가 데이터**를 포함한다.<br>
 이 역시 JSON 형식으로 작성되며, 주요 클레임(Claim)들은 다음과 같다.
-
+```
 {
   "sub": "user123",
   "iat": 1710150000,
   "exp": 1710153600,
   "roles": ["USER"]
 }
-"sub": Subject(사용자 ID 또는 식별 정보)
-"iat": Issued At(토큰이 생성된 시간, UNIX Timestamp)
-"exp": Expiration Time(토큰 만료 시간, UNIX Timestamp)
-"roles": 사용자 역할(예: USER, ADMIN)
+```
+```"sub"```: Subject(사용자 ID 또는 식별 정보)<br>
+```"iat"```: Issued At(토큰이 생성된 시간, UNIX Timestamp)<br>
+```"exp```: Expiration Time(토큰 만료 시간, UNIX Timestamp)<br>
+```"roles"```: 사용자 역할(예: USER, ADMIN)
+
 이 정보들은 Base64 URL 인코딩되어 JWT의 Payload 부분을 구성하게 된다.
 
-JWT Signature 생성
-JWT의 Signature(서명) 는 토큰이 변조되지 않았음을 보장하는 역할을 한다.
+**JWT Signature 생성**<br>
+JWT의 Signature(서명) 는 **토큰이 변조되지 않았음을 보장하는 역할**을 한다.<br>
 서명은 다음과 같은 방식으로 생성된다.
-
+```
 HMACSHA256(
   base64UrlEncode(header) + "." + base64UrlEncode(payload),
   secretKey
 )
-HMACSHA256: 서명 알고리즘(예: HMAC SHA-256)
-base64UrlEncode(header): JWT의 헤더를 Base64 URL 인코딩
-base64UrlEncode(payload): JWT의 페이로드를 Base64 URL 인코딩
-secretKey: 서버에서 사용하는 서명용 비밀키
+```
+```HMACSHA256```: 서명 알고리즘(예: HMAC SHA-256)<br>
+```base64UrlEncode(header)```: JWT의 헤더를 Base64 URL 인코딩<br>
+```base64UrlEncode(payload)```: JWT의 페이로드를 Base64 URL 인코딩<br>
+```secretKey```: 서버에서 사용하는 서명용 비밀키
+
 서버에서는 JwtEncoder를 활용하여 자동으로 서명을 적용할 수 있다.
 
-Spring Security에서 JWT 생성
+----------------
+### Spring Security에서 JWT 생성
 이제 JwtEncoder를 활용하여 JWT를 생성하는 코드를 작성해 보자.
-
+```java
 @Component
 public class JwtTokenProvider {
 
@@ -1751,17 +1770,19 @@ public class JwtTokenProvider {
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 }
-설명
+```
+설명<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```JwtEncoder```를 활용하여 JWT를 생성한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```JwtClaimsSet.builder()```를 사용하여 Payload에 사용자 정보 및 만료 시간 포함.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```encode()```를 통해 서명이 적용된 JWT를 최종 생성.
 
-JwtEncoder를 활용하여 JWT를 생성한다.
-JwtClaimsSet.builder()를 사용하여 Payload에 사용자 정보 및 만료 시간 포함.
-encode()를 통해 서명이 적용된 JWT를 최종 생성.
-Spring Security에서 JWT 서명 알고리즘 설정
-JWT의 보안성을 강화하기 위해 HMAC SHA-256 또는 RSA 서명 방식을 사용할 수 있다.
+----------------
+### Spring Security에서 JWT 서명 알고리즘 설정
+JWT의 보안성을 강화하기 위해 HMAC SHA-256 또는 RSA 서명 방식을 사용할 수 있다.<br>
 서명 알고리즘을 설정하는 방법은 다음과 같다.
 
 HMAC (대칭 키) 기반 서명
-
+```java
 @Bean
 public JwtEncoder jwtEncoder() {
     return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey().getEncoded()));
@@ -1771,10 +1792,12 @@ public JwtEncoder jwtEncoder() {
 public Key secretKey() {
     return new SecretKeySpec("your-secret-key".getBytes(), "HmacSHA256");
 }
-secretKey()에서 HMAC SHA-256 비밀키를 설정.
-jwtEncoder()는 HMAC 기반 서명을 사용하도록 구성.
-RSA (비대칭 키) 기반 서명
+```
+```secretKey()```에서 HMAC SHA-256 비밀키를 설정.<br>
+```jwtEncoder()```는 HMAC 기반 서명을 사용하도록 구성.
 
+RSA (비대칭 키) 기반 서명
+```java
 @Bean
 public JwtEncoder jwtEncoder() {
     return new NimbusJwtEncoder(new ImmutableSecret<>(privateKey().getEncoded()));
@@ -1784,12 +1807,15 @@ public JwtEncoder jwtEncoder() {
 public Key privateKey() {
     return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
 }
-privateKey()에서 RSA 개인 키를 설정.
+```
+```privateKey()```에서 RSA 개인 키를 설정.<br>
 RSA 방식은 공개키/개인키 기반의 서명 방식을 사용하여 더 높은 보안성을 제공.
-JWT를 활용한 사용자 로그인 및 토큰 발급 API
-JWT를 활용하면 사용자가 로그인할 때 Access Token을 발급할 수 있다.
-다음은 JWT 기반 로그인 API의 예제 코드이다.
 
+-----------------
+### JWT를 활용한 사용자 로그인 및 토큰 발급 API
+JWT를 활용하면 **사용자가 로그인할 때 Access Token을 발급**할 수 있다.<br>
+다음은 JWT 기반 로그인 API의 예제 코드이다.
+```java
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -1812,69 +1838,64 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("accessToken", token));
     }
 }
-설명
+```
+설명<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 로그인하면 ```AuthenticationManager```를 통해 인증을 수행한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인증이 성공하면 ```JwtTokenProvider```를 사용하여 JWT Access Token을 생성한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트에게 Access Token을 응답으로 반환.
 
-사용자가 로그인하면 AuthenticationManager를 통해 인증을 수행한다.
-인증이 성공하면 JwtTokenProvider를 사용하여 JWT Access Token을 생성한다.
-클라이언트에게 Access Token을 응답으로 반환.
-JWT 발급 후 Access Token 사용 방식
+---------------
+### JWT 발급 후 Access Token 사용 방식
 JWT를 발급받은 클라이언트는 이후의 API 요청에서 Authorization 헤더를 사용하여 토큰을 전송한다.
-
+```
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR...
-서버는 이 토큰을 검증하여 사용자의 인증 상태를 확인할 수 있다.
+```
+서버는 이 토큰을 검증하여 사용자의 인증 상태를 확인할 수 있다.<br>
 JWT의 검증 및 인증 처리 과정은 다음 장에서 다룬다.
 
-실습 문제
-문제 1: HMAC 기반의 JWT 생성
-아래 요구사항을 만족하는 코드를 작성하시오.
+--------------
+## 5-2. JWT 검증 및 인증 처리
+JWT(Json Web Token)는 사용자 인증을 위한 강력한 방식이지만, 보안성을 유지하기 위해 반드시 토큰 검증 과정이 필요하다.<br>
+이 절에서는 **JWT의 검증 방식과 Spring Security를 활용한 JWT 인증 처리**에 대해 자세히 다룬다.
 
-jsonwebtoken 라이브러리를 사용하여 HMAC 알고리즘으로 JWT를 생성한다.
-JWT는 사용자 ID, 역할(Role) , 토큰 만료 시간을 포함해야 한다.
-생성된 JWT를 출력한다.
-문제 2: RSA 기반의 JWT 서명
-다음 요구사항을 만족하는 코드를 작성하시오.
-
-RSA 키 쌍(공개 키 및 개인 키)을 생성하여 JWT를 서명한다.
-클라이언트에서 JWT를 전송하면 공개 키를 사용하여 검증한다.
-유효한 경우 사용자 정보를 반환하고, 유효하지 않은 경우 예외를 발생시킨다.
-5.2. JWT 검증 및 인증 처리
-JWT(Json Web Token)는 사용자 인증을 위한 강력한 방식이지만, 보안성을 유지하기 위해 반드시 토큰 검증 과정이 필요하다.
-이 절에서는 JWT의 검증 방식과 Spring Security를 활용한 JWT 인증 처리에 대해 자세히 다룬다.
-
-JWT 검증의 필요성
-JWT는 사용자 정보를 포함한 디지털 서명된 토큰이다.
-그러나 클라이언트가 서버로부터 받은 JWT를 임의로 변경하거나 위조할 가능성이 존재한다.
+### JWT 검증의 필요성
+JWT는 사용자 정보를 포함한 디지털 서명된 토큰이다.<br>
+그러나 클라이언트가 서버로부터 받은 **JWT를 임의로 변경하거나 위조할 가능성**이 존재한다.<br>
 따라서 서버는 다음 사항을 검증해야 한다.
 
-토큰 구조가 올바른지 확인
-서명이 유효한지 확인
-토큰의 만료 시간을 검증
-Payload(페이로드) 데이터가 변조되지 않았는지 확인
-권한(Role) 정보가 적절한지 확인
+**토큰 구조가 올바른지 확인**<br>
+**서명이 유효한지 확인**<br>
+**토큰의 만료 시간을 검증**<br>
+**Payload(페이로드) 데이터가 변조되지 않았는지 확인**<br>
+**권한(Role) 정보가 적절한지 확인**
+
 이제 각 검증 단계를 자세히 살펴보자.
 
-JWT 검증 방식
+----------------------
+### JWT 검증 방식
 JWT 검증은 다음의 절차로 진행된다.
 
-토큰 형식 확인
+**토큰 형식 확인**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 보낸 Authorization 헤더에 Bearer 토큰이 있는지 확인.
 
-클라이언트가 보낸 Authorization 헤더에 Bearer 토큰이 있는지 확인.
-서명(Signature) 검증
+**서명(Signature) 검증**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HMAC 또는 RSA 등의 서명 알고리즘을 사용하여 토큰 변조 여부 확인.
 
-HMAC 또는 RSA 등의 서명 알고리즘을 사용하여 토큰 변조 여부 확인.
-토큰 만료 시간(Expiration) 확인
+**토큰 만료 시간(Expiration) 확인**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exp 클레임(Claim) 값을 비교하여 만료된 토큰인지 판별.
 
-exp 클레임(Claim) 값을 비교하여 만료된 토큰인지 판별.
-Payload 데이터 검증
+**Payload 데이터 검증**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자 ID, 역할(Role) 정보가 올바른지 확인.
 
-사용자 ID, 역할(Role) 정보가 올바른지 확인.
-권한(Role) 기반 접근 제어
+**권한(Role) 기반 접근 제어**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;특정 API 호출 시 사용자 역할(Role) 확인.
 
-특정 API 호출 시 사용자 역할(Role) 확인.
-Spring Security에서 JWT 검증
-Spring Security에서는 JwtDecoder를 사용하여 토큰을 검증할 수 있다.
-이제 JWT 검증을 수행하는 JwtTokenVerifier 필터를 작성해보자.
+-------------------------------
+### Spring Security에서 JWT 검증
+Spring Security에서는 JwtDecoder를 사용하여 토큰을 검증할 수 있다.<br>
+이제 JWT 검증을 수행하는 ```JwtTokenVerifier``` 필터를 작성해보자.
 
+```java
 @Component
 public class JwtTokenVerifier extends OncePerRequestFilter {
 
@@ -1918,14 +1939,17 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
                 .collect(Collectors.toList());
     }
 }
-코드 설명
-doFilterInternal(): 요청이 들어올 때마다 Authorization 헤더를 확인하고 JWT를 검증.
-jwtDecoder.decode(token): JWT를 디코딩하여 서명 검증 및 만료 여부 확인.
-extractRoles(): roles 클레임에서 사용자 권한 정보를 추출.
-SecurityContextHolder.getContext().setAuthentication(authentication): 인증 정보를 Spring Security의 컨텍스트에 저장.
-JWT 검증을 위한 Security 설정
-위에서 작성한 JwtTokenVerifier 필터를 Spring Security 설정에 추가해야 한다.
+```
+**코드 설명**<br>
+```doFilterInternal()```: 요청이 들어올 때마다 Authorization 헤더를 확인하고 JWT를 검증.<br>
+```jwtDecoder.decode(token)```: JWT를 디코딩하여 서명 검증 및 만료 여부 확인.
+```extractRoles()```: roles 클레임에서 사용자 권한 정보를 추출.<br>
+```SecurityContextHolder.getContext().setAuthentication(authentication)```: 인증 정보를 Spring Security의 컨텍스트에 저장.
 
+------------------
+### JWT 검증을 위한 Security 설정
+위에서 작성한 JwtTokenVerifier 필터를 Spring Security 설정에 추가해야 한다.
+```java
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -1949,18 +1973,18 @@ public class SecurityConfig {
                 .build();
     }
 }
-Security 설정 코드 설명
-.csrf().disable(): CSRF 보호를 비활성화 (JWT는 상태를 유지하지 않기 때문).
-.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS): 세션을 사용하지 않는 방식으로 설정.
-.authorizeHttpRequests():
-/auth/login은 모든 사용자 접근 가능.
-그 외 요청은 JWT 인증이 필요.
-.addFilterBefore(jwtTokenVerifier, UsernamePasswordAuthenticationFilter.class):
-JWT 검증 필터를 UsernamePasswordAuthenticationFilter 이전에 실행하도록 설정.
-JWT 검증 실패 시 처리
-JWT가 유효하지 않은 경우, 예외 처리 로직을 추가하여 적절한 응답을 반환해야 한다.
-예를 들어, 유효하지 않은 JWT가 감지되었을 때 401 Unauthorized 응답을 반환하는 필터를 작성할 수 있다.
+```
+### Security 설정 코드 설명
+```.csrf().disable()```: CSRF 보호를 비활성화 (JWT는 상태를 유지하지 않기 때문).<br>
+```.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)```: 세션을 사용하지 않는 방식으로 설정.<br>
+```.authorizeHttpRequests()```: /auth/login은 모든 사용자 접근 가능. 그 외 요청은 JWT 인증이 필요.<br>
+```.addFilterBefore(jwtTokenVerifier, UsernamePasswordAuthenticationFilter.class)```:JWT 검증 필터를 UsernamePasswordAuthenticationFilter 이전에 실행하도록 설정.
 
+-----------------
+### JWT 검증 실패 시 처리
+JWT가 유효하지 않은 경우, 예외 처리 로직을 추가하여 적절한 응답을 반환해야 한다.<br>
+예를 들어, 유효하지 않은 JWT가 감지되었을 때 401 Unauthorized 응답을 반환하는 필터를 작성할 수 있다.
+```java
 @Component
 public class JwtExceptionHandlerFilter extends OncePerRequestFilter {
 
@@ -1976,12 +2000,15 @@ public class JwtExceptionHandlerFilter extends OncePerRequestFilter {
         }
     }
 }
+```
 Security 설정에서 추가 적용
-
+```
 .addFilterBefore(new JwtExceptionHandlerFilter(), JwtTokenVerifier.class)
-JWT 검증 후 사용자 권한(Role) 활용
-Spring Security의 @PreAuthorize 또는 @Secured를 사용하여 JWT를 기반으로 API 접근을 제어할 수 있다.
-
+```
+----------------
+### JWT 검증 후 사용자 권한(Role) 활용
+Spring Security의 ```@PreAuthorize``` 또는 ```@Secured```를 사용하여 JWT를 기반으로 API 접근을 제어할 수 있다.
+```java
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -1992,10 +2019,13 @@ public class AdminController {
         return ResponseEntity.ok("Admin Dashboard Access Granted");
     }
 }
-@PreAuthorize("hasRole('ADMIN')"): JWT의 역할(Role) 정보를 확인하여 API 접근을 제한.
-JWT 검증 후 인증된 사용자 정보 조회
-JWT 검증 후 인증된 사용자 정보를 컨트롤러에서 가져올 수도 있다.
+```
+```@PreAuthorize("hasRole('ADMIN')")```: JWT의 역할(Role) 정보를 확인하여 API 접근을 제한.
 
+------------------
+### JWT 검증 후 인증된 사용자 정보 조회
+JWT 검증 후 인증된 사용자 정보를 컨트롤러에서 가져올 수도 있다.
+```java
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -2005,64 +2035,61 @@ public class UserController {
         return ResponseEntity.ok("Hello, " + authentication.getName());
     }
 }
-authentication.getName(): 현재 로그인한 사용자의 ID 반환.
-실습 문제
-문제 1: JWT를 검증하는 필터 구현
-아래 요구사항을 만족하는 코드를 작성하시오.
+```
+```authentication.getName()```: 현재 로그인한 사용자의 ID 반환.
 
-HTTP 요청의 Authorization 헤더에서 JWT를 추출한다.
-JWT를 검증하고, 유효한 경우 사용자 정보를 SecurityContext에 저장한다.
-검증 실패 시 401 Unauthorized 응답을 반환한다.
-문제 2: JWT를 활용한 사용자 인증 API 구현
-다음 요구사항을 만족하는 코드를 작성하시오.
-
-사용자가 로그인하면 JWT를 발급하여 클라이언트에 반환한다.
-클라이언트가 JWT를 포함하여 API 요청을 하면, 서버는 이를 검증하고 사용자 정보를 반환한다.
-만료된 JWT일 경우 403 Forbidden 응답을 반환한다.
-5.3. Refresh Token을 활용한 Access Token 갱신
-Refresh Token은 OAuth2와 JWT 기반의 인증 시스템에서 Access Token을 재발급하는 데 사용된다.
+---------------
+## 5-3. Refresh Token을 활용한 Access Token 갱신
+Refresh Token은 OAuth2와 JWT 기반의 인증 시스템에서 Access Token을 재발급하는 데 사용된다.<br>
 이 절에서는 Refresh Token을 이용해 Access Token을 갱신하는 방식과 보안적으로 안전하게 다루는 방법을 설명한다.
 
-Refresh Token의 필요성
-Access Token은 보안상의 이유로 유효 기간이 짧게 설정된다.
-만약 Access Token이 만료될 때마다 사용자가 다시 로그인해야 한다면 매우 불편할 것이다.
-이를 해결하기 위해 Refresh Token을 사용하여 새로운 Access Token을 발급받는다.
+### Refresh Token의 필요성
+Access Token은 보안상의 이유로 **유효 기간이 짧게 설정**된다.<br>
+만약 Access Token이 만료될 때마다 **사용자가 다시 로그인해야 한다면** 매우 불편할 것이다.<br>
+이를 해결하기 위해 **Refresh Token을 사용하여 새로운 Access Token을 발급**받는다.
 
-Refresh Token의 주요 역할
+**Refresh Token의 주요 역할**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Access Token 만료 시 새로운 Access Token을 발급**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ 사용자는 다시 로그인하지 않아도 된다.
 
-Access Token 만료 시 새로운 Access Token을 발급
-→ 사용자는 다시 로그인하지 않아도 된다.
-Access Token보다 긴 수명을 가짐
-→ 일반적으로 Access Token은 15~30분, Refresh Token은 7일~30일 정도로 설정.
-보안 강화를 위해 서버에서만 검증 가능
-→ Refresh Token은 클라이언트가 직접 검증할 수 없으며, 반드시 서버를 거쳐야 한다.
-Refresh Token 기반 인증 흐름
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**Access Token보다 긴 수명을 가짐**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ 일반적으로 Access Token은 15~30분, Refresh Token은 7일~30일 정도로 설정.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**보안 강화를 위해 서버에서만 검증 가능**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Refresh Token은 클라이언트가 직접 검증할 수 없으며, 반드시 서버를 거쳐야 한다.
+
+---------------------
+### Refresh Token 기반 인증 흐름
 Refresh Token을 활용한 인증 과정은 다음과 같다.
 
-사용자가 로그인을 하면 Access Token과 Refresh Token을 함께 발급받는다.
-클라이언트는 Access Token을 사용하여 API 요청을 보낸다.
-Access Token이 만료되면 Refresh Token을 사용하여 새로운 Access Token을 요청한다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자가 로그인을 하면 **Access Token과 Refresh Token을 함께 발급**받는다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트는 Access Token을 사용하여 API 요청을 보낸다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access Token이 만료되면 Refresh Token을 사용하여 새로운 Access Token을 요청한다.<br>
 서버는 Refresh Token을 검증한 후 새로운 Access Token을 생성하여 클라이언트에 반환한다.
-흐름 예시
 
+**흐름 예시**<br>
+```
 [STEP 1] 사용자가 로그인 → 서버가 Access Token & Refresh Token 발급
 [STEP 2] 클라이언트가 Access Token으로 API 요청
 [STEP 3] Access Token 만료 시 → Refresh Token을 사용해 새로운 Access Token 요청
 [STEP 4] 서버가 Refresh Token 검증 후 새로운 Access Token 발급
 [STEP 5] 클라이언트는 새로운 Access Token을 사용해 API 요청 계속 수행
-Refresh Token 발급 및 저장 방식
-Refresh Token을 안전하게 관리하는 것이 중요하다.
+```
+=========================
+### Refresh Token 발급 및 저장 방식
+Refresh Token을 안전하게 관리하는 것이 중요하다.<br>
 보통 다음 두 가지 방식이 있다.
 
-Refresh Token을 데이터베이스(DB)에 저장
+**Refresh Token을 데이터베이스(DB)에 저장**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Refresh Token을 사용자별로 데이터베이스에 저장하고 관리.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;보안이 강화되지만, 추가적인 DB 조회 부담이 있음.
 
-Refresh Token을 사용자별로 데이터베이스에 저장하고 관리.
-보안이 강화되지만, 추가적인 DB 조회 부담이 있음.
-Refresh Token을 Redis에 저장
+**Refresh Token을 Redis에 저장**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Redis를 이용하여 유효 기간이 있는 Refresh Token을 저장.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;빠른 조회가 가능하고, TTL(Time-To-Live)을 설정할 수 있음.
 
-Redis를 이용하여 유효 기간이 있는 Refresh Token을 저장.
-빠른 조회가 가능하고, TTL(Time-To-Live)을 설정할 수 있음.
-Refresh Token을 이용한 Access Token 갱신 API 구현
+-----------------
+### Refresh Token을 이용한 Access Token 갱신 API 구현
 다음은 Spring Boot + Spring Security를 이용하여 Refresh Token을 활용한 Access Token 갱신 API를 구현하는 예제이다.
 
 1. Refresh Token을 포함한 JWT 발급
