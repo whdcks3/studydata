@@ -2092,7 +2092,7 @@ Refresh Token을 안전하게 관리하는 것이 중요하다.<br>
 ### Refresh Token을 이용한 Access Token 갱신 API 구현
 다음은 Spring Boot + Spring Security를 이용하여 Refresh Token을 활용한 Access Token 갱신 API를 구현하는 예제이다.
 
-1. Refresh Token을 포함한 JWT 발급
+**1. Refresh Token을 포함한 JWT 발급**
 ```java
 public class JwtTokenProvider {
 
@@ -2124,10 +2124,10 @@ public class JwtTokenProvider {
 ```generateRefreshToken()```: 7일짜리 Refresh Token 생성.
 
 ---------------
-### 2. Refresh Token 저장 및 관리
-Refresh Token을 데이터베이스 또는 Redis에 저장하여 관리할 수 있다.
+**2. Refresh Token 저장 및 관리**<br>
+Refresh Token을 데이터베이스 또는 Redis에 저장하여 관리할 수 있다.<br>
 아래는 Refresh Token을 MySQL에 저장하는 방식이다.
-
+```java
 @Entity
 public class RefreshToken {
 
@@ -2141,12 +2141,16 @@ public class RefreshToken {
 
     // Getter, Setter
 }
+```
+```java
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
     Optional<RefreshToken> findByRefreshToken(String refreshToken);
 }
+```
 RefreshTokenRepository: Refresh Token을 데이터베이스에서 조회하는 JPA 인터페이스.
-3. Refresh Token을 이용한 Access Token 갱신 API
+
+**3. Refresh Token을 이용한 Access Token 갱신 API**<br>
 사용자가 Access Token을 갱신하는 API를 만든다.
 
 @RestController
