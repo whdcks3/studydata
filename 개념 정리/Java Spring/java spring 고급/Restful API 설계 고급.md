@@ -1,212 +1,174 @@
-Logo
-LMS
-대시보드
-스케줄
-강의 목록
-자료실
-QnA
-제안 관리
-납부 내역
-Avatar
-자료실
+# 1. RESTful API의 고급 설계 원칙
+## 1-1. RESTful API 설계 개요
+### RESTful API란 무엇인가?
+RESTful API는 **REST(Representational State Transfer)** 원칙을 따르는 API 설계 방식이다.<br>
+REST는 웹의 설계 원칙을 기반으로 한 소프트웨어 아키텍처 스타일이며, 자원을 중심으로 한 구조를 따른다.<br>
+RESTful API는 웹 서비스에서 데이터를 주고받기 위해 널리 사용되며, HTTP 프로토콜을 활용하여 리소스에 대한 CRUD(Create, Read, Update, Delete) 작업을 수행하는 것이 일반적이다.
 
-전체 과목
-
-카테고리 선택
-파일명 검색
-Java 기초 - 01. 기초 개념: 4. 형 변환과 상수 선언
-보기
-Java 기초 - 01. 기초 개념: 3. Java의 기초 데이터 타입
-보기
-Java Mastery for Spring Developers - 7단계: Java 기반 프레임워크 심화 학습 - 4. Spring Boot와 API 설계 - 1. RESTful API 설계 고급
-보기
-Java Mastery for Spring Developers - 7단계: Java 기반 프레임워크 심화 학습 - 3. Spring Security 심화 - 2. OAuth2와 JWT 통합
-보기
-Java Mastery for Spring Developers - 7단계: Java 기반 프레임워크 심화 학습 - 3. Spring Security 심화 - 1. 인증과 권한
-보기
-Java Mastery for Spring Developers - 7단계: Java 기반 프레임워크 심화 학습 - 2. Spring Boot 통합 테스트 - 2. Mock과 데이터베이스 테스트
-보기
-Java Mastery for Spring Developers - 7단계: Java 기반 프레임워크 심화 학습 - 2. Spring Boot 통합 테스트 - 1. 테스트 전략
-보기
-Java Mastery for Spring Developers - 7단계: Java 기반 프레임워크 심화 학습 - 1. Spring Boot 고급 기능 - 2. Spring Boot와 데이터베이스
-보기
-Java Mastery for Spring Developers - 7단계: Java 기반 프레임워크 심화 학습 - 1. Spring Boot 고급 기능 - 1. Spring Boot 구성과 설정 심화
-보기
-Java Mastery for Spring Developers - 6단계: 고급 Java 애플리케이션 개발 - 6. 최종 프로젝트 - 1. 고급 Java 애플리케이션 프로젝트
-보기
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-다음
-
-RESTful API 설계 고급
-학습 목표
-RESTful API의 고급 설계 원칙을 이해한다.
-API의 버전 관리 및 문서화를 학습한다.
-API의 보안과 성능 최적화 방법을 익힌다.
-1. RESTful API의 고급 설계 원칙
-1.1. RESTful API 설계 개요
-RESTful API란 무엇인가?
-RESTful API는 REST(Representational State Transfer) 원칙을 따르는 API 설계 방식이다. REST는 웹의 설계 원칙을 기반으로 한 소프트웨어 아키텍처 스타일이며, 자원을 중심으로 한 구조를 따른다. RESTful API는 웹 서비스에서 데이터를 주고받기 위해 널리 사용되며, HTTP 프로토콜을 활용하여 리소스에 대한 CRUD(Create, Read, Update, Delete) 작업을 수행하는 것이 일반적이다.
-
-RESTful API의 핵심 개념은 리소스(Resource) 기반 설계이다. RESTful API에서는 클라이언트가 서버의 특정 리소스를 식별하고, 이를 조작하는 방식으로 데이터를 처리한다. 이 과정에서 HTTP 메서드가 리소스에 대한 행동을 나타내며, URL이 리소스를 식별하는 역할을 한다.
+RESTful API의 핵심 개념은 리소스(Resource) 기반 설계이다.<br>
+RESTful API에서는 클라이언트가 서버의 특정 리소스를 식별하고, 이를 조작하는 방식으로 데이터를 처리한다.<br>
+이 과정에서 HTTP 메서드가 리소스에 대한 행동을 나타내며, URL이 리소스를 식별하는 역할을 한다.
 
 예를 들어, 사용자의 정보를 조회하는 RESTful API의 엔드포인트는 다음과 같이 정의할 수 있다.
-
+```
 GET /users/{id}
-이 API는 {id}에 해당하는 사용자의 정보를 반환하며, users는 리소스의 집합을 의미한다. RESTful API는 명확하고 직관적인 구조를 가지므로, 개발자들이 쉽게 이해하고 사용할 수 있다는 장점이 있다.
+```
+이 API는 ```{id}```에 해당하는 사용자의 정보를 반환하며, ```users```는 리소스의 집합을 의미한다. RESTful API는 명확하고 직관적인 구조를 가지므로, 개발자들이 쉽게 이해하고 사용할 수 있다는 장점이 있다.
 
-RESTful API의 특징
+------------------
+### RESTful API의 특징
 RESTful API를 설계할 때는 REST 아키텍처의 주요 원칙을 준수해야 한다. RESTful API의 특징을 이해하는 것은 효과적인 API 설계를 위한 필수적인 과정이다.
 
-클라이언트-서버 구조(Client-Server Architecture)
-RESTful API는 클라이언트와 서버 간의 명확한 역할 분리를 기반으로 한다.
-클라이언트는 사용자 인터페이스를 담당하며, 서버는 데이터를 처리하고 저장하는 역할을 한다.
+**클라이언트-서버 구조(Client-Server Architecture)**<br>
+RESTful API는 클라이언트와 서버 간의 명확한 역할 분리를 기반으로 한다.<br>
+클라이언트는 사용자 인터페이스를 담당하며, 서버는 데이터를 처리하고 저장하는 역할을 한다.<br>
 이러한 구조는 시스템의 확장성을 높이며, 클라이언트와 서버가 독립적으로 개발될 수 있도록 한다.
 
 예를 들어, 웹 브라우저에서 사용자가 특정 상품을 조회하면, 클라이언트는 RESTful API를 통해 서버에서 데이터를 가져와 화면에 표시하는 방식으로 동작한다.
-
+```
 GET /products/{id}
-위 요청을 통해 서버는 id에 해당하는 상품 데이터를 반환하고, 클라이언트는 이를 UI에 표시한다.
+```
+위 요청을 통해 서버는 id에 해당하는 상품 데이터를 반환하고, 클라이언트는 이를 UI에 표시한다.<b>
 이 과정에서 클라이언트는 데이터 저장이나 비즈니스 로직을 처리하지 않으며, 서버는 UI에 대해 알 필요가 없다.
 
-무상태(Stateless) 원칙
-RESTful API는 무상태(Stateless) 원칙을 따른다.
-이는 서버가 클라이언트의 이전 요청 상태를 저장하지 않는다는 것을 의미한다.
-모든 요청은 독립적으로 처리되며, 필요한 모든 정보는 요청에 포함되어야 한다.
+**무상태(Stateless) 원칙**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RESTful API는 무상태(Stateless) 원칙을 따른다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이는 서버가 클라이언트의 이전 요청 상태를 저장하지 않는다는 것을 의미한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;모든 요청은 독립적으로 처리되며, 필요한 모든 정보는 요청에 포함되어야 한다.
 
-예를 들어, 사용자가 서버에 요청을 보낼 때, 서버는 해당 사용자의 세션 상태를 유지하지 않는다.
+예를 들어, 사용자가 서버에 요청을 보낼 때, 서버는 해당 사용자의 세션 상태를 유지하지 않는다.<br>
 대신, 클라이언트는 매 요청마다 필요한 인증 정보를 포함하여 서버가 요청을 인증할 수 있도록 해야 한다.
-
+```
 GET /users/profile
 Authorization: Bearer <JWT_TOKEN>
-위 요청에서는 Authorization 헤더에 JWT(Json Web Token) 토큰을 포함하여 사용자를 인증한다.
+```
+위 요청에서는 Authorization 헤더에 JWT(Json Web Token) 토큰을 포함하여 사용자를 인증한다.<br>
 서버는 클라이언트의 로그인 상태를 기억하지 않으며, 매 요청을 개별적으로 처리한다.
 
-캐시 가능(Cacheable) 설계
-RESTful API는 클라이언트가 응답을 캐싱할 수 있도록 설계되어야 한다.
+------------------
+**캐시 가능(Cacheable) 설계**<br>
+RESTful API는 클라이언트가 응답을 캐싱할 수 있도록 설계되어야 한다.<br>
 이를 통해 불필요한 네트워크 요청을 줄이고, 성능을 최적화할 수 있다.
 
 캐싱을 적용하기 위해 HTTP의 Cache-Control 헤더를 활용할 수 있다.
-
+```
 Cache-Control: max-age=3600, public
-위 설정은 클라이언트가 1시간(3600초) 동안 캐시된 응답을 사용할 수 있도록 지정하는 것이다.
+```
+위 설정은 클라이언트가 1시간(3600초) 동안 캐시된 응답을 사용할 수 있도록 지정하는 것이다.<br>
 이를 통해 동일한 데이터를 반복적으로 요청하는 경우 서버의 부하를 줄일 수 있다.
 
-계층화된 시스템(Layered System)
-RESTful API는 계층화된 구조를 가질 수 있다.
+**계층화된 시스템(Layered System)**<br>
+RESTful API는 계층화된 구조를 가질 수 있다.<br>
 즉, 클라이언트의 요청이 여러 계층을 거쳐 처리될 수 있으며, 클라이언트는 이러한 내부 구조를 알 필요가 없다.
 
-예를 들어, 클라이언트는 직접 데이터베이스에 접근하지 않고, API 게이트웨이나 프록시 서버를 통해 요청을 처리할 수도 있다.
+예를 들어, 클라이언트는 직접 데이터베이스에 접근하지 않고, API 게이트웨이나 프록시 서버를 통해 요청을 처리할 수도 있다.<br>
 이러한 계층 구조는 보안과 성능 향상에 기여하며, 로드 밸런서 등을 추가하여 트래픽을 효율적으로 관리할 수 있도록 한다.
 
-일관된 인터페이스(Uniform Interface)
-RESTful API는 일관된 인터페이스를 제공해야 한다.
+**일관된 인터페이스(Uniform Interface)**<br>
+RESTful API는 일관된 인터페이스를 제공해야 한다.<br>
 즉, API의 사용 방식이 일관되게 유지되어야 하며, 리소스 경로와 HTTP 메서드의 조합이 예측 가능해야 한다.
 
 예를 들어, 다음과 같이 API를 설계하면 일관성을 유지할 수 있다.
-
+```
 GET /products         # 모든 상품 조회
 GET /products/{id}    # 특정 상품 조회
 POST /products        # 새로운 상품 추가
 PUT /products/{id}    # 기존 상품 정보 수정
 DELETE /products/{id} # 상품 삭제
+```
 위처럼 API가 일관된 패턴을 가지면 클라이언트가 API를 예측하기 쉬워지고, 문서화 없이도 직관적으로 이해할 수 있다.
 
-RESTful API 설계 시 고려해야 할 사항
+------------------
+### RESTful API 설계 시 고려해야 할 사항
 RESTful API를 설계할 때는 다음과 같은 사항을 고려해야 한다.
 
-일관성 유지
+**일관성 유지**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;엔드포인트 경로(/users, /orders 등)가 일관성을 유지해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;응답 형식이 일관되게 유지되어야 한다.
 
-엔드포인트 경로(/users, /orders 등)가 일관성을 유지해야 한다.
-응답 형식이 일관되게 유지되어야 한다.
-리소스 중심 설계
+**리소스 중심 설계**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;API는 동작이 아니라 리소스를 중심으로 설계되어야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, /getUser 대신 /users/{id}로 설계하는 것이 RESTful 방식이다.
 
-API는 동작이 아니라 리소스를 중심으로 설계되어야 한다.
-예를 들어, /getUser 대신 /users/{id}로 설계하는 것이 RESTful 방식이다.
-HTTP 메서드의 올바른 사용
+**HTTP 메서드의 올바른 사용**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;API의 동작을 HTTP 메서드(GET, POST, PUT, DELETE)와 매핑해야 한다.
 
-API의 동작을 HTTP 메서드(GET, POST, PUT, DELETE)와 매핑해야 한다.
-URI 네이밍 컨벤션
+**URI 네이밍 컨벤션**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URI는 짧고 직관적으로 작성되어야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/users vs. /userList → /users가 RESTful 방식이다.
 
-URI는 짧고 직관적으로 작성되어야 한다.
-/users vs. /userList → /users가 RESTful 방식이다.
-요청 및 응답의 표준화
+**요청 및 응답의 표준화**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JSON 또는 XML을 사용하여 일관된 응답 구조를 제공해야 한다.
 
-JSON 또는 XML을 사용하여 일관된 응답 구조를 제공해야 한다.
-확장성 고려
+**확장성 고려**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;API의 확장성을 고려하여 새로운 기능을 추가할 때 기존 API가 깨지지 않도록 해야 한다.
 
-API의 확장성을 고려하여 새로운 기능을 추가할 때 기존 API가 깨지지 않도록 해야 한다.
-RESTful API와 SOAP API의 차이점
+-----------------
+### RESTful API와 SOAP API의 차이점
 RESTful API는 SOAP(Simple Object Access Protocol) API와 비교하여 더 가볍고 직관적인 설계를 제공한다.
 
-비교 항목	RESTful API	SOAP API
-프로토콜	HTTP 기반	HTTP, SMTP 등 다양한 프로토콜 지원
-데이터 형식	JSON, XML 등 다양함	XML
-상태 관리	무상태(Stateless)	상태를 유지할 수 있음
-사용 용도	웹 및 모바일 API, 마이크로서비스	엔터프라이즈 애플리케이션, 보안이 중요한 서비스
+비교 항목|RESTful API|SOAP API
+:---|:---|:---
+프로토콜|HTTP 기반|HTTP, SMTP 등 다양한 프로토콜 지원
+데이터 형식|JSON, XML 등 다양함|XML
+상태 관리|무상태(Stateless)|상태를 유지할 수 있음
+사용 용도|웹 및 모바일 API, 마이크로서비스|엔터프라이즈 애플리케이션, 보안이 중요한 서비스
+
 RESTful API는 보다 유연하고 확장성이 뛰어나기 때문에, 웹과 모바일 애플리케이션에서 가장 널리 사용되는 방식이다.
 
-학습자의 사고를 돕기 위한 질문
-RESTful API가 클라이언트-서버 구조를 따르는 이유는 무엇인가?
-
-클라이언트와 서버의 역할을 분리함으로써 얻을 수 있는 장점을 고려해보라.
-RESTful API에서 무상태(stateless) 원칙이 중요한 이유는 무엇인가?
-
-상태 정보를 유지하는 경우 발생할 수 있는 문제점과 서버 확장성의 영향을 생각해보라.
-1.2. 리소스 설계 원칙
-리소스란 무엇인가?
-RESTful API에서 리소스(Resource) 는 서버가 관리하는 데이터의 단위를 의미한다.
-API를 통해 접근하고 조작할 수 있는 대상이 모두 리소스가 될 수 있으며,
+---------------------
+## 1-2. 리소스 설계 원칙
+### 리소스란 무엇인가?
+RESTful API에서 리소스(Resource) 는 서버가 관리하는 데이터의 단위를 의미한다.<br>
+API를 통해 접근하고 조작할 수 있는 대상이 모두 리소스가 될 수 있으며,<br>
 예를 들어 사용자(User), 주문(Order), 제품(Product) 등이 이에 해당한다.
 
-리소스는 API에서 고유한 URI(Uniform Resource Identifier) 를 통해 식별된다.
+리소스는 API에서 **고유한 URI(Uniform Resource Identifier)** 를 통해 식별된다.<br>
 API 사용자는 특정 리소스를 조회, 추가, 수정 또는 삭제하기 위해 정확한 URI를 사용해야 한다.
 
 예를 들어, 특정 사용자의 정보를 조회하는 엔드포인트를 다음과 같이 정의할 수 있다.
-
+```
 GET /users/{userId}
+```
 위 URI는 userId에 해당하는 특정 사용자의 정보를 조회하는 API 엔드포인트이다.
 
-RESTful한 리소스 설계의 원칙
-RESTful API에서 리소스를 설계할 때는 다음 원칙을 따라야 한다.
+---------------
+### RESTful한 리소스 설계의 원칙
+RESTful API에서 리소스를 설계할 때는 다음 원칙을 따라야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;명사 기반의 리소스 경로 사용<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일관된 URI 패턴 유지<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;계층적 구조 활용<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTP 메서드와 리소스의 관계 명확화<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;복수형 사용 권장<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;행위(Verb) 대신 리소스를 중심으로 설계
 
-명사 기반의 리소스 경로 사용
-일관된 URI 패턴 유지
-계층적 구조 활용
-HTTP 메서드와 리소스의 관계 명확화
-복수형 사용 권장
-행위(Verb) 대신 리소스를 중심으로 설계
 이제 각 원칙에 대해 자세히 살펴보자.
 
-명사 기반의 리소스 경로 사용
-RESTful API의 URI는 리소스를 표현해야 한다.
+----------------------
+### 명사 기반의 리소스 경로 사용
+RESTful API의 URI는 리소스를 표현해야 한다.<br>
 즉, 명사(Noun) 기반으로 설계 해야 하며, 동사(Verb)를 포함하지 않아야 한다.
 
 잘못된 예시:
-
+```
 GET /getUser
 POST /createOrder
 DELETE /removeProduct
+```
 올바른 예시:
-
+```
 GET /users/{userId}
 POST /orders
 DELETE /products/{productId}
-잘못된 예시에서는 API 경로에 동사(getUser, createOrder) 가 포함되어 있다.
-RESTful API에서는 URI가 리소스를 표현하는 역할 을 해야 하므로,
+```
+잘못된 예시에서는 API 경로에 동사(getUser, createOrder) 가 포함되어 있다.<br>
+RESTful API에서는 URI가 리소스를 표현하는 역할 을 해야 하므로,<br>
 HTTP 메서드(GET, POST, DELETE) 자체가 수행할 동작을 나타내도록 설계해야 한다.
 
 즉, API는 GET 요청이면 데이터를 조회하고, POST 요청이면 데이터를 생성하는 등 HTTP 메서드에 따라 동작을 정의 해야 한다.
 
-일관된 URI 패턴 유지
+---------------------
+### 일관된 URI 패턴 유지
 API의 URI 설계는 일관된 패턴을 유지해야 한다.
 API를 사용하는 개발자가 직관적으로 이해할 수 있도록 일반적인 RESTful 설계 패턴을 따르는 것이 중요하다.
 
