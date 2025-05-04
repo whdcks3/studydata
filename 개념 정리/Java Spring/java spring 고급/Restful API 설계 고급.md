@@ -169,186 +169,174 @@ HTTP 메서드(GET, POST, DELETE) 자체가 수행할 동작을 나타내도록 
 
 ---------------------
 ### 일관된 URI 패턴 유지
-API의 URI 설계는 일관된 패턴을 유지해야 한다.
+API의 URI 설계는 **일관된 패턴을 유지해야 한다.**<br>
 API를 사용하는 개발자가 직관적으로 이해할 수 있도록 일반적인 RESTful 설계 패턴을 따르는 것이 중요하다.
 
 다음과 같은 URI 패턴을 유지하는 것이 좋다.
 
 올바른 예시:
-
+```
 GET /users/{userId}/orders  # 특정 사용자의 주문 목록 조회
 POST /users/{userId}/orders # 특정 사용자에 대한 주문 생성
 GET /products/{productId}   # 특정 제품 정보 조회
-위 예제에서 /users/{userId}/orders 패턴은 특정 사용자와 관련된 주문을 의미한다.
+```
+위 예제에서 ```/users/{userId}/orders``` 패턴은 특정 사용자와 관련된 주문을 의미한다.<br>
 즉, 계층적 구조를 반영하여 API URI의 의미가 명확하도록 설계 하는 것이 중요하다.
 
-계층적 구조 활용
-RESTful API의 URI는 리소스 간의 계층 구조를 반영 해야 한다.
-예를 들어, 사용자가 작성한 댓글 데이터를 조회하는 API를 설계할 경우,
+---------------------
+### 계층적 구조 활용
+RESTful API의 URI는 리소스 간의 계층 구조를 반영 해야 한다.<br>
+예를 들어, 사용자가 작성한 댓글 데이터를 조회하는 API를 설계할 경우,<br>
 댓글(comments)이 사용자(users)에 속한다는 점을 반영하여 다음과 같이 설계할 수 있다.
 
 올바른 예시:
-
+```
 GET /users/{userId}/comments
-이처럼 계층적 관계를 표현하면 API의 가독성과 직관성이 향상된다.
-하지만 모든 관계를 계층 구조로 표현하는 것은 바람직하지 않다.
+```
+이처럼 계층적 관계를 표현하면 API의 가독성과 직관성이 향상된다.<br>
+하지만 모든 관계를 계층 구조로 표현하는 것은 바람직하지 않다.<Br>
 계층 구조가 너무 깊어지면 API 사용성이 낮아질 수 있기 때문이다.
 
 잘못된 예시 (과도한 계층화):
-
+```
 GET /users/{userId}/orders/{orderId}/items/{itemId}/details
-이처럼 너무 깊은 계층 구조 는 API 사용성을 떨어뜨릴 수 있다.
+```
+이처럼 너무 깊은 계층 구조 는 API 사용성을 떨어뜨릴 수 있다.<br>
 이런 경우에는 필요한 정보를 쿼리 파라미터로 전달하는 방식 도 고려할 수 있다.
 
 개선된 예시:
-
+```
 GET /orders/{orderId}/items?details=true
+```
 이처럼 계층적 구조를 유지하되 불필요한 중첩을 피하는 것이 중요하다.
 
-HTTP 메서드와 리소스의 관계 명확화
-RESTful API에서는 HTTP 메서드와 리소스의 관계를 명확하게 정의 해야 한다.
+---------------------
+### HTTP 메서드와 리소스의 관계 명확화
+RESTful API에서는 HTTP 메서드와 리소스의 관계를 명확하게 정의 해야 한다.<br>
 즉, HTTP 메서드가 수행하는 동작이 API의 의미와 일관성을 가져야 한다.
 
-HTTP 메서드	동작(의미)	예제 URI
-GET	리소스 조회	/users/{userId}
-POST	리소스 생성	/users
-PUT	리소스 전체 수정	/users/{userId}
-PATCH	리소스 부분 수정	/users/{userId}
-DELETE	리소스 삭제	/users/{userId}
+HTTP 메서드|동작(의미)|예제 URI
+:---|:---|:---
+GET|리소스 조회|/users/{userId}
+POST|리소스 생성|/users
+PUT|리소스 전체 수정|/users/{userId}
+PATCH|리소스 부분 수정|/users/{userId}
+DELETE|리소스 삭제|/users/{userId}
+
 예를 들어, 사용자의 정보를 수정하는 API를 설계할 때는 다음과 같이 정의할 수 있다.
 
 올바른 예시:
-
+```
 PUT /users/{userId}   # 사용자 정보 전체 수정
 PATCH /users/{userId} # 사용자 정보 일부 수정
+```
 잘못된 예시:
-
+```
 POST /users/update
 GET /users/update/{userId}
-잘못된 예시에서는 POST /users/update 와 같은 동사(update)가 포함되어 있다.
+```
+잘못된 예시에서는 POST /users/update 와 같은 동사(update)가 포함되어 있다.<br>
 RESTful API에서는 HTTP 메서드 자체가 동작을 나타내므로, 동사를 포함하지 않는 것이 원칙 이다.
 
-복수형 사용 권장
-RESTful API에서는 리소스 이름을 복수형으로 표현하는 것이 권장된다.
+-------------------
+### 복수형 사용 권장
+RESTful API에서는 리소스 이름을 복수형으로 표현하는 것이 권장된다.<br>
 이유는 하나의 리소스가 단일 객체가 아니라, 동일한 유형의 리소스 집합을 나타내기 때문이다.
 
 올바른 예시:
-
+```
 GET /users
 GET /products
+```
 잘못된 예시:
-
+```
 GET /user
 GET /product
-복수형을 사용하면 API가 보다 직관적으로 설계 될 수 있으며,
+```
+복수형을 사용하면 API가 보다 **직관적으로 설계** 될 수 있으며,<br>
 특정 리소스 하나만 조회할 때는 /{id} 를 추가하여 구별할 수 있다.
 
 예제:
-
+```
 GET /users          # 모든 사용자 조회
 GET /users/{userId} # 특정 사용자 조회
-이처럼 복수형을 사용하면 API 사용자가 리소스의 개념을 더 쉽게 이해 할 수 있다.
+```
+이처럼 복수형을 사용하면 API 사용자가 **리소스의 개념을 더 쉽게 이해** 할 수 있다.
 
-행위(Verb) 대신 리소스를 중심으로 설계
-RESTful API는 행위(Verb)가 아닌 리소스(Resource)를 중심으로 설계 되어야 한다.
+-----------------
+### 행위(Verb) 대신 리소스를 중심으로 설계
+RESTful API는 행위(Verb)가 아닌 리소스(Resource)를 중심으로 설계 되어야 한다.<br>
 즉, GET, POST, PUT, DELETE 와 같은 HTTP 메서드를 활용하여 리소스를 조작하는 방식으로 API를 설계해야 한다.
 
 잘못된 예시:
-
+```
 GET /getUserOrders
 POST /addNewProduct
 DELETE /removeUserAccount
+```
 올바른 예시:
-
+```
 GET /users/{userId}/orders
 POST /products
 DELETE /users/{userId}
-잘못된 예시에서는 URI에 get, add, remove 와 같은 동사가 포함되어 있다.
+```
+잘못된 예시에서는 URI에 get, add, remove 와 같은 동사가 포함되어 있다.<br>
 올바른 설계 방식은 리소스 중심으로 URI를 정의하고, 동작은 HTTP 메서드로 표현하는 것 이다.
 
-학습자의 사고를 돕기 위한 질문
-RESTful API에서 엔드포인트 URL을 동사(Verb) 기반이 아닌 명사(Noun) 기반으로 설계하는 것이 중요한 이유는 무엇인가?
-
-URL이 리소스를 나타내야 하는 이유를 떠올려보라.
-리소스 간 계층적 구조를 적용하면 어떤 이점이 있는가?
-
-/users/{userId}/orders/{orderId} 같은 URL 구조가 어떤 상황에서 유용한지 생각해보라.
-실습 문제
-문제 1: RESTful URL 설계하기
-아래의 요구사항을 만족하는 RESTful API 엔드포인트를 설계하시오.
-
-제품 목록을 조회하는 엔드포인트.
-특정 제품 정보를 조회하는 엔드포인트.
-새로운 제품을 추가하는 엔드포인트.
-특정 제품을 삭제하는 엔드포인트.
-출력 예시:
-
-/products
-/products/{id}
-POST /products
-DELETE /products/{id}
-문제 2: HTTP 메서드와 엔드포인트 매핑
-다음 요청에 적절한 HTTP 메서드를 매핑하시오.
-
-고객 목록을 조회한다.
-새로운 고객을 추가한다.
-특정 고객 정보를 수정한다.
-특정 고객을 삭제한다.
-출력 예시:
-
-GET /customers
-POST /customers
-PUT /customers/{id}
-DELETE /customers/{id}
-1.3. 상태 전이와 API 설계
-상태 전이(State Transition)란 무엇인가?
-RESTful API에서 상태 전이(State Transition) 는 클라이언트가 API 요청을 보낼 때 리소스의 상태가 변경되는 과정을 의미한다.
+----------------------------
+## 1-3. 상태 전이와 API 설계
+### 상태 전이(State Transition)란 무엇인가?
+RESTful API에서 상태 전이(State Transition) 는 클라이언트가 API 요청을 보낼 때 리소스의 상태가 변경되는 과정을 의미한다.<br>
 즉, 사용자의 특정 액션이 API를 통해 서버로 전달되면서 리소스의 상태가 변할 수 있다.
 
 이 개념은 웹 애플리케이션이 특정 동작을 수행할 때 현재 상태를 기반으로 변화하는 과정 을 의미하며, HTTP 요청을 통해 이루어진다.
 
-예를 들어, 사용자가 주문을 생성하고, 결제하고, 배송 상태를 변경하는 과정을 생각해보자.
+예를 들어, 사용자가 주문을 생성하고, 결제하고, 배송 상태를 변경하는 과정을 생각해보자.<br>
 각 단계에서 API 호출을 통해 주문의 상태가 변할 수 있다.
 
-주문 생성: POST /orders (상태: "주문 접수")
-결제 완료: PATCH /orders/{orderId} (상태: "결제 완료")
-배송 시작: PATCH /orders/{orderId} (상태: "배송 중")
-배송 완료: PATCH /orders/{orderId} (상태: "배송 완료")
+**주문 생성**: POST /orders (상태: "주문 접수")<br>
+**결제 완료**: PATCH /orders/{orderId} (상태: "결제 완료")<br>
+**배송 시작**: PATCH /orders/{orderId} (상태: "배송 중")<br>
+**배송 완료**: PATCH /orders/{orderId} (상태: "배송 완료")<br>
 이처럼 API를 통해 리소스의 상태가 전이되며, 이 상태 전이가 RESTful 설계에서 중요한 개념 이다.
 
-상태 전이와 엔드포인트 설계
-API를 설계할 때 상태 전이를 어떻게 처리할 것인지 명확한 기준을 세워야 한다.
+----------------------
+### 상태 전이와 엔드포인트 설계
+API를 설계할 때 상태 전이를 어떻게 처리할 것인지 명확한 기준을 세워야 한다.<br>
 이때 다음과 같은 설계 방식을 고려할 수 있다.
 
-리소스 중심의 상태 전이
+**리소스 중심의 상태 전이**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;상태가 변하는 리소스를 기준으로 API를 설계한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;상태 값은 API의 응답(JSON 등)에 포함될 수 있다.<br>
 
-상태가 변하는 리소스를 기준으로 API를 설계한다.
-상태 값은 API의 응답(JSON 등)에 포함될 수 있다.
-HTTP 메서드를 활용한 상태 전이
+**HTTP 메서드를 활용한 상태 전이**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```GET```: 리소스 조회 (상태 변화 없음)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```POST```: 새로운 리소스 생성 (새로운 상태로 진입)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```PUT```: 기존 리소스의 상태를 완전히 변경<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```PATCH```: 특정 필드 또는 일부 상태만 변경<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```DELETE```: 리소스를 제거하여 상태를 종료
 
-GET: 리소스 조회 (상태 변화 없음)
-POST: 새로운 리소스 생성 (새로운 상태로 진입)
-PUT: 기존 리소스의 상태를 완전히 변경
-PATCH: 특정 필드 또는 일부 상태만 변경
-DELETE: 리소스를 제거하여 상태를 종료
-명확한 상태 변경을 위한 API 패턴
+**명확한 상태 변경을 위한 API 패턴**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;특정 상태로 변경하는 API를 따로 제공할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 주문 상태를 변경하는 API를 PATCH 요청으로 관리한다.
 
-특정 상태로 변경하는 API를 따로 제공할 수 있다.
-예를 들어, 주문 상태를 변경하는 API를 PATCH 요청으로 관리한다.
 예제:
-
+```
 PATCH /orders/{orderId}/status
+```
 이 API를 호출할 때 요청 본문(JSON)에서 새로운 상태 값을 전달할 수 있다.
-
+```
 {
   "status": "배송 완료"
 }
+```
 이 방식은 클라이언트가 명확하게 상태를 지정하여 전이하도록 유도 할 수 있다.
 
-상태 전이 방식의 예제
-이제 상태 전이를 어떻게 API에서 구현하는지 간단한 코드 예제를 살펴보자.
+------------------
+### 상태 전이 방식의 예제
+이제 상태 전이를 어떻게 API에서 구현하는지 간단한 코드 예제를 살펴보자.<br>
 아래 코드는 주문 상태를 변경하는 RESTful API의 예제이다.
-
+```java
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
@@ -368,18 +356,20 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
 }
-위 코드에서는 PATCH /orders/{orderId}/status 엔드포인트를 사용하여 주문의 상태를 변경할 수 있다.
+```
+위 코드에서는 ```PATCH /orders/{orderId}/status``` 엔드포인트를 사용하여 주문의 상태를 변경할 수 있다.<br>
 요청 본문(JSON)에서 새로운 상태 값을 전달하면 서버에서 해당 주문의 상태를 업데이트한다.
 
-상태 전이 시 고려해야 할 사항
-비즈니스 로직을 반영한 상태 전이
+----------------
+### 상태 전이 시 고려해야 할 사항
+**비즈니스 로직을 반영한 상태 전이**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;상태 변경이 올바르게 이루어져야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, "배송 완료" 상태로 변경하기 전에 반드시 "배송 중" 상태를 거쳐야 하는 경우가 있다.
 
-상태 변경이 올바르게 이루어져야 한다.
-예를 들어, "배송 완료" 상태로 변경하기 전에 반드시 "배송 중" 상태를 거쳐야 하는 경우가 있다.
-유효한 상태 값만 허용
-
-클라이언트가 존재하지 않는 상태 값으로 변경하지 못하도록 해야 한다.
-예를 들어, OrderStatus enum을 정의하여 허용된 상태만 설정할 수 있도록 한다.
+**유효한 상태 값만 허용**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 존재하지 않는 상태 값으로 변경하지 못하도록 해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, OrderStatus enum을 정의하여 허용된 상태만 설정할 수 있도록 한다.
+```
 public enum OrderStatus {
     PENDING,      // 주문 접수
     PAID,         // 결제 완료
@@ -387,123 +377,130 @@ public enum OrderStatus {
     DELIVERED,    // 배송 완료
     CANCELED      // 주문 취소
 }
+```
 이렇게 하면 클라이언트가 잘못된 상태 값을 전달하는 것을 방지할 수 있다.
 
-상태 변경에 대한 권한 검증
-특정 사용자가 특정 상태로 변경할 수 있는지 확인해야 한다.
-예를 들어, "배송 완료" 상태는 관리자만 변경할 수 있도록 설정할 수 있다.
+**상태 변경에 대한 권한 검증**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;특정 사용자가 특정 상태로 변경할 수 있는지 확인해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, "배송 완료" 상태는 관리자만 변경할 수 있도록 설정할 수 있다.<br>
+```java
 if (!currentUser.isAdmin()) {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 }
-상태 전이 로깅
-상태 변경 이력을 남기는 것이 중요하다.
-예를 들어, 주문이 "결제 완료" 상태로 변경되었을 때, 로그를 남길 수 있다.
+```
+
+**상태 전이 로깅**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;상태 변경 이력을 남기는 것이 중요하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 주문이 "결제 완료" 상태로 변경되었을 때, 로그를 남길 수 있다.
+```
 log.info("Order {} status changed to {}", orderId, request.getStatus());
-상태 전이를 고려한 API 설계의 중요성
-API에서 상태 전이는 단순한 CRUD(Create, Read, Update, Delete) 설계보다 더 복잡한 문제를 포함한다.
-리소스의 상태가 변화하는 과정에서 비즈니스 로직이 포함될 가능성이 높으며,
-이를 잘못 설계하면 불필요한 API 호출 증가, 데이터 일관성 문제, 보안 취약점 등이 발생할 수 있다.
+```
 
-따라서 상태 전이를 설계할 때는 다음과 같은 점을 고려해야 한다.
+-------------
+### 상태 전이를 고려한 API 설계의 중요성
+API에서 상태 전이는 단순한 CRUD(Create, Read, Update, Delete) 설계보다 더 복잡한 문제를 포함한다.<br>
+리소스의 상태가 변화하는 과정에서 비즈니스 로직이 포함될 가능성이 높으며,<br>
+이를 잘못 설계하면 **불필요한 API 호출 증가, 데이터 일관성 문제, 보안 취약점** 등이 발생할 수 있다.
 
-명확한 상태 정의 - 리소스가 가질 수 있는 상태를 미리 정의하고 API에서 일관성 있게 적용해야 한다.
-비즈니스 규칙 반영 - 상태 전이 간의 유효성을 검증하는 로직이 필요하다.
-HTTP 메서드와 URI 설계 - PATCH 또는 PUT을 활용하여 상태 변경을 구현해야 한다.
-상태 변경 로그 및 검증 - 변경된 상태를 추적하고, 변경 가능한 사용자를 제한할 필요가 있다.
-이러한 원칙을 적용하면 RESTful API에서 상태 전이를 보다 안정적으로 관리 할 수 있으며,
+따라서 상태 전이를 설계할 때는 다음과 같은 점을 고려해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**명확한 상태 정의** - 리소스가 가질 수 있는 상태를 미리 정의하고 API에서 일관성 있게 적용해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**비즈니스 규칙 반영** - 상태 전이 간의 유효성을 검증하는 로직이 필요하다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**HTTP 메서드와 URI 설계** - PATCH 또는 PUT을 활용하여 상태 변경을 구현해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**상태 변경 로그 및 검증** - 변경된 상태를 추적하고, 변경 가능한 사용자를 제한할 필요가 있다.
+
+이러한 원칙을 적용하면 RESTful API에서 상태 전이를 보다 안정적으로 관리 할 수 있으며,<br>
 클라이언트와 서버 간의 API 사용 경험을 더욱 향상시킬 수 있다.
 
-학습자의 사고를 돕기 위한 질문
-RESTful API에서 상태 전이(State Transition)의 개념이 중요한 이유는 무엇인가?
-
-클라이언트가 서버와 상호작용할 때 상태 변화가 필요한 이유를 고려해보라.
-PUT과 PATCH 메서드는 어떻게 다르고, 각각 어떤 상황에서 사용하는 것이 적절한가?
-
-전체 리소스를 수정하는 경우와 특정 필드만 변경하는 경우를 비교해보라.
-2. RESTful API에서 HTTP 상태 코드 활용
-2.1. HTTP 상태 코드 개요
-HTTP 상태 코드란?
-HTTP 상태 코드는 클라이언트가 서버에 요청을 보냈을 때, 서버가 해당 요청을 어떻게 처리했는지 를 응답하는 표준 코드이다.
-RESTful API에서 올바른 상태 코드를 사용하는 것은 API의 신뢰성과 사용성을 높이는 핵심 요소 이다.
+-----------------
+# 2. RESTful API에서 HTTP 상태 코드 활용
+## 2-1. HTTP 상태 코드 개요
+### HTTP 상태 코드란?
+HTTP 상태 코드는 클라이언트가 서버에 요청을 보냈을 때, **서버가 해당 요청을 어떻게 처리했는지** 를 응답하는 표준 코드이다.<br>
+RESTful API에서 올바른 상태 코드를 사용하는 것은 **API의 신뢰성과 사용성을 높이는 핵심 요소** 이다.
 
 이 상태 코드는 숫자 3자리 로 구성되며, 첫 번째 숫자에 따라 응답의 의미가 달라진다.
 
-예를 들어, 다음과 같은 의미를 가진다.
+예를 들어, 다음과 같은 의미를 가진다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```2xx```: 요청이 정상적으로 처리됨 (성공)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```3xx```: 클라이언트가 추가적인 조치를 해야 함 (리다이렉션)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```4xx```: 클라이언트의 잘못된 요청 (클라이언트 오류)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```5xx```: 서버에서 요청을 정상적으로 처리하지 못함 (서버 오류)
 
-2xx: 요청이 정상적으로 처리됨 (성공)
-3xx: 클라이언트가 추가적인 조치를 해야 함 (리다이렉션)
-4xx: 클라이언트의 잘못된 요청 (클라이언트 오류)
-5xx: 서버에서 요청을 정상적으로 처리하지 못함 (서버 오류)
-HTTP 상태 코드의 필요성
+---------------
+### HTTP 상태 코드의 필요성
 RESTful API에서 올바른 상태 코드를 반환하는 것은 단순히 응답을 전달하는 것 이상의 의미를 가진다.
 
-API의 신뢰성을 높임
+**API의 신뢰성을 높임**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;올바른 상태 코드가 없으면, 클라이언트는 서버의 응답을 해석하는 데 어려움을 겪을 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 실패한 요청에 대해 200 OK 를 반환하면 클라이언트는 성공으로 오인할 수 있다.
 
-올바른 상태 코드가 없으면, 클라이언트는 서버의 응답을 해석하는 데 어려움을 겪을 수 있다.
-예를 들어, 실패한 요청에 대해 200 OK 를 반환하면 클라이언트는 성공으로 오인할 수 있다.
-디버깅과 유지보수를 용이하게 함
+**디버깅과 유지보수를 용이하게 함**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;적절한 상태 코드가 제공되면, 클라이언트와 서버 개발자는 API의 동작을 쉽게 파악할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 404 Not Found 가 반환되면, 클라이언트는 해당 리소스가 존재하지 않음을 즉시 알 수 있다.
 
-적절한 상태 코드가 제공되면, 클라이언트와 서버 개발자는 API의 동작을 쉽게 파악할 수 있다.
-예를 들어, 404 Not Found 가 반환되면, 클라이언트는 해당 리소스가 존재하지 않음을 즉시 알 수 있다.
-HTTP 프로토콜의 원칙을 따름
+**HTTP 프로토콜의 원칙을 따름**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RESTful API는 HTTP 프로토콜을 기반으로 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;따라서 올바른 상태 코드를 사용하는 것은 REST 아키텍처 스타일을 준수하는 필수 요소 이다.
 
-RESTful API는 HTTP 프로토콜을 기반으로 한다.
-따라서 올바른 상태 코드를 사용하는 것은 REST 아키텍처 스타일을 준수하는 필수 요소 이다.
-상태 코드의 주요 카테고리
-HTTP 상태 코드는 크게 다섯 개의 범주로 나뉜다.
+--------------------
+### 상태 코드의 주요 카테고리
+HTTP 상태 코드는 크게 다섯 개의 범주로 나뉜다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```1xx (정보)``` : 클라이언트의 요청을 처리 중임을 의미<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```2xx (성공)``` : 요청이 정상적으로 처리됨<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```3xx (리다이렉션)``` : 요청을 완료하려면 추가 동작이 필요<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```4xx (클라이언트 오류)``` : 클라이언트 측에서 문제가 발생<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```5xx (서버 오류)``` : 서버에서 요청을 정상적으로 처리하지 못함
 
-1xx (정보) : 클라이언트의 요청을 처리 중임을 의미
-2xx (성공) : 요청이 정상적으로 처리됨
-3xx (리다이렉션) : 요청을 완료하려면 추가 동작이 필요
-4xx (클라이언트 오류) : 클라이언트 측에서 문제가 발생
-5xx (서버 오류) : 서버에서 요청을 정상적으로 처리하지 못함
 이 중 RESTful API에서는 2xx, 4xx, 5xx 상태 코드가 가장 중요하게 사용된다.
 
-2xx (성공) 상태 코드
+----------------
+### 2xx (성공) 상태 코드
 서버가 클라이언트의 요청을 정상적으로 처리했음을 의미하는 코드이다.
 
-200 OK
+**200 OK**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;가장 일반적인 성공 응답 코드.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GET, PUT, PATCH, DELETE 요청이 성공했을 때 사용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;응답 본문에 데이터를 포함할 수 있다.
 
-가장 일반적인 성공 응답 코드.
-GET, PUT, PATCH, DELETE 요청이 성공했을 때 사용된다.
-응답 본문에 데이터를 포함할 수 있다.
-201 Created
+**201 Created**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;새로운 리소스가 성공적으로 생성되었을 때 사용한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;보통 POST 요청에서 사용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;응답 헤더에 Location 을 포함하여 생성된 리소스의 URI를 제공할 수 있다.
 
-새로운 리소스가 성공적으로 생성되었을 때 사용한다.
-보통 POST 요청에서 사용된다.
-응답 헤더에 Location 을 포함하여 생성된 리소스의 URI를 제공할 수 있다.
-204 No Content
+**204 No Content**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;요청은 성공적으로 처리되었지만, 응답 본문을 반환할 필요가 없을 때 사용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;보통 DELETE 요청에서 사용된다.
 
-요청은 성공적으로 처리되었지만, 응답 본문을 반환할 필요가 없을 때 사용된다.
-보통 DELETE 요청에서 사용된다.
 예제:
-
+```java
 @PostMapping("/users")
 public ResponseEntity<User> createUser(@RequestBody User user) {
     User savedUser = userService.save(user);
     return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
 }
-4xx (클라이언트 오류) 상태 코드
+```
+------------------
+### 4xx (클라이언트 오류) 상태 코드
 클라이언트가 잘못된 요청을 보냈을 때 사용된다.
 
-400 Bad Request
+**400 Bad Request**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;요청이 잘못되었거나, 유효성 검사를 통과하지 못한 경우.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 필수 입력값이 누락된 경우 사용된다.
 
-요청이 잘못되었거나, 유효성 검사를 통과하지 못한 경우.
-예를 들어, 필수 입력값이 누락된 경우 사용된다.
-401 Unauthorized
+**401 Unauthorized**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 인증되지 않았을 때 사용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;보통 API에서 인증 토큰이 누락되었거나, 올바르지 않을 때 발생한다.
 
-클라이언트가 인증되지 않았을 때 사용된다.
-보통 API에서 인증 토큰이 누락되었거나, 올바르지 않을 때 발생한다.
-403 Forbidden
+**403 Forbidden**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 해당 리소스에 접근할 권한이 없을 때 사용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 관리자 권한이 없는 사용자가 특정 API를 호출할 때 발생할 수 있다.
 
-클라이언트가 해당 리소스에 접근할 권한이 없을 때 사용된다.
-예를 들어, 관리자 권한이 없는 사용자가 특정 API를 호출할 때 발생할 수 있다.
-404 Not Found
+**404 Not Found**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;요청한 리소스가 존재하지 않을 때 사용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 잘못된 엔드포인트를 호출했거나, 데이터가 존재하지 않는 경우 발생할 수 있다.
 
-요청한 리소스가 존재하지 않을 때 사용된다.
-클라이언트가 잘못된 엔드포인트를 호출했거나, 데이터가 존재하지 않는 경우 발생할 수 있다.
 예제:
-
+```java
 @GetMapping("/users/{id}")
 public ResponseEntity<User> getUser(@PathVariable Long id) {
     User user = userService.findById(id);
@@ -514,65 +511,65 @@ public ResponseEntity<User> getUser(@PathVariable Long id) {
 
     return ResponseEntity.ok(user);
 }
-5xx (서버 오류) 상태 코드
+```
+---------------
+### 5xx (서버 오류) 상태 코드
 서버에서 요청을 정상적으로 처리하지 못할 때 사용된다.
 
-500 Internal Server Error
+**500 Internal Server Error**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버에서 예상치 못한 오류가 발생했을 때 사용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일반적으로 예외가 발생하거나, 내부 오류가 있는 경우 발생할 수 있다.
 
-서버에서 예상치 못한 오류가 발생했을 때 사용된다.
-일반적으로 예외가 발생하거나, 내부 오류가 있는 경우 발생할 수 있다.
-502 Bad Gateway
+**502 Bad Gateway**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버가 다른 서버로부터 잘못된 응답을 받았을 때 사용된다.<br>
 
-서버가 다른 서버로부터 잘못된 응답을 받았을 때 사용된다.
-503 Service Unavailable
+**503 Service Unavailable**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버가 현재 요청을 처리할 수 없을 때 사용된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;과부하 상태이거나, 유지보수 중일 때 발생할 수 있다.
 
-서버가 현재 요청을 처리할 수 없을 때 사용된다.
-과부하 상태이거나, 유지보수 중일 때 발생할 수 있다.
 예제:
-
+```java
 @ExceptionHandler(Exception.class)
 public ResponseEntity<String> handleGlobalException(Exception ex) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                          .body("서버 내부 오류 발생");
 }
-HTTP 상태 코드의 활용
-올바른 상태 코드를 사용하면 API의 가독성과 신뢰성이 높아진다.
+```
+-------------------------
+### HTTP 상태 코드의 활용
+올바른 상태 코드를 사용하면 API의 가독성과 신뢰성이 높아진다.<br>
 API 응답이 일관되게 동작하도록 설계하고, 클라이언트가 이를 해석할 수 있도록 명확한 기준을 설정해야 한다.
 
-200 OK: GET 요청의 일반적인 성공 응답
-201 Created: 새로운 리소스 생성 시
-204 No Content: 응답 본문이 필요 없는 경우
-400 Bad Request: 요청이 잘못된 경우
-401 Unauthorized: 인증 실패
-403 Forbidden: 권한 부족
-404 Not Found: 리소스 없음
-500 Internal Server Error: 서버 내부 오류
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```200 OK```: GET 요청의 일반적인 성공 응답<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```201 Created```: 새로운 리소스 생성 시<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```204 No Content```: 응답 본문이 필요 없는 경우<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```400 Bad Request```: 요청이 잘못된 경우<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```401 Unauthorized```: 인증 실패<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```403 Forbidden```: 권한 부족<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```404 Not Found```: 리소스 없음<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```500 Internal Server Error```: 서버 내부 오류
+
 이러한 원칙을 지키면 RESTful API의 신뢰성을 높이고, 클라이언트와의 소통을 원활하게 할 수 있다.
 
-학습자의 사고를 돕기 위한 질문
-HTTP 상태 코드는 왜 필요한가?
-
-클라이언트가 서버 응답을 어떻게 해석해야 하는지 생각해보라.
-2xx, 4xx, 5xx 상태 코드의 주요 차이점은 무엇인가?
-
-성공, 클라이언트 오류, 서버 오류의 관점에서 차이를 고려해보라.
-2.2. 상태 코드별 활용 사례
-상태 코드의 실무적 활용
-RESTful API를 설계할 때 가장 중요한 부분 중 하나는 올바른 상태 코드를 반환하는 것이다.
+-------------------------
+## 2-2. 상태 코드별 활용 사례
+### 상태 코드의 실무적 활용
+RESTful API를 설계할 때 가장 중요한 부분 중 하나는 올바른 상태 코드를 반환하는 것이다.<br>
 클라이언트는 서버가 제공하는 HTTP 상태 코드를 기반으로 응답을 해석하며, 올바른 상태 코드가 반환되지 않으면 오작동, 디버깅 문제, 예기치 않은 에러 발생 등의 문제가 생길 수 있다.
 
-일반적으로 API 응답을 설계할 때는 다음과 같은 원칙을 따른다.
+일반적으로 API 응답을 설계할 때는 다음과 같은 원칙을 따른다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 요청한 작업이 정상적으로 처리되었는지 명확히 전달할 것<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;클라이언트가 오류를 받았을 때, 그 이유를 정확히 파악할 수 있도록 할 것<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTP 상태 코드를 표준에 맞게 사용할 것<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일관된 API 응답 패턴을 유지할 것
 
-클라이언트가 요청한 작업이 정상적으로 처리되었는지 명확히 전달할 것
-클라이언트가 오류를 받았을 때, 그 이유를 정확히 파악할 수 있도록 할 것
-HTTP 상태 코드를 표준에 맞게 사용할 것
-일관된 API 응답 패턴을 유지할 것
 이제 각 상태 코드별로 구체적인 활용 사례를 살펴보겠다.
 
-200 OK - 일반적인 성공 응답
-200 OK는 가장 흔하게 사용되는 HTTP 상태 코드이며, 요청이 성공적으로 처리되었음을 의미한다.
-GET, PUT, PATCH, DELETE 요청이 정상적으로 실행되었을 때 사용된다.
-
+-------------------
+### 200 OK - 일반적인 성공 응답
+200 OK는 가장 흔하게 사용되는 HTTP 상태 코드이며, 요청이 성공적으로 처리되었음을 의미한다.<br>
+**GET, PUT, PATCH, DELETE** 요청이 정상적으로 실행되었을 때 사용된다.
+```java
 @GetMapping("/users/{id}")
 public ResponseEntity<User> getUser(@PathVariable Long id) {
     User user = userService.findById(id);
@@ -583,13 +580,15 @@ public ResponseEntity<User> getUser(@PathVariable Long id) {
 
     return ResponseEntity.ok(user);
 }
-위 코드에서는 GET /users/{id} 요청이 정상적으로 수행되었을 경우,
-ResponseEntity.ok(user)를 통해 HTTP 상태 코드 200 OK와 함께 데이터를 반환한다.
+```
+위 코드에서는 ```GET /users/{id}``` 요청이 정상적으로 수행되었을 경우,<br>
+```ResponseEntity.ok(user)```를 통해 HTTP 상태 코드 200 OK와 함께 데이터를 반환한다.
 
-201 Created - 리소스 생성 성공
-201 Created는 POST 요청을 통해 새로운 리소스가 생성되었을 때 사용된다.
+--------------------
+### 201 Created - 리소스 생성 성공
+201 Created는 POST 요청을 통해 새로운 리소스가 생성되었을 때 사용된다.<br>
 이때, 반드시 응답 헤더에 생성된 리소스의 URL을 포함하는 것이 원칙이다.
-
+```java
 @PostMapping("/users")
 public ResponseEntity<User> createUser(@RequestBody User user) {
     User savedUser = userService.save(user);
@@ -597,12 +596,15 @@ public ResponseEntity<User> createUser(@RequestBody User user) {
 
     return ResponseEntity.created(location).body(savedUser);
 }
-클라이언트가 새로운 유저를 생성하기 위해 POST /users 요청을 보낸다.
+```
+클라이언트가 새로운 유저를 생성하기 위해 ```POST /users``` 요청을 보낸다.<br>
 서버는 201 Created 상태 코드와 함께 Location 헤더를 설정하여 생성된 리소스의 URL을 반환한다.
-204 No Content - 응답 본문이 필요 없는 경우
-204 No Content는 요청이 정상적으로 처리되었으나, 클라이언트에게 반환할 본문이 없을 때 사용된다.
-보통 DELETE 요청이 성공했을 때 사용된다.
 
+----------------
+### 204 No Content - 응답 본문이 필요 없는 경우
+204 No Content는 요청이 정상적으로 처리되었으나, 클라이언트에게 반환할 본문이 없을 때 사용된다.<br>
+보통 DELETE 요청이 성공했을 때 사용된다.
+```java
 @DeleteMapping("/users/{id}")
 public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
     boolean deleted = userService.delete(id);
@@ -613,13 +615,16 @@ public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
 
     return ResponseEntity.noContent().build();
 }
-클라이언트가 DELETE /users/{id} 요청을 보낸다.
-해당 사용자가 존재하면 삭제 후 204 No Content 응답을 보낸다.
+```
+클라이언트가 ```DELETE /users/{id}``` 요청을 보낸다.<br>
+해당 사용자가 존재하면 삭제 후 204 No Content 응답을 보낸다.<br>
 삭제할 사용자가 존재하지 않으면 404 Not Found를 반환한다.
-400 Bad Request - 잘못된 요청
-400 Bad Request는 클라이언트가 보낸 요청이 잘못되었을 때 사용된다.
-예를 들어, 필수 필드가 누락되었거나, 잘못된 형식의 데이터가 포함된 경우 사용된다.
 
+-------------------
+### 400 Bad Request - 잘못된 요청
+400 Bad Request는 클라이언트가 보낸 요청이 잘못되었을 때 사용된다.<br>
+예를 들어, 필수 필드가 누락되었거나, 잘못된 형식의 데이터가 포함된 경우 사용된다.
+```java
 @PostMapping("/users")
 public ResponseEntity<String> createUser(@RequestBody @Valid User user, BindingResult result) {
     if (result.hasErrors()) {
@@ -630,12 +635,15 @@ public ResponseEntity<String> createUser(@RequestBody @Valid User user, BindingR
     User savedUser = userService.save(user);
     return ResponseEntity.ok(savedUser);
 }
-클라이언트가 필수 입력 값을 빠뜨리고 POST /users 요청을 보냈을 경우,
+```
+클라이언트가 필수 입력 값을 빠뜨리고 POST /users 요청을 보냈을 경우,<br>
 400 Bad Request 상태 코드와 함께 오류 메시지를 반환한다.
-401 Unauthorized - 인증 실패
-401 Unauthorized는 클라이언트가 인증되지 않았을 때 발생한다.
-즉, API에 접근하려면 로그인 또는 인증 토큰이 필요하지만, 해당 정보를 제공하지 않았거나 잘못된 정보를 제공했을 경우 사용된다.
 
+-------------------
+### 401 Unauthorized - 인증 실패
+401 Unauthorized는 클라이언트가 인증되지 않았을 때 발생한다.<br>
+즉, API에 접근하려면 로그인 또는 인증 토큰이 필요하지만, 해당 정보를 제공하지 않았거나 잘못된 정보를 제공했을 경우 사용된다.
+```java
 @GetMapping("/secure-data")
 public ResponseEntity<String> getSecureData(@RequestHeader(value = "Authorization", required = false) String authToken) {
     if (authToken == null || !authService.isValid(authToken)) {
@@ -644,10 +652,13 @@ public ResponseEntity<String> getSecureData(@RequestHeader(value = "Authorizatio
 
     return ResponseEntity.ok("보안 데이터입니다.");
 }
+```
 Authorization 헤더 없이 요청을 보낼 경우 401 Unauthorized를 반환한다.
-403 Forbidden - 접근 권한 없음
-403 Forbidden은 클라이언트가 인증은 되었지만, 특정 리소스에 대한 접근 권한이 없을 때 사용된다.
 
+-----------------
+### 403 Forbidden - 접근 권한 없음
+403 Forbidden은 클라이언트가 인증은 되었지만, 특정 리소스에 대한 접근 권한이 없을 때 사용된다.
+```java
 @GetMapping("/admin")
 public ResponseEntity<String> getAdminPage(@RequestHeader("Authorization") String token) {
     if (!authService.isAdmin(token)) {
@@ -656,98 +667,68 @@ public ResponseEntity<String> getAdminPage(@RequestHeader("Authorization") Strin
 
     return ResponseEntity.ok("관리자 페이지");
 }
+```
 사용자가 일반 권한으로 관리자 페이지에 접근하려고 하면 403 Forbidden을 반환한다.
-404 Not Found - 리소스 없음
-404 Not Found는 클라이언트가 요청한 리소스가 존재하지 않을 때 사용된다.
-예를 들어, 존재하지 않는 ID로 데이터를 조회하려는 경우 404가 반환된다.
 
+--------------------
+### 404 Not Found - 리소스 없음
+404 Not Found는 클라이언트가 요청한 리소스가 존재하지 않을 때 사용된다.<br>
+예를 들어, 존재하지 않는 ID로 데이터를 조회하려는 경우 404가 반환된다.
+```java
 @GetMapping("/users/{id}")
 public ResponseEntity<User> getUser(@PathVariable Long id) {
     return userService.findById(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 }
+```
 사용자가 없는 ID로 요청하면 404 Not Found를 반환한다.
-500 Internal Server Error - 서버 내부 오류
-500 Internal Server Error는 서버 내부에서 예기치 않은 오류가 발생했을 때 사용된다.
-보통, 예상하지 못한 예외가 발생했거나 서버에서 처리할 수 없는 오류가 있을 때 사용된다.
 
+-------------------
+### 500 Internal Server Error - 서버 내부 오류
+500 Internal Server Error는 서버 내부에서 예기치 않은 오류가 발생했을 때 사용된다.<br>
+보통, 예상하지 못한 예외가 발생했거나 서버에서 처리할 수 없는 오류가 있을 때 사용된다.
+```java
 @ExceptionHandler(Exception.class)
 public ResponseEntity<String> handleException(Exception ex) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body("서버 내부 오류 발생: " + ex.getMessage());
 }
+```
 서버에서 예외가 발생하면 500 Internal Server Error를 반환하도록 설정한다.
-상태 코드 활용 시 주의할 점
-일관된 상태 코드 사용
 
-API 내에서 같은 동작에 대해 다른 상태 코드를 사용하면 혼란을 초래할 수 있다.
-예를 들어, 리소스를 찾지 못했을 때 어떤 API는 404 Not Found를, 다른 API는 400 Bad Request를 반환하면 일관성이 떨어진다.
-필요 이상으로 상태 코드를 남발하지 말 것
+--------------------
+### 상태 코드 활용 시 주의할 점
+**일관된 상태 코드 사용**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;API 내에서 같은 동작에 대해 다른 상태 코드를 사용하면 혼란을 초래할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 리소스를 찾지 못했을 때 어떤 API는 404 Not Found를, 다른 API는 400 Bad Request를 반환하면 일관성이 떨어진다.
 
-상황에 맞게 적절한 상태 코드를 사용해야 한다.
-예를 들어, DELETE 요청이 성공적으로 처리되었는데 200 OK 대신 204 No Content를 사용하는 것이 더 적절하다.
-에러 메시지를 포함하여 반환할 것
+**필요 이상으로 상태 코드를 남발하지 말 것**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;상황에 맞게 적절한 상태 코드를 사용해야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, DELETE 요청이 성공적으로 처리되었는데 200 OK 대신 204 No Content를 사용하는 것이 더 적절하다.
 
-상태 코드만 반환하면 클라이언트는 문제의 원인을 알 수 없다.
-JSON 형식으로 메시지를 포함하는 것이 좋다.
-학습자의 사고를 돕기 위한 질문
-HTTP 상태 코드 201 Created와 204 No Content의 차이점은 무엇인가?
+**에러 메시지를 포함하여 반환할 것**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;상태 코드만 반환하면 클라이언트는 문제의 원인을 알 수 없다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JSON 형식으로 메시지를 포함하는 것이 좋다.
 
-응답 본문(body) 포함 여부와 사용되는 상황을 비교해보라.
-클라이언트가 서버에 존재하지 않는 리소스를 요청했을 때 적절한 상태 코드는 무엇이며, 왜 404 Not Found를 사용하는가?
-
-자원의 존재 여부를 확인하는 HTTP 요청의 원리를 떠올려보라.
-실습 문제
-문제 1: 적절한 HTTP 상태 코드 선택
-아래 시나리오에 맞는 HTTP 상태 코드를 작성하시오.
-
-서버에서 정상적으로 요청을 처리하고 데이터를 반환했다.
-클라이언트가 유효하지 않은 데이터를 서버에 전송했다.
-클라이언트가 요청한 리소스가 존재하지 않는다.
-서버 내부에서 예기치 않은 오류가 발생했다.
-출력 예시:
-
-1. 200 OK
-2. 400 Bad Request
-3. 404 Not Found
-4. 500 Internal Server Error
-문제 2: RESTful API 응답 처리
-다음 API 요청에 대한 응답을 JSON 형식으로 작성하시오.
-
-새로운 사용자가 생성되었을 때(201 Created).
-요청한 데이터가 없을 때(404 Not Found).
-인증되지 않은 사용자가 접근할 때(401 Unauthorized).
-출력 예시:
-
-{
-  "status": 201,
-  "message": "User created successfully",
-  "userId": 12345
-}
-{
-  "status": 404,
-  "message": "Resource not found"
-}
-{
-  "status": 401,
-  "message": "Unauthorized access"
-}
-2.3. 오류 응답 표준화
-오류 응답의 필요성
-RESTful API를 설계할 때 단순히 HTTP 상태 코드만 반환하는 것이 아니라, 일관된 형식의 오류 응답을 제공하는 것이 중요하다.
-클라이언트는 API를 호출했을 때 어떤 오류가 발생했는지, 어떻게 해결할 수 있는지를 알아야 한다.
+-----------------
+## 2-3. 오류 응답 표준화
+### 오류 응답의 필요성
+RESTful API를 설계할 때 단순히 HTTP 상태 코드만 반환하는 것이 아니라, **일관된 형식의 오류 응답을 제공하는 것**이 중요하다.<br>
+클라이언트는 API를 호출했을 때 **어떤 오류가 발생했는지, 어떻게 해결할 수 있는지**를 알아야 한다.
 
 일반적으로 다음과 같은 이유로 오류 응답의 표준화가 필요하다.
 
-일관성 유지: API마다 다른 오류 형식을 사용하면 클라이언트가 이를 처리하기 어려워진다.
-디버깅 용이성: 개발자와 사용자 모두 오류가 발생했을 때 문제를 쉽게 이해할 수 있어야 한다.
-자동화 및 로깅 지원: 시스템이 오류를 수집하고 분석하기 위해서는 명확한 응답 형식이 필요하다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**일관성 유지**: API마다 다른 오류 형식을 사용하면 클라이언트가 이를 처리하기 어려워진다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**디버깅 용이성**: 개발자와 사용자 모두 오류가 발생했을 때 문제를 쉽게 이해할 수 있어야 한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**자동화 및 로깅 지원**: 시스템이 오류를 수집하고 분석하기 위해서는 명확한 응답 형식이 필요하다.
+
 표준화된 오류 응답을 사용하면 RESTful API의 가독성과 유지보수성이 크게 향상된다.
 
-오류 응답의 JSON 형식 설계
+---------------------
+### 오류 응답의 JSON 형식 설계
 일반적으로 API의 오류 응답은 JSON 형식으로 제공되며, 다음과 같은 필드를 포함하는 것이 일반적이다.
-
+```
 {
   "timestamp": "2025-03-11T14:30:00Z",
   "status": 400,
@@ -755,19 +736,21 @@ RESTful API를 설계할 때 단순히 HTTP 상태 코드만 반환하는 것이
   "message": "필수 필드 'email'이 누락되었습니다.",
   "path": "/users"
 }
-각 필드의 의미는 다음과 같다.
+```
+각 필드의 의미는 다음과 같다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```timestamp``` : 오류가 발생한 시점 (ISO 8601 형식)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```status``` : HTTP 상태 코드 (예: 400, 404, 500)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```error``` : 오류의 간략한 설명 (예: Bad Request, Unauthorized)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```message``` : 상세한 오류 메시지 (예: "필수 필드 'email'이 누락되었습니다.")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```path``` : 오류가 발생한 API 엔드포인트 경로
 
-timestamp : 오류가 발생한 시점 (ISO 8601 형식)
-status : HTTP 상태 코드 (예: 400, 404, 500)
-error : 오류의 간략한 설명 (예: Bad Request, Unauthorized)
-message : 상세한 오류 메시지 (예: "필수 필드 'email'이 누락되었습니다.")
-path : 오류가 발생한 API 엔드포인트 경로
 위와 같은 응답 형식을 사용하면, 클라이언트가 오류를 보다 쉽게 처리할 수 있다.
 
-Spring Boot에서 오류 응답 표준화
-Spring Boot에서는 @ControllerAdvice를 사용하여 전역적으로 예외를 처리할 수 있다.
+------------------
+### Spring Boot에서 오류 응답 표준화
+Spring Boot에서는 ```@ControllerAdvice```를 사용하여 전역적으로 예외를 처리할 수 있다.<br>
 이를 통해 일관된 오류 응답을 자동으로 생성할 수 있다.
-
+```java
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -807,19 +790,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 }
+```
 위 코드에서는 @RestControllerAdvice를 사용하여 전역 예외 처리 핸들러를 정의했다.
 
-MethodArgumentNotValidException : 유효성 검사 실패 시 400 Bad Request 응답을 반환한다.
-EntityNotFoundException : 데이터가 존재하지 않을 경우 404 Not Found 응답을 반환한다.
-Exception : 예상치 못한 서버 오류가 발생하면 500 Internal Server Error 응답을 반환한다.
+```MethodArgumentNotValidException``` : 유효성 검사 실패 시 400 Bad Request 응답을 반환한다.<br>
+```EntityNotFoundException``` : 데이터가 존재하지 않을 경우 404 Not Found 응답을 반환한다.<br>
+```Exception``` : 예상치 못한 서버 오류가 발생하면 500 Internal Server Error 응답을 반환한다.
+
 이렇게 하면, 모든 API에서 동일한 형식의 오류 응답을 반환할 수 있다.
 
-클라이언트에서 오류 응답 처리하기
-서버가 오류 응답을 표준화했다면, 클라이언트에서도 일관된 방식으로 오류를 처리하는 것이 중요하다.
+------------------------
+### 클라이언트에서 오류 응답 처리하기
+서버가 오류 응답을 표준화했다면, **클라이언트에서도 일관된 방식으로 오류를 처리하는 것이 중요하다.**<br>
 예를 들어, React 또는 Vue.js와 같은 프론트엔드 애플리케이션에서 API 호출 시 오류를 처리하는 방법을 살펴보자.
 
 JavaScript (React 예제)
-
+```java
 async function fetchUser(userId) {
     try {
         const response = await fetch(`/users/${userId}`);
@@ -835,68 +821,27 @@ async function fetchUser(userId) {
         alert("오류 발생: " + error.message);
     }
 }
+```
 위 코드는 API 호출 중 오류가 발생하면 서버가 반환한 JSON 오류 응답을 읽고, 클라이언트에서 처리할 수 있도록 한다.
 
-오류 응답 표준화 시 주의할 점
-HTTP 상태 코드와 응답 메시지를 일치시켜야 한다.
+--------------------------
+### 오류 응답 표준화 시 주의할 점
+**HTTP 상태 코드와 응답 메시지를 일치시켜야 한다.**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, 404 Not Found 응답을 보내면서 "Bad Request"라는 메시지를 제공하면 혼란을 초래할 수 있다.
 
-예를 들어, 404 Not Found 응답을 보내면서 "Bad Request"라는 메시지를 제공하면 혼란을 초래할 수 있다.
-에러 메시지는 너무 자세하지 않아야 한다.
+**에러 메시지는 너무 자세하지 않아야 한다.**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;내부 서버 오류(500)와 같은 경우, 너무 많은 정보를 제공하면 보안에 취약할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"서버 내부 오류가 발생했습니다." 같은 일반적인 메시지를 사용하는 것이 좋다.
 
-내부 서버 오류(500)와 같은 경우, 너무 많은 정보를 제공하면 보안에 취약할 수 있다.
-"서버 내부 오류가 발생했습니다." 같은 일반적인 메시지를 사용하는 것이 좋다.
-모든 예외를 잡지 말고 적절한 예외만 처리해야 한다.
+**모든 예외를 잡지 말고 적절한 예외만 처리해야 한다.**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예를 들어, Exception.class를 전역적으로 처리하는 경우 모든 오류가 동일한 500으로 반환될 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;이를 방지하기 위해, 비즈니스 로직에서 발생하는 예외와 서버 내부 예외를 구분하는 것이 중요하다.
 
-예를 들어, Exception.class를 전역적으로 처리하는 경우 모든 오류가 동일한 500으로 반환될 수 있다.
-이를 방지하기 위해, 비즈니스 로직에서 발생하는 예외와 서버 내부 예외를 구분하는 것이 중요하다.
-실습 문제
-문제 1: 표준화된 오류 응답 설계
-아래 조건을 만족하는 JSON 오류 응답 형식을 설계하시오.
-
-응답에는 status, error, message, timestamp 필드가 포함되어야 한다.
-400 Bad Request 상태 코드가 발생했을 때의 응답 예시를 작성하시오.
-출력 예시:
-
-{
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Invalid input data",
-  "timestamp": "2025-03-11T12:00:00Z"
-}
-문제 2: 공통 예외 처리 구현
-Spring Boot에서 예외가 발생했을 때 공통 예외 처리를 수행하는 @ControllerAdvice 클래스를 작성하시오.
-
-MethodArgumentNotValidException이 발생하면 400 Bad Request를 반환해야 한다.
-ResourceNotFoundException이 발생하면 404 Not Found를 반환해야 한다.
-출력 예시:
-
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", 400);
-        errorResponse.put("error", "Bad Request");
-        errorResponse.put("message", "Invalid input data");
-        errorResponse.put("timestamp", Instant.now());
-        return ResponseEntity.badRequest().body(errorResponse);
-    }
-
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", 404);
-        errorResponse.put("error", "Not Found");
-        errorResponse.put("message", ex.getMessage());
-        errorResponse.put("timestamp", Instant.now());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-}
-3. API 버전 관리 전략
-3.1. API 버전 관리 필요성
-API 버전 관리란?
-API 버전 관리란 API가 변경될 때 기존 사용자와의 호환성을 유지하면서 새로운 기능을 제공하는 방법을 의미한다.
+---------------------------------
+# 3. API 버전 관리 전략
+## 3-1. API 버전 관리 필요성
+### API 버전 관리란?
+API 버전 관리란 **API가 변경될 때 기존 사용자와의 호환성을 유지하면서 새로운 기능을 제공하는 방법**을 의미한다.<br>
 API는 시간이 지남에 따라 변경될 수밖에 없으며, 기존 API 사용자의 기능을 보장하면서 새로운 API를 제공하는 것이 중요하다.
 
 API 버전 관리가 필요한 이유
