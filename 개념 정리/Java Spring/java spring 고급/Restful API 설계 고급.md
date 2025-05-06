@@ -1498,7 +1498,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 이제 API를 호출할 때, JWT 토큰이 없는 요청은 거부할 수 있다.
 
 3. CORS 설정 적용 Spring Boot에서 CORS 정책을 설정하려면 WebMvcConfigurer를 구현하면 된다.
-
+```java
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
     @Override
@@ -1509,9 +1509,11 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowCredentials(true);
     }
 }
+```
 이렇게 하면 https://trusted-domain.com에서만 API 호출을 허용할 수 있다.
 
-API 보안 적용 시 주의할 점
+-----------------
+### API 보안 적용 시 주의할 점
 API 보안을 적용할 때 다음 사항을 반드시 고려해야 한다.
 
 보안은 다층 방어 전략이 필요하다
