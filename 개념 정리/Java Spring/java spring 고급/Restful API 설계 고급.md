@@ -1045,12 +1045,13 @@ HATEOAS를 적용한 API 응답 예시
 다음은 HATEOAS를 적용한 API 응답 예제이다.
 
 예제 (일반적인 API 응답 - HATEOAS 미적용)
-
+```
 {
   "id": 1,
   "name": "John Doe",
   "email": "john@example.com"
 }
+```
 위 API 응답에서는 클라이언트가 사용자의 정보를 조회할 수 있지만, 사용자가 다른 동작(예: 수정, 삭제)을 수행하려면 해당 API의 엔드포인트를 미리 알고 있어야 한다.
 
 예제 (HATEOAS 적용 API 응답)
