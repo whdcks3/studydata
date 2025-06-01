@@ -51,48 +51,55 @@ HTML이 웹 페이지의 골격이라면, CSS는 색상, 레이아웃, 글꼴, �
 
 게임 캐릭터의 예시로 다시 설명하자면, HTML이 캐릭터의 몸의 형태라면, CSS는 캐릭터가 입는 옷, 장신구, 무기, 스킨 등을 결정하는 요소이다.
 
-### CSS의 주요 특징
-HTML 요소의 스타일을 변경: 색상, 크기, 배경, 테두리 등을 설정할 수 있다.<br>
-웹 페이지의 레이아웃을 구성: flexbox, grid 등을 사용하여 화면 배치를 조정할 수 있다.<br>
-반응형 웹 디자인을 지원: 다양한 화면 크기에 맞게 스타일을 변경할 수 있다.
-CSS의 기본 적용 방법
+**CSS의 주요 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTML 요소의 스타일을 변경: 색상, 크기, 배경, 테두리 등을 설정할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;웹 페이지의 레이아웃을 구성: flexbox, grid 등을 사용하여 화면 배치를 조정할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;반응형 웹 디자인을 지원: 다양한 화면 크기에 맞게 스타일을 변경할 수 있다.
+
+**CSS의 기본 적용 방법**<br>
 CSS는 HTML에 여러 방식으로 적용할 수 있다.
 
-인라인 스타일(Inline CSS)
+**인라인 스타일(Inline CSS)**<br>
 개별 요소에 직접 style 속성을 이용하여 적용하는 방식이다.
-
+```html
 <p style="color: blue; font-size: 18px;">
   CSS는 웹 페이지의 스타일을 변경할 수 있다.
 </p>
-내부 스타일(SInternal CSS)
-HTML 문서 내 <style> 태그를 사용하여 스타일을 정의하는 방식이다.
+```
 
+**내부 스타일(SInternal CSS)**<br>
+HTML 문서 내 <style> 태그를 사용하여 스타일을 정의하는 방식이다.
+```html
 <style>
   p {
     color: red;
     font-size: 16px;
   }
 </style>
-외부 스타일(External CSS) 별도의 .css 파일을 만들어 HTML에서 불러오는 방식이다.
+```
 
+외부 스타일(External CSS) 별도의 .css 파일을 만들어 HTML에서 불러오는 방식이다.
+```html
 <link rel="stylesheet" href="styles.css" />
+```
 CSS를 사용하면 웹 페이지의 일관된 디자인을 유지하고, 유지보수도 쉽게 할 수 있다.
 
-JavaScript: 웹 페이지에 동적 기능을 추가하는 언어
-JavaScript는 웹 페이지를 동적으로 만들고 사용자와 상호작용할 수 있도록 하는 프로그래밍 언어이다.
+### JavaScript: 웹 페이지에 동적 기능을 추가하는 언어
+JavaScript는 **웹 페이지를 동적으로 만들고 사용자와 상호작용할 수 있도록 하는 프로그래밍 언어**이다.<br>
 HTML이 페이지의 구조를 담당하고, CSS가 디자인을 담당한다면, JavaScript는 사용자의 행동(클릭, 입력 등)에 반응하여 페이지를 동적으로 변경할 수 있도록 돕는다.
 
-게임 개발에서 캐릭터의 움직임, 공격, 점프 등의 동작을 구현하는 것이 JavaScript의 역할과 비슷하다.
+게임 개발에서 캐릭터의 움직임, 공격, 점프 등의 동작을 구현하는 것이 JavaScript의 역할과 비슷하다.<br>
 즉, 웹 페이지에서도 JavaScript를 활용하여 버튼을 클릭하면 내용이 바뀌거나, 애니메이션이 실행되거나, 데이터를 서버에서 받아오는 등의 다양한 기능을 추가할 수 있다.
 
 ### JavaScript의 주요 특징
-사용자 이벤트를 처리: 버튼 클릭, 키보드 입력, 마우스 움직임 등의 이벤트를 감지하여 동작을 수행한다.
-HTML 요소를 동적으로 변경: document.getElementById() 등의 메서드를 이용하여 HTML 요소를 조작할 수 있다.
-애니메이션과 효과를 추가: CSS와 함께 사용하여 화면 전환, 슬라이드 효과 등을 구현할 수 있다.
-서버와 비동기 통신(AJAX, Fetch API) : 백엔드 서버에서 데이터를 가져와 웹 페이지를 업데이트할 수 있다.
-JavaScript의 기본 예제
-아래 예제는 버튼을 클릭하면 문장의 내용을 변경하는 간단한 JavaScript 코드이다.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;사용자 이벤트를 처리: 버튼 클릭, 키보드 입력, 마우스 움직임 등의 이벤트를 감지하여 동작을 수행한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTML 요소를 동적으로 변경: document.getElementById() 등의 메서드를 이용하여 HTML 요소를 조작할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;애니메이션과 효과를 추가: CSS와 함께 사용하여 화면 전환, 슬라이드 효과 등을 구현할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버와 비동기 통신(AJAX, Fetch API) : 백엔드 서버에서 데이터를 가져와 웹 페이지를 업데이트할 수 있다.
 
+**JavaScript의 기본 예제**<br>
+아래 예제는 버튼을 클릭하면 문장의 내용을 변경하는 간단한 JavaScript 코드이다.
+```html
 <!DOCTYPE html>
 <html lang="ko">
   <head>
@@ -113,59 +120,59 @@ JavaScript의 기본 예제
     </script>
   </body>
 </html>
-위 코드에서:
+```
+위 코드에서:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```document.getElementById("text").innerText```를 사용하여 <p> 태그의 내용을 변경할 수 있다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;```onclick="changeText()"```를 버튼에 추가하여 클릭 시 함수가 실행되도록 했다.
 
-document.getElementById("text").innerText를 사용하여 <p> 태그의 내용을 변경할 수 있다.
-onclick="changeText()"를 버튼에 추가하여 클릭 시 함수가 실행되도록 했다.
 이처럼 JavaScript를 활용하면 웹 페이지를 동적으로 조작하고, 사용자의 입력에 반응할 수 있다.
 
-HTML, CSS, JavaScript의 협업
+--------------
+### HTML, CSS, JavaScript의 협업
 웹 페이지가 제대로 동작하려면 HTML, CSS, JavaScript가 서로 협력해야 한다.
 
-HTML이 콘텐츠의 구조를 담당하고,
-CSS가 디자인을 적용하며,
+HTML이 콘텐츠의 구조를 담당하고,<br>
+CSS가 디자인을 적용하며,<br>
 JavaScript가 동적인 기능을 추가한다.
+
 이 세 가지 요소가 조화롭게 사용될 때, 비로소 사용자가 원하는 기능을 갖춘 웹 페이지가 완성된다.
 
-학습자의 사고를 돕기 위한 질문
-HTML, CSS, JavaScript가 각각 담당하는 역할은 무엇인가?
-
-웹 페이지에서 각 요소가 어떤 기능을 수행하는지 생각해보라.
-HTML 문서에서 CSS와 JavaScript를 분리하여 작성하는 것이 유지보수에 왜 유리한가?
-
-코드의 재사용성과 유지보수성을 고려해보라.
-1.2. 브라우저의 렌더링 과정
-웹 브라우저는 HTML 문서를 해석하여 사용자가 볼 수 있는 화면을 렌더링한다.
-렌더링 과정은 단순히 HTML 파일을 읽어서 화면에 출력하는 것이 아니라, 여러 단계를 거쳐 최종적으로 웹 페이지를 표시하는 복잡한 절차이다.
+------------------
+## 1-2. 브라우저의 렌더링 과정
+웹 브라우저는 HTML 문서를 해석하여 사용자가 볼 수 있는 화면을 렌더링한다.<br>
+렌더링 과정은 단순히 HTML 파일을 읽어서 화면에 출력하는 것이 아니라, 여러 단계를 거쳐 최종적으로 웹 페이지를 표시하는 복잡한 절차이다.<br>
 이 과정을 이해하면 웹 페이지가 어떻게 동작하는지 파악할 수 있으며, 렌더링 최적화를 통해 성능을 개선할 수도 있다.
 
 웹 브라우저가 HTML 문서를 화면에 표시하는 과정은 다음과 같이 진행된다.
 
-HTML 문서 요청 및 응답
-DOM(Document Object Model) 트리 생성
-CSSOM(CSS Object Model) 트리 생성 및 적용
-렌더 트리(Render Tree) 생성
-레이아웃(Layout) 계산
-페인팅(Painting) 및 화면에 표시
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTML 문서 요청 및 응답<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOM(Document Object Model) 트리 생성<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CSSOM(CSS Object Model) 트리 생성 및 적용<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;렌더 트리(Render Tree) 생성<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;레이아웃(Layout) 계산<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;페인팅(Painting) 및 화면에 표시
+
 이제 각 단계별로 자세히 살펴보자.
 
-HTML 문서 요청 및 응답
-웹 브라우저는 사용자가 웹 페이지를 요청하면 HTTP 요청을 보내고, 서버로부터 해당 HTML 파일을 받아온다.
+---------------
+### HTML 문서 요청 및 응답
+웹 브라우저는 사용자가 웹 페이지를 요청하면 HTTP 요청을 보내고, 서버로부터 해당 HTML 파일을 받아온다.<br>
 이 과정은 클라이언트-서버 모델을 기반으로 동작하며, 브라우저는 사용자가 입력한 URL을 바탕으로 DNS 서버에서 IP 주소를 조회한 후 요청을 보낸다.
 
-예를 들어, 사용자가 https://example.com을 입력하면:
+예를 들어, 사용자가 https://example.com을 입력하면:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;브라우저는 DNS 서버에서 example.com의 IP 주소를 조회한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;해당 IP 주소를 가진 서버로 HTTP 요청(GET 요청) 을 보낸다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;서버는 요청을 처리한 후 HTML 파일을 응답(Response) 으로 반환한다.
 
-브라우저는 DNS 서버에서 example.com의 IP 주소를 조회한다.
-해당 IP 주소를 가진 서버로 HTTP 요청(GET 요청) 을 보낸다.
-서버는 요청을 처리한 후 HTML 파일을 응답(Response) 으로 반환한다.
 이때 서버가 반환하는 응답은 HTML뿐만 아니라, CSS, JavaScript, 이미지 등 웹 페이지를 구성하는 모든 자원을 포함할 수 있다.
 
-DOM(Document Object Model) 트리 생성
-웹 브라우저가 HTML 파일을 받으면 이를 해석하여 DOM(Document Object Model) 트리를 생성한다.
+------------------
+### DOM(Document Object Model) 트리 생성
+웹 브라우저가 HTML 파일을 받으면 이를 해석하여 DOM(Document Object Model) 트리를 생성한다.<br>
 DOM은 웹 페이지의 계층적 구조를 나타내는 객체 모델로, 각 HTML 요소를 노드(Node)로 변환하여 트리 형태로 구성된다.
 
 예를 들어, 다음과 같은 HTML이 있다고 가정하자.
-
+```html
 <!DOCTYPE html>
 <html lang="ko">
   <head>
@@ -176,8 +183,9 @@ DOM은 웹 페이지의 계층적 구조를 나타내는 객체 모델로, 각 H
     <p>이 페이지는 렌더링 과정의 이해를 돕기 위한 예제입니다.</p>
   </body>
 </html>
+```
 이 HTML 문서를 브라우저가 해석하면, 다음과 같은 DOM 트리가 생성된다.
-
+```
 Document
  ├── html
  │   ├── head
@@ -185,16 +193,18 @@ Document
  │   ├── body
  │   │   ├── h1
  │   │   ├── p
-각 HTML 요소(<html>, <head>, <body> 등)가 트리 구조의 노드(Node) 로 변환되며, 이 DOM은 이후 JavaScript에서 조작할 수 있다.
+```
+각 HTML 요소(```<html>, <head>, <body>```등)가 트리 구조의 노드(Node) 로 변환되며, 이 DOM은 이후 JavaScript에서 조작할 수 있다.
 
 DOM 트리는 브라우저가 HTML을 해석하는 즉시 생성되며, 이후 CSS와 JavaScript가 적용될 준비를 한다.
 
-CSSOM(CSS Object Model) 트리 생성 및 적용
-HTML이 DOM 트리로 변환되었다면, 이제 CSS를 처리할 차례다.
+-----------------
+### CSSOM(CSS Object Model) 트리 생성 및 적용
+HTML이 DOM 트리로 변환되었다면, 이제 CSS를 처리할 차례다.<br>
 웹 페이지가 CSS를 포함하고 있다면 브라우저는 CSS 파서(Parser) 를 이용해 CSS 스타일을 분석하고, 이를 기반으로 CSSOM(CSS Object Model) 트리를 생성한다.
 
 예를 들어, 다음과 같은 CSS 코드가 있다고 가정하자.
-
+```html
 h1 {
   color: blue;
   font-size: 24px;
@@ -202,58 +212,67 @@ h1 {
 p {
   color: gray;
 }
+```
 이 CSS는 다음과 같은 CSSOM 트리로 변환된다.
-
+```
 CSSOM
  ├── h1
  │   ├── color: blue
  │   ├── font-size: 24px
  ├── p
      ├── color: gray
+```
 브라우저는 이 CSSOM을 이용하여 각 HTML 요소에 스타일을 적용할 준비를 한다.
 
-DOM과 CSSOM의 차이점
+**DOM과 CSSOM의 차이점**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOM: HTML 요소의 구조와 관계를 나타내는 트리<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CSSOM: 각 요소에 적용되는 스타일 정보를 나타내는 트리
 
-DOM: HTML 요소의 구조와 관계를 나타내는 트리
-CSSOM: 각 요소에 적용되는 스타일 정보를 나타내는 트리
-렌더 트리(Render Tree) 생성
-브라우저는 HTML의 DOM 트리와 CSS의 CSSOM 트리를 결합하여 렌더 트리(Render Tree) 를 생성한다.
+---------------
+### 렌더 트리(Render Tree) 생성
+브라우저는 HTML의 DOM 트리와 CSS의 CSSOM 트리를 결합하여 렌더 트리(Render Tree) 를 생성한다.<br>
 렌더 트리는 실제로 화면에 표시할 요소만 포함하는 트리이다.
 
-예를 들어, <head> 내부의 <title> 요소나 display: none;이 적용된 요소는 렌더 트리에 포함되지 않는다.
-
+예를 들어, ```<head>``` 내부의 ```<title>``` 요소나 ```display: none;```이 적용된 요소는 렌더 트리에 포함되지 않는다.
+```html
 <body>
   <h1>렌더링 과정</h1>
   <p style="display: none;">이 문장은 보이지 않습니다.</p>
 </body>
+```
 이 HTML과 CSS를 조합하면, 최종적인 렌더 트리는 다음과 같이 구성된다.
-
+```
 Render Tree
  ├── h1 (color: blue, font-size: 24px)
-렌더 트리의 특징
+```
 
-화면에 표시할 요소만 포함한다.
-각 요소가 CSS 스타일을 포함한 상태로 존재한다.
+**렌더 트리의 특징**<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;화면에 표시할 요소만 포함한다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;각 요소가 CSS 스타일을 포함한 상태로 존재한다.
+
 이제 브라우저는 렌더 트리를 기반으로 화면 배치를 계산하는 단계로 넘어간다.
 
-레이아웃(Layout) 계산
-렌더 트리가 생성되었다면, 이제 각 요소의 위치와 크기를 계산하는 과정이 필요하다.
+-------------
+### 레이아웃(Layout) 계산
+렌더 트리가 생성되었다면, 이제 각 요소의 위치와 크기를 계산하는 과정이 필요하다.<br>
 이 과정을 레이아웃(Layout) 계산이라고 하며, 브라우저는 화면 크기에 따라 각 요소를 배치한다.
 
 예를 들어, <h1> 태그가 가로 너비 100% 를 차지한다고 가정해보자.
-
+```html
 h1 {
   width: 100%;
   margin: 10px;
 }
+```
 브라우저는 해당 요소의 너비, 높이, 좌표 위치 등을 계산하여 화면에서 어디에 배치할지를 결정한다.
 
-레이아웃 과정에서는 다음과 같은 요소들이 고려된다.
+레이아웃 과정에서는 다음과 같은 요소들이 고려된다.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;각 요소의 크기(width, height)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;요소 간의 간격(margin, padding)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;컨테이너 안에서의 위치(position, flexbox, grid 등)
 
-각 요소의 크기(width, height)
-요소 간의 간격(margin, padding)
-컨테이너 안에서의 위치(position, flexbox, grid 등)
-페인팅(Painting) 및 화면에 표시
+--------------------
+### 페인팅(Painting) 및 화면에 표시
 마지막 단계는 실제 화면에 픽셀을 그리는 과정, 즉 페인팅(Painting) 이다.
 브라우저는 이전 단계에서 계산한 레이아웃 정보를 GPU(Graphics Processing Unit) 를 사용하여 화면에 렌더링한다.
 
