@@ -335,7 +335,7 @@ HTTP 프로토콜과 요청/응답 구조
 웹에서 클라이언트와 서버 간 통신은 HTTP(HyperText Transfer Protocol) 를 통해 이루어진다.
 HTTP는 요청(Request)과 응답(Response) 기반의 프로토콜이며, 클라이언트가 서버에 요청을 보내면, 서버는 이에 대한 응답을 반환하는 구조로 동작한다.
 
-HTTP 요청(Request)
+### HTTP 요청(Request)
 
 클라이언트가 서버에 요청을 보낼 때 사용되는 메시지.
 요청 방식(Method)에는 GET, POST, PUT, DELETE 등이 있다.
