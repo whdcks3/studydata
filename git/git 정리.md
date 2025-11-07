@@ -65,7 +65,7 @@ git 등록
 
 -------
 ### 푸쉬
-```git push origin main```<br>
+```git push origin main``` (원격 저장소 이름) (브랜치 이름)<br>
 원격 저장소에 업로드
 
 ### 병합
