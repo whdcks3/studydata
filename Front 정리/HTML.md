@@ -307,3 +307,41 @@ target 속성은 새 탭을 열어준다.
 
 #### required
 필수 입력 필드를 지정한다.
+
+#### autofocus
+자동으로 커서를 갖다 놓는다.
+
+---------------------
+### ```<textarea>```
+여러 줄을 입력하는 텍스트 영역이다.
+```html
+<label for="memo">메모</label>
+<textarea id="memo" cols="40" rows="4"></textarea>
+```
+
+--------------
+### ```<select>, <option>```
+드롭다운 목록을 만들어준다.
+```html
+<select>
+  <option value="값1">내용1</option>
+</select>
+```
+
+---------------
+### ```<datalist>, <option>```
+데이터 목록을 만들어준다.
+```html
+<input type="text" list="데이터 목록 id">
+<datalist id="데이터 목록 id">
+  <option value="서버값1">선택 옵션1</option>
+  <option value="서버값2">선택 옵션2</option>
+</datalist>
+```
+
+-------------
+### <button>
+버튼을 만들어주는 태그
+```html
+<button type="submit">내용</button>
+```
