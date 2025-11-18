@@ -3,7 +3,7 @@
 ### 스타일과 스타일 시트
 
 기본형은 ```선택자 { 속성1: 속성값1; 속성2: 속성값2; }```
-```css
+```css 
 p {
   text-align: center;
   color: blue;
