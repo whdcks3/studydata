@@ -1,4 +1,4 @@
-# 웹 문서에 디자인 입히기
+<img width="132" height="184" alt="image" src="https://github.com/user-attachments/assets/31356185-7a88-4917-9d79-4b65c3d4d8ee" /># 웹 문서에 디자인 입히기
 
 ### 스타일과 스타일 시트
 
@@ -185,4 +185,140 @@ body { font-family: "맑은 고딕", 돋움, 굴림 }
 ```
 
 --------------------
-## 텍스트 관련 스타일
+# 텍스트 관련 스타일
+웹 문서에서 문단이나 제목 등의 텍스트에서 글자색을 바꿀 때는 color 속성을 사용한다.
+```css
+color: <색상>
+```
+
+### 16진수로 표현하는 법
+6자리의 16진수는 앞에서부터 두자리씩 묶어 **#RRGGBB**로 표시된다.
+```css
+p {
+  color: #034f1f;
+}
+```
+
+### hsl과 hsla로 표현하는 법
+hue(색상), saturation(채도), lightness(명도)의 줄임말이다.
+```css
+p {
+  color: hsl(0, 100%, 50%);
+}
+```
+
+### 색상을 영문명으로 표현하는 방법
+```css
+p {
+color: green;
+}
+```
+
+### rgb, rgba 표기법
+```css
+h1 {
+  color: rgb(0, 0, 255);
+}
+
+h2 {
+  color: rgba(0, 0, 255, 0.5) # a는 alpha 불투명도의 값이다.
+}
+```
+------------------------
+### 텍스트 정렬
+```css
+text-align: start
+```
+**속성값**
+|종류|설명|
+|:---|:---|
+|start|현재 텍스트 줄의 시작 위치에 맞추어 문단을 정렬한다.|
+|end|현재 텍스트 줄의 끝 위치에 맞추어 문단을 정렬한다.|
+|left|왼쪽에 맞추어 문단을 정렬한다.|
+|right|오른쪽에 맞추어 문단을 정렬한다.|
+|center|가운데에 맞추어 문단을 정렬한다.|
+|justify| 양쪽에 맞추어 문단을 정렬한다.|
+|match-parent|부모 요소를 따라 문단을 정렬한다.
+
+--------------
+### 줄 간격 조절
+한 문단이 두 줄을 넘기면 줄 간격이 생긴다. 그 사이를 조절할 수 있다.
+```css
+p {
+  font-size: 12px;
+  line-height: 24px;
+}
+```
+----------------
+### 텍스트 줄 표시
+```css
+<p style="text-decoration:none">none</p>
+<p style="text-decoration:underline">underline</p>
+<p style="text-decoration:overline">overline</p>
+<p style="text-decoration:line-through">line through</p>
+```
+<img width="132" height="184" alt="image" src="https://github.com/user-attachments/assets/738974ee-9039-4e04-9a04-e73a000a981d" />
+
+------------------
+### 텍스트 그림자 효과
+```css
+text-shadow: none : <가로 거리> <세로 거리> <번짐 정도> <색상>
+```
+
+**예시**
+```css
+<style>    
+    h1 { 
+      font-size:60px;
+    } 
+    .shadow1 {
+      color:red;
+      text-shadow:1px 1px black;
+    }
+    .shadow2 {
+      text-shadow:5px 5px 3px #ffa500;
+    }
+    .shadow3 {
+      color:#fff;
+      text-shadow:7px -7px 20px #000;
+    }
+  </style>
+```
+----------------
+### 텍스트 대소 문자 변환
+|종류|설명|
+|:---|:---|
+|capitalize|첫 번째 글자를 대문자로 변환한다.|
+|uppercase|모든 글자를 대문자로 변환한다.|
+|lowercase|모든 글자를 소문자로 변환한다.|
+|full-width|가능한 한 모든 문자를 전각 문자로 변환한다.|
+
+```css
+<style>    
+    .trans1 {
+      text-transform: capitalize;
+    }
+    .trans2 {
+      text-transform: uppercase;
+    }
+    .trans3 {
+      text-transform: lowercase;
+    }
+  </style>
+```
+-------------------
+### 글자 간격 조절
+letter-spacing 속성은 글자와 글자 사이의 간격을 조절<br>
+word-spacting 속성은 단어와 단어 사이의 간격을 조절
+```css
+<style> 
+  .spacing1 {
+    letter-spacing:0.2em;  /* 글자 간격 0.2em */
+  }
+  .spacing2 {
+    letter-spacing:0.5em;  /* 글자 간격 0.5em */
+  }      
+</style>
+```
+-----------------
+# 목록 스타일
