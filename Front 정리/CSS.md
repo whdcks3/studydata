@@ -1,4 +1,4 @@
-<img width="132" height="184" alt="image" src="https://github.com/user-attachments/assets/31356185-7a88-4917-9d79-4b65c3d4d8ee" /># 웹 문서에 디자인 입히기
+# 웹 문서에 디자인 입히기
 
 ### 스타일과 스타일 시트
 
