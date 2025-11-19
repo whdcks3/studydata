@@ -127,3 +127,62 @@ body { font-family: "맑은 고딕", 돋움, 굴림 }
 ------------------
 ### 웹 폰트 사용하기
 웹 폰트를 사용하려면 웹 문서를 작성할 때 글꼴 정보를 함께 저장해야 한다.<br>
+웹 폰트를 사용한 사이트에 사용자가 접속하면 웹 문서를 내려받으면서 웹 폰트도 사용자 시스템으로 다운로드 된다.<br>
+```css
+@font-face {
+  font-family: <글꼴 이름>;
+  src: <글꼴 파일>;
+}
+```
+**예시**
+```html
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>웹 폰트 사용하기</title>
+    <style>
+      @font-face {
+        font-family: 'Ostrich';  /* 폰트 이름 */
+        src: local('Ostrich Sans'), 
+              url('fonts/ostrich-sans-bold.woff') format('woff'), 
+              url('fonts/ostrich-sans-bold.ttf') format('truetype'), 
+              url('fonts/ostrich-sans-bold.svg') format('svg');
+      }
+      .wfont {
+        font-family:'Ostrich', sans-serif; /* 웹 폰트 지정 */
+      }
+      p {
+        font-size:30px; /* 글자 크기 */
+      }
+    </style>
+</head>
+<body>
+  <p>Using Default Fonts</p>
+  <p class="wfont">Using Web Fonts</p>
+</body>
+</html>
+```
+----------------
+### 구글 폰트 사용하기
+```html
+<head>
+  <meta charset="UTF-8">
+  <title>구글 폰트 사용하기</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
+
+    h1 {
+      font-size: 60px;
+      font-weight: bold;
+      font-family: "Nanum Pen Script", cursive;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>HTML+CSS+JavaScript</h1>
+</body>
+```
+
+--------------------
+## 텍스트 관련 스타일
