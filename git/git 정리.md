@@ -13,7 +13,7 @@
 git 등록
 
 ```git remote add (저장소 이름) (URL)```<br>
-원격 저장소 연결
+원격 저장소 연결 
  
 ```git remote rename (기존이름) (변경할 이름)```<br>
 원격 저장소 이름 변경
